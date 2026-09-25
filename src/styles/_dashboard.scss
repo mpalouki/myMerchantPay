@@ -1,0 +1,58 @@
+@use 'variables' as *;
+
+.dashboard__panel {
+  box-shadow: none;
+  border: 1px solid $color-border;
+  border-radius: 0 0 8px 8px;
+}
+
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  border: 1px solid $color-border;
+  margin: 20px 24px 0;
+
+  &--hidden {
+    padding: 20px;
+    color: $color-text-muted;
+    text-align: center;
+  }
+}
+
+.balance-cell {
+  padding: 16px 18px;
+  border-right: 1px solid $color-border;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &__label {
+    font-size: 13px;
+    color: $color-text-muted;
+    margin-bottom: 6px;
+  }
+
+  &__value {
+    font-weight: 700;
+    font-size: 15px;
+
+    &--danger {
+      color: $color-danger;
+    }
+
+    &--success {
+      color: $color-success;
+    }
+  }
+}
+
+.dashboard__chart-title {
+  padding: 24px 24px 0;
+  font-size: 16px;
+}
+
+.dashboard__chart {
+  padding: 12px 12px 24px;
+}

@@ -1,0 +1,156 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.card {
+  @include card;
+  overflow: hidden;
+
+  &__header {
+    padding: 16px 24px;
+    font-weight: 700;
+    border-bottom: 1px solid $color-border;
+    color: $color-text;
+
+    &-icon {
+      margin-right: 6px;
+    }
+  }
+
+  &__subheader {
+    font-weight: 400;
+    font-size: 13px;
+    color: $color-text-muted;
+    margin-top: 4px;
+  }
+
+  &__body {
+    padding: 24px;
+  }
+
+  &--placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px;
+    color: $color-text-muted;
+
+    h2 {
+      color: $color-text;
+      margin: 0 0 6px;
+    }
+  }
+}
+
+.placeholder__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: $color-info-bg;
+  color: $color-primary;
+  @include flex(center, center);
+  margin-bottom: 16px;
+}
+
+.alert {
+  border-radius: $radius;
+  padding: 14px 18px;
+  font-size: 14px;
+  margin-bottom: 20px;
+
+  &--warning {
+    background: $color-danger-bg;
+    color: $color-danger;
+  }
+}
+
+.page-header {
+  @include flex(center, space-between, 12px, wrap);
+  margin-bottom: 18px;
+
+  h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+}
+
+.country-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.country-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 24px;
+  border: 1px solid $color-border;
+  background: #fff;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: $color-text;
+
+  &:hover {
+    border-color: $color-primary;
+  }
+
+  &--active {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: #fff;
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  background: #dfe4ea;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
+
+  &__item {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: $color-text-muted;
+
+    &--active {
+      background: #fff;
+      color: $color-text;
+      font-weight: 600;
+    }
+  }
+}
+
+.tab-panel {
+  padding-top: 20px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $color-primary-dark;
+  border-bottom: 1px dotted $color-border;
+  padding-bottom: 8px;
+  margin: 24px 0 8px;
+}
+
+.section-title-lg {
+  font-size: 18px;
+  text-align: center;
+  margin: 4px 0 24px;
+}
+
+.section-row {
+  @include flex(center, space-between, 12px, wrap);
+}
+
+.country-pill__flag {
+  border-radius: 2px;
+}

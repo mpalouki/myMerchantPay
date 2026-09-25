@@ -1,0 +1,92 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+
+  th,
+  td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid $color-border;
+  }
+
+  th {
+    color: $color-text-muted;
+    font-weight: 600;
+    background: #f7f9fb;
+  }
+
+  &__empty {
+    text-align: center;
+    color: $color-text-muted;
+    padding: 30px 14px;
+  }
+}
+
+.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+
+  th,
+  td {
+    padding: 14px 16px;
+    border: 1px solid $color-border;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  th {
+    width: 40%;
+    background: #f7f9fb;
+    font-weight: 600;
+    color: $color-text;
+  }
+}
+
+.table-toolbar {
+  @include flex(center, space-between, 12px, wrap);
+  margin-bottom: 16px;
+  font-size: 13.5px;
+
+  &__pagesize,
+  &__search {
+    @include flex(center, flex-start, 8px);
+  }
+
+  select,
+  &__search input {
+    padding: 7px 10px;
+    border: 1px solid $color-border;
+    border-radius: 6px;
+    font-size: 13.5px;
+  }
+}
+
+.table-footer {
+  @include flex(center, space-between, 10px, wrap);
+  margin-top: 14px;
+  font-size: 13px;
+  color: $color-text-muted;
+}
+
+.table-pagination {
+  display: flex;
+  gap: 6px;
+
+  button {
+    border: 1px solid $color-border;
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}

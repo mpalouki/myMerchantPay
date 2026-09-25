@@ -1,0 +1,35 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 6px;
+  text-transform: uppercase;
+
+  &--new {
+    @include badge-tone(#063a35, #17d1c1);
+    margin-left: auto;
+    text-transform: none;
+  }
+
+  &--danger {
+    @include badge-tone($color-danger, $color-danger-bg);
+  }
+
+  &--success {
+    @include badge-tone($color-success, $color-success-bg);
+  }
+
+  &--warning {
+    @include badge-tone($color-warning, $color-warning-bg);
+  }
+
+  &--info {
+    @include badge-tone($color-primary-dark, $color-info-bg);
+  }
+}

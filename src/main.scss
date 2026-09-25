@@ -1,0 +1,15 @@
+// Only bundle the flags for the countries we operate in (see COUNTRIES in data/mockData.js).
+@use 'flag-icons';
+@use 'styles/base';
+@use 'styles/buttons';
+@use 'styles/badges';
+@use 'styles/login';
+@use 'styles/register';
+@use 'styles/layout';
+@use 'styles/sidebar';
+@use 'styles/cards';
+@use 'styles/dashboard';
+@use 'styles/tables';
+@use 'styles/forms';
+@use 'styles/api';
+@use 'styles/stepper';

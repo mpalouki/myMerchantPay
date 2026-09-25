@@ -1,0 +1,106 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: $color-text;
+
+  &--stacked span {
+    font-weight: 600;
+  }
+
+  input,
+  select {
+    @include field-input;
+  }
+
+  small {
+    color: $color-text-muted;
+    font-size: 12px;
+  }
+}
+
+.settings-row {
+  @include flex(center, space-between);
+  padding: 10px 0;
+  border-bottom: 1px solid $color-border;
+  font-size: 14px;
+
+  &__label {
+    font-weight: 700;
+  }
+}
+
+.phone-input,
+.amount-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  overflow: hidden;
+
+  input {
+    border: none;
+    flex: 1;
+
+    &:focus {
+      border: none;
+    }
+  }
+}
+
+.phone-input__flag {
+  padding: 11px 12px;
+  background: #f7f9fb;
+  border-right: 1px solid $color-border;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.amount-input span {
+  padding: 0 14px;
+  font-size: 13px;
+  color: $color-text-muted;
+}
+
+.toast-inline {
+  background: $color-success-bg;
+  color: $color-success;
+  padding: 10px 14px;
+  border-radius: $radius;
+  font-size: 13.5px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.settings-others {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+}
+
+.country-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  select {
+    flex: 1;
+  }
+}

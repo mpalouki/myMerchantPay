@@ -1,0 +1,149 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.sidebar {
+  width: $sidebar-width;
+  flex-shrink: 0;
+  background: $sidebar-bg;
+  color: $sidebar-text;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  position: relative;
+
+  &--collapsed {
+    width: $sidebar-width-collapsed;
+  }
+
+  &__brand {
+    padding: 0 20px 16px;
+    display: none;
+  }
+
+  &__account {
+    padding: 0 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+
+    &-type {
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      color: #8a94a3;
+      margin-bottom: 8px;
+    }
+
+    &-label {
+      font-size: 12px;
+      color: #8a94a3;
+    }
+
+    &-number {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+    gap: 2px;
+  }
+
+  &__link,
+  &__link--button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: $sidebar-text;
+    text-decoration: none;
+    font-size: 14px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+  }
+
+  &__link--active {
+    background: $sidebar-accent;
+    color: #fff;
+
+    &:hover {
+      background: $sidebar-accent;
+    }
+  }
+
+  &__caret {
+    margin-left: auto;
+  }
+
+  &__submenu {
+    display: flex;
+    flex-direction: column;
+    padding-left: 30px;
+    margin: 2px 0 6px;
+    gap: 2px;
+  }
+
+  &__sublink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: $sidebar-text;
+    text-decoration: none;
+    font-size: 13.5px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+
+    &--active {
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  &__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  &__divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 14px 10px;
+  }
+
+  &__collapse-btn {
+    margin: 16px auto 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #fff;
+    @include flex(center, center);
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+}

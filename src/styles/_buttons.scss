@@ -1,0 +1,79 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: $radius;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  &--block {
+    width: 100%;
+  }
+
+  &--sm {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  &--primary {
+    @include button-variant($color-primary, #fff, $color-primary-dark);
+  }
+
+  &--teal {
+    @include button-variant($color-teal, #fff, $color-teal-dark);
+  }
+
+  &--danger {
+    @include button-variant($color-danger);
+  }
+
+  &--outline {
+    background: #fff;
+    color: $color-text;
+    border: 1px solid $color-border;
+
+    &:hover {
+      border-color: $color-primary;
+    }
+  }
+
+  &--outline-danger {
+    background: #fff;
+    color: $color-danger;
+    border: 1px solid $color-danger;
+
+    &:hover {
+      background: $color-danger-bg;
+    }
+  }
+
+  &--ghost {
+    background: #f1f3f6;
+    color: $color-text;
+
+    &:hover {
+      background: #e6e9ee;
+    }
+  }
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: $color-primary;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

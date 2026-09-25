@@ -1,0 +1,140 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.register-card {
+  max-width: 720px;
+
+  &__fields {
+    border: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 13px;
+    color: $color-text-muted;
+  }
+
+  &--done {
+    max-width: 480px;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: $color-text-muted;
+    }
+
+    .btn {
+      text-decoration: none;
+    }
+  }
+
+  .field select {
+    @include field-input;
+  }
+}
+
+.register-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  @include flex(flex-start, space-between, 8px);
+  counter-reset: none;
+
+  &__item {
+    flex: 1;
+    @include flex(center, flex-start, 8px);
+    flex-direction: column;
+    text-align: center;
+    font-size: 12.5px;
+    color: $color-text-muted;
+    position: relative;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: calc(50% + 18px);
+      right: calc(-50% + 18px);
+      height: 2px;
+      background: $color-border;
+    }
+
+    &--active {
+      color: $color-text;
+      font-weight: 600;
+    }
+
+    &--done::after {
+      background: $color-primary !important;
+    }
+  }
+
+  &__index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    @include flex(center, center);
+    border: 2px solid $color-border;
+    background: $color-surface;
+    font-weight: 700;
+  }
+
+  &__item--active &__index,
+  &__item--done &__index {
+    border-color: $color-primary;
+    background: $color-primary;
+    color: #fff;
+  }
+}
+
+.register-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+
+  &__full {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.register-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &__item input[type='file'] {
+    padding: 8px 10px;
+    background: #f7f9fb;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 600px) {
+  .register-steps__label {
+    display: none;
+  }
+}
+
+
+.language-switcher select {
+  padding: 6px 10px;
+  border-radius: $radius;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+
+  option {
+    color: $color-text;
+  }
+}

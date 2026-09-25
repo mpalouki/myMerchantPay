@@ -1,0 +1,70 @@
+@use 'variables' as *;
+
+.key-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  margin-bottom: 8px;
+}
+
+.key-row span {
+  font-weight: 400;
+  color: $color-text-muted;
+  font-size: 13px;
+}
+
+.key-field {
+  display: flex;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    font-size: 13px;
+    color: $color-danger;
+    letter-spacing: 1px;
+    background: #fafbfc;
+  }
+}
+
+.pm-group {
+  padding: 10px 0;
+  border-bottom: 1px dashed $color-border;
+
+  &__label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  max-width: 300px;
+  font-size: 14px;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0 16px;
+  flex-wrap: wrap;
+}
+
+.empty-panel {
+  color: $color-text-muted;
+  padding: 40px 0;
+  text-align: center;
+}
