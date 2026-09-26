@@ -56,6 +56,17 @@ export function getMerchantProfile(token) {
   return request('/api/merchant/me', { method: 'GET', token })
 }
 
+// Sent as form data (the endpoint reads $request->request, not a JSON body).
+// Response shape: { message }. Validation failures are 422 with
+// { errors: { current_password?, new_password?, confirm_password? } }.
+export function updatePassword(token, { currentPassword, newPassword, confirmPassword }) {
+  const body = new FormData()
+  body.append('current_password', currentPassword)
+  body.append('new_password', newPassword)
+  body.append('confirm_password', confirmPassword)
+  return request('/api/merchant/update-password', { method: 'POST', body, token })
+}
+
 // Merchant self-registration with KYC data, reviewed by the back office before
 // the account is activated. Sent as multipart/form-data:
 //   - `data`: JSON string { company: {...}, representative: {...}, account: { email, password }, acceptedTerms }

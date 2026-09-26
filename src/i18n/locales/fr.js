@@ -125,4 +125,122 @@ export default {
       backToLogin: 'Retour à la connexion',
     },
   },
+
+  home: {
+    nav: {
+      features: 'Fonctionnalités',
+      countries: 'Pays',
+      developers: 'Développeurs',
+      security: 'Sécurité',
+      login: 'Se connecter',
+      signup: 'Ouvrir un compte',
+      dashboard: 'Tableau de bord',
+    },
+    hero: {
+      eyebrow: 'Paiements pour les entreprises africaines',
+      title: 'Encaissez et payez partout en Afrique de l’Ouest, en un seul compte.',
+      subtitle:
+        'Mobile money, cartes bancaires et virements : MyMerchantPay réunit tous vos moyens de paiement dans une seule plateforme, avec une seule intégration API.',
+      primaryCta: 'Ouvrir un compte marchand',
+      secondaryCta: 'Découvrir l’API',
+      note: 'Inscription gratuite · Vérification KYC rapide · Aucun frais caché',
+    },
+    mock: {
+      balance: 'Solde disponible',
+      toastTitle: 'Paiement reçu',
+    },
+    features: {
+      eyebrow: 'Fonctionnalités',
+      title: 'Tout ce qu’il faut pour gérer votre argent',
+      items: {
+        collect: {
+          title: 'Collecter des paiements',
+          text: 'Acceptez le mobile money et les cartes sur votre site, votre application ou en boutique.',
+        },
+        disburse: {
+          title: 'Débourser en masse',
+          text: 'Payez vos fournisseurs, agents et employés en une seule opération, dans plusieurs pays.',
+        },
+        send: {
+          title: 'Envoyer de l’argent',
+          text: 'Transférez des fonds vers n’importe quel portefeuille mobile ou compte bancaire en quelques secondes.',
+        },
+        request: {
+          title: 'Demander un paiement',
+          text: 'Partagez un lien ou un QR code et soyez payé sans intégration technique.',
+        },
+      },
+    },
+    countries: {
+      eyebrow: 'Couverture',
+      title: 'Présents là où sont vos clients',
+      subtitle: 'Un seul compte pour opérer dans chaque pays, avec les opérateurs que vos clients utilisent déjà.',
+    },
+    steps: {
+      eyebrow: 'Comment ça marche',
+      title: 'Opérationnel en trois étapes',
+      items: {
+        signup: {
+          title: 'Créez votre compte',
+          text: 'Renseignez les informations de votre entreprise en quelques minutes.',
+        },
+        kyc: {
+          title: 'Validez votre KYC',
+          text: 'Transmettez vos documents : notre équipe conformité vérifie et active votre compte.',
+        },
+        integrate: {
+          title: 'Intégrez et encaissez',
+          text: 'Générez vos clés API, testez en sandbox, puis passez en production.',
+        },
+      },
+    },
+    security: {
+      eyebrow: 'Sécurité',
+      title: 'Une sécurité toujours active',
+      text: 'Vos fonds et les données de vos clients sont protégés à chaque étape, de l’inscription à chaque transaction.',
+      points: {
+        encryption: {
+          title: 'Chiffrement de bout en bout',
+          text: 'Toutes les communications et données sensibles sont chiffrées.',
+        },
+        kyc: {
+          title: 'Marchands vérifiés',
+          text: 'Chaque compte est contrôlé par notre équipe conformité avant activation.',
+        },
+        monitoring: {
+          title: 'Surveillance des transactions',
+          text: 'Les opérations inhabituelles sont détectées et bloquées en temps réel.',
+        },
+        keys: {
+          title: 'Clés API séparées',
+          text: 'Des clés distinctes pour le test et la production, révocables à tout moment.',
+        },
+      },
+    },
+    developers: {
+      eyebrow: 'Développeurs',
+      title: 'Une API pensée pour les développeurs',
+      text: 'Une intégration REST unique pour tous les pays et tous les opérateurs. Démarrez en sandbox et passez en production sans changer votre code.',
+      points: {
+        sandbox: 'Environnement de test complet',
+        webhooks: 'Notifications IPN en temps réel',
+        oneApi: 'Une seule API pour tous les opérateurs',
+      },
+      codeLabel: 'Exemple de requête',
+    },
+    cta: {
+      title: 'Prêt à développer votre activité ?',
+      text: 'Ouvrez votre compte marchand gratuitement et commencez à encaisser dès aujourd’hui.',
+      button: 'Créer mon compte',
+    },
+    footer: {
+      tagline: 'La plateforme de paiement des entreprises en Afrique de l’Ouest.',
+      product: 'Produit',
+      developers: 'Développeurs',
+      account: 'Compte',
+      apiDocs: 'Documentation API',
+      sandbox: 'Sandbox',
+      legal: 'Mentions légales · Confidentialité · Conditions d’utilisation',
+    },
+  },
 }

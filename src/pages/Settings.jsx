@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Tabs from '../components/Tabs.jsx'
 import Flag from '../components/Flag.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { ApiError, updatePassword } from '../api/client.js'
 
 const TABS = [
   { key: 'info', label: 'Changer vos informations personnelles' },
@@ -99,46 +100,116 @@ function PersonalInfoTab() {
   )
 }
 
+// Mirrors the server policy in myPay's Api\Merchant\PasswordController, so most
+// mistakes are caught before a round trip. The server stays the source of truth.
+function validatePasswordForm({ current, next, confirm }) {
+  const errors = {}
+  if (!current) errors.current = 'Veuillez saisir votre mot de passe actuel.'
+  if (!next) errors.next = 'Veuillez saisir un nouveau mot de passe.'
+  else if (next.length < 10) errors.next = 'Le mot de passe doit contenir au moins 10 caractères.'
+  else if (!/[A-Za-z]/.test(next) || !/\d/.test(next))
+    errors.next = 'Le mot de passe doit contenir au moins une lettre et un chiffre.'
+  else if (next === current) errors.next = "Le nouveau mot de passe doit être différent de l'actuel."
+  if (!confirm) errors.confirm = 'Veuillez confirmer le nouveau mot de passe.'
+  else if (next && confirm !== next) errors.confirm = 'Les nouveaux mots de passe ne correspondent pas.'
+  return errors
+}
+
+// Server field errors come back in English, keyed by API field name.
+function mapServerPasswordErrors(serverErrors = {}) {
+  const errors = {}
+  if (serverErrors.current_password) errors.current = 'Le mot de passe actuel est incorrect.'
+  if (serverErrors.new_password) errors.next = serverErrors.new_password
+  if (serverErrors.confirm_password) errors.confirm = 'Les nouveaux mots de passe ne correspondent pas.'
+  return errors
+}
+
 function PasswordTab() {
+  const { token } = useAuth()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [message, setMessage] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [formError, setFormError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!current || !next || !confirm) {
-      setMessage('Veuillez remplir tous les champs.')
-      return
+    setSuccess(false)
+    setFormError('')
+
+    const errors = validatePasswordForm({ current, next, confirm })
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
+    setSubmitting(true)
+    try {
+      await updatePassword(token, { currentPassword: current, newPassword: next, confirmPassword: confirm })
+      setSuccess(true)
+      setCurrent('')
+      setNext('')
+      setConfirm('')
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
+        setFieldErrors(mapServerPasswordErrors(err.data.errors))
+      } else if (err instanceof ApiError && err.status === 401) {
+        setFormError('Votre session a expiré. Veuillez vous reconnecter.')
+      } else {
+        setFormError(err instanceof ApiError && err.status === 0 ? err.message : 'Une erreur est survenue. Veuillez réessayer.')
+      }
+    } finally {
+      setSubmitting(false)
     }
-    if (next !== confirm) {
-      setMessage('Les nouveaux mots de passe ne correspondent pas.')
-      return
-    }
-    setMessage('Mot de passe changé avec succès.')
-    setCurrent('')
-    setNext('')
-    setConfirm('')
   }
 
   return (
-    <form className="settings-form" onSubmit={handleSubmit}>
+    <form className="settings-form" onSubmit={handleSubmit} noValidate>
       <label className="field field--stacked">
         <span>Mot de passe actuel</span>
-        <input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <input
+          type="password"
+          autoComplete="current-password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          disabled={submitting}
+          aria-invalid={!!fieldErrors.current}
+        />
+        {fieldErrors.current && <small className="field__error">{fieldErrors.current}</small>}
       </label>
       <label className="field field--stacked">
         <span>Nouveau mot de passe</span>
-        <input type="password" value={next} onChange={(e) => setNext(e.target.value)} />
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={next}
+          onChange={(e) => setNext(e.target.value)}
+          disabled={submitting}
+          aria-invalid={!!fieldErrors.next}
+        />
+        {fieldErrors.next ? (
+          <small className="field__error">{fieldErrors.next}</small>
+        ) : (
+          <small>Au moins 10 caractères, dont une lettre et un chiffre.</small>
+        )}
       </label>
       <label className="field field--stacked">
         <span>Confirmer votre nouveau mot de passe</span>
-        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          disabled={submitting}
+          aria-invalid={!!fieldErrors.confirm}
+        />
+        {fieldErrors.confirm && <small className="field__error">{fieldErrors.confirm}</small>}
       </label>
-      <button type="submit" className="btn btn--teal">
-        Changer de mot de passe
+      <button type="submit" className="btn btn--teal" disabled={submitting}>
+        {submitting ? 'Modification en cours…' : 'Changer de mot de passe'}
       </button>
-      {message && <div className="toast-inline">{message}</div>}
+      {success && <div className="toast-inline">Mot de passe changé avec succès.</div>}
+      {formError && <div className="toast-inline toast-inline--error">{formError}</div>}
     </form>
   )
 }

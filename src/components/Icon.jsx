@@ -15,6 +15,8 @@ const PATHS = {
   chevronRight: 'M9 6l6 6-6 6',
   eye: 'M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7zm11 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
   copy: 'M9 9h10v10H9V9zM5 15V5h10',
+  check: 'M5 12.5l4.5 4.5L19 7',
+  shield: 'M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6l8-3zm-3.5 9 2.5 2.5 4.5-5',
 }
 
 export default function Icon({ name, size = 18, className = '' }) {
