@@ -21,7 +21,14 @@ docker compose up -d --build web                        # dev with hot reload on
 docker compose --profile prod up -d --build web-prod    # nginx on :8080 (clashes with myPay's adminer)
 ```
 
-There is no test runner, linter, or TypeScript — verify changes by running the app against a running myPay backend.
+```bash
+npm run lint        # ESLint 9 flat config (eslint.config.js); must pass with 0 errors (statements end with `;`)
+npm run lint:fix
+```
+
+Node isn't installed on the host; run npm commands in the container, e.g. `docker compose exec web npm run lint`.
+
+There is no test runner or TypeScript — besides lint, verify changes by running the app against a running myPay backend.
 
 Config: `VITE_API_BASE_URL` (copy `.env.example` to `.env`; defaults to `http://localhost:8000`).
 
