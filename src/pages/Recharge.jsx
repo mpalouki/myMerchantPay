@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BANK_ACCOUNTS, ZONES } from '../data/mockData.js'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BANK_ACCOUNTS, ZONES } from '../data/mockData.js';
 
 const METHODS = [
   { key: 'mobile', label: 'Mobile Money' },
   { key: 'bank', label: 'Compte bancaire' },
-]
+];
 
 export default function Recharge() {
-  const [method, setMethod] = useState('bank')
-  const [step, setStep] = useState(1)
-  const navigate = useNavigate()
+  const [method, setMethod] = useState('bank');
+  const [step, setStep] = useState(1);
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     bank: BANK_ACCOUNTS[0].id,
@@ -21,14 +21,14 @@ export default function Recharge() {
     label: '',
     phone: '',
     operator: '',
-  })
+  });
 
-  const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    navigate('/dashboard/recharge/history')
-  }
+    e.preventDefault();
+    navigate('/dashboard/recharge/history');
+  };
 
   return (
     <div className="card">
@@ -44,8 +44,8 @@ export default function Recharge() {
               type="button"
               className={`stepper-tabs__item ${method === m.key ? 'stepper-tabs__item--active' : ''}`}
               onClick={() => {
-                setMethod(m.key)
-                setStep(1)
+                setMethod(m.key);
+                setStep(1);
               }}
             >
               {m.label}
@@ -61,8 +61,8 @@ export default function Recharge() {
           <form
             className="settings-form"
             onSubmit={(e) => {
-              e.preventDefault()
-              setStep(2)
+              e.preventDefault();
+              setStep(2);
             }}
           >
             {method === 'bank' ? (
@@ -166,5 +166,5 @@ export default function Recharge() {
         )}
       </div>
     </div>
-  )
+  );
 }

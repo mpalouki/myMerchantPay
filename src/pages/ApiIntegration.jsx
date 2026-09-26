@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import Tabs from '../components/Tabs.jsx'
-import Icon from '../components/Icon.jsx'
-import { APPLICATION_INFO, API_KEYS, PAYMENT_METHODS_BY_COUNTRY } from '../data/mockData.js'
+import { useState } from 'react';
+import Tabs from '../components/Tabs.jsx';
+import Icon from '../components/Icon.jsx';
+import { APPLICATION_INFO, API_KEYS, PAYMENT_METHODS_BY_COUNTRY } from '../data/mockData.js';
 
 const TABS = [
   { key: 'apps', label: 'Applications' },
   { key: 'clients', label: 'Clients fictifs' },
   { key: 'data', label: 'Données internes fictives' },
-]
+];
 
-const FAKE_KEY = 'fake_demo_7f8a7d6c0b4e3e0d1c0c9a8f5e6d5c4f'
+const FAKE_KEY = 'fake_demo_7f8a7d6c0b4e3e0d1c0c9a8f5e6d5c4f';
 
 export default function ApiIntegration() {
-  const [tab, setTab] = useState('apps')
-  const [revealed, setRevealed] = useState(false)
+  const [tab, setTab] = useState('apps');
+  const [revealed, setRevealed] = useState(false);
 
   return (
     <div className="card">
@@ -33,7 +33,7 @@ export default function ApiIntegration() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ApplicationsPanel({ revealed, onToggleReveal }) {
@@ -159,7 +159,7 @@ function ApplicationsPanel({ revealed, onToggleReveal }) {
         Retour à la page précédente
       </a>
     </>
-  )
+  );
 }
 
 function KeyRow({ label, value, revealed }) {
@@ -168,22 +168,22 @@ function KeyRow({ label, value, revealed }) {
       <span>{label}</span>
       <KeyField value={value} revealed={revealed} />
     </div>
-  )
+  );
 }
 
 function KeyField({ value, revealed }) {
-  const [copied, setCopied] = useState(false)
-  const display = revealed ? FAKE_KEY : value
+  const [copied, setCopied] = useState(false);
+  const display = revealed ? FAKE_KEY : value;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(FAKE_KEY)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      await navigator.clipboard.writeText(FAKE_KEY);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     } catch {
-      setCopied(false)
+      setCopied(false);
     }
-  }
+  };
 
   return (
     <div className="key-field">
@@ -192,9 +192,9 @@ function KeyField({ value, revealed }) {
         <Icon name="copy" size={14} /> {copied ? 'Copié !' : 'Copier'}
       </button>
     </div>
-  )
+  );
 }
 
 function EmptyPanel({ label }) {
-  return <div className="empty-panel">{label}</div>
+  return <div className="empty-panel">{label}</div>;
 }

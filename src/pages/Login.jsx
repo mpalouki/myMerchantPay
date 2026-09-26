@@ -1,39 +1,39 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import Logo from '../components/Logo.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
-import { ApiError } from '../api/client.js'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
-import { useTranslation } from '../i18n/I18nContext.jsx'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { ApiError } from '../api/client.js';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
+import { useTranslation } from '../i18n/I18nContext.jsx';
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   // Translation key, or { message } for server errors, so it re-renders on language switch.
-  const [error, setError] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const { login } = useAuth()
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const { login } = useAuth();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!email || !password) {
-      setError('login.missingCredentials')
-      return
+      setError('login.missingCredentials');
+      return;
     }
 
-    setError(null)
-    setSubmitting(true)
+    setError(null);
+    setSubmitting(true);
     try {
-      await login(email, password)
-      navigate('/dashboard')
+      await login(email, password);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof ApiError ? { message: err.message } : 'login.serverError')
+      setError(err instanceof ApiError ? { message: err.message } : 'login.serverError');
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
@@ -83,5 +83,5 @@ export default function Login() {
         </Link>
       </form>
     </div>
-  )
+  );
 }

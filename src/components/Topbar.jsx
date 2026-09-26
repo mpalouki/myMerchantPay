@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Icon from './Icon.jsx'
-import Logo from './Logo.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Icon from './Icon.jsx';
+import Logo from './Logo.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Topbar() {
-  const { user, merchant, logout } = useAuth()
-  const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef(null)
+  const { user, merchant, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
-  const displayName = merchant?.name || user?.email || ''
+  const displayName = merchant?.name || user?.email || '';
   const initials = merchant?.name
     ? merchant.name
         .split(/\s+/)
@@ -18,22 +18,22 @@ export default function Topbar() {
         .map((w) => w[0])
         .join('')
         .toUpperCase()
-    : user?.email?.[0]?.toUpperCase() || ''
+    : user?.email?.[0]?.toUpperCase() || '';
 
   useEffect(() => {
     function onClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false)
+        setMenuOpen(false);
       }
     }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [])
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, []);
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="topbar">
@@ -59,8 +59,8 @@ export default function Topbar() {
                 type="button"
                 className="topbar__menu-item"
                 onClick={() => {
-                  setMenuOpen(false)
-                  navigate('/dashboard/profile')
+                  setMenuOpen(false);
+                  navigate('/dashboard/profile');
                 }}
               >
                 Profil du gestionnaire
@@ -69,8 +69,8 @@ export default function Topbar() {
                 type="button"
                 className="topbar__menu-item"
                 onClick={() => {
-                  setMenuOpen(false)
-                  navigate('/dashboard/settings')
+                  setMenuOpen(false);
+                  navigate('/dashboard/settings');
                 }}
               >
                 Paramètres
@@ -84,5 +84,5 @@ export default function Topbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

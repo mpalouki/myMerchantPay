@@ -1,4 +1,4 @@
-import Icon from './Icon.jsx'
+import Icon from './Icon.jsx';
 
 export default function PlaceholderPage({ title, icon = 'shop' }) {
   return (
@@ -9,5 +9,5 @@ export default function PlaceholderPage({ title, icon = 'shop' }) {
       <h2>{title}</h2>
       <p>Cette section est en cours de construction. Revenez bientôt.</p>
     </div>
-  )
+  );
 }

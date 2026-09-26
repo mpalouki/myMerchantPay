@@ -1,16 +1,16 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
-import PlaceholderPage from './components/PlaceholderPage.jsx'
-import DashboardLayout from './layouts/DashboardLayout.jsx'
-import Home from './pages/Home.jsx'
-import Login from './pages/Login.jsx'
-import Register from './pages/Register.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Profile from './pages/Profile.jsx'
-import Settings from './pages/Settings.jsx'
-import ApiIntegration from './pages/ApiIntegration.jsx'
-import Recharge from './pages/Recharge.jsx'
-import RechargeHistory from './pages/RechargeHistory.jsx'
+import { Navigate, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PlaceholderPage from './components/PlaceholderPage.jsx';
+import DashboardLayout from './layouts/DashboardLayout.jsx';
+import Home from './pages/Home.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Profile from './pages/Profile.jsx';
+import Settings from './pages/Settings.jsx';
+import ApiIntegration from './pages/ApiIntegration.jsx';
+import Recharge from './pages/Recharge.jsx';
+import RechargeHistory from './pages/RechargeHistory.jsx';
 
 export default function App() {
   return (
@@ -52,5 +52,5 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  )
+  );
 }

@@ -1,28 +1,28 @@
-import { useMemo, useState } from 'react'
-import { RECHARGE_HISTORY } from '../data/mockData.js'
+import { useMemo, useState } from 'react';
+import { RECHARGE_HISTORY } from '../data/mockData.js';
 
 const STATUS_TONE = {
   Validé: 'success',
   'En attente': 'warning',
   Rejeté: 'danger',
-}
+};
 
 export default function RechargeHistory() {
-  const [pageSize, setPageSize] = useState(10)
-  const [query, setQuery] = useState('')
+  const [pageSize, setPageSize] = useState(10);
+  const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return RECHARGE_HISTORY
-    const q = query.toLowerCase()
+    if (!query.trim()) return RECHARGE_HISTORY;
+    const q = query.toLowerCase();
     return RECHARGE_HISTORY.filter((r) =>
       [r.date, r.phoneOrRib, r.amount, r.method, r.account, r.label, r.status]
         .join(' ')
         .toLowerCase()
         .includes(q),
-    )
-  }, [query])
+    );
+  }, [query]);
 
-  const rows = filtered.slice(0, pageSize)
+  const rows = filtered.slice(0, pageSize);
 
   return (
     <div className="card">
@@ -107,5 +107,5 @@ export default function RechargeHistory() {
         </div>
       </div>
     </div>
-  )
+  );
 }

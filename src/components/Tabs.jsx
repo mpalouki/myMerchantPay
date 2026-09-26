@@ -12,5 +12,5 @@ export default function Tabs({ tabs, active, onChange }) {
         </button>
       ))}
     </div>
-  )
+  );
 }

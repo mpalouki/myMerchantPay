@@ -1,5 +1,5 @@
 export default function Logo({ variant = 'color', size = 26 }) {
-  const color = variant === 'white' ? '#ffffff' : '#1e88e5'
+  const color = variant === 'white' ? '#ffffff' : '#1e88e5';
   return (
     <span
       style={{
@@ -14,5 +14,5 @@ export default function Logo({ variant = 'color', size = 26 }) {
     >
       merchant<span style={{ fontWeight: 400 }}>pay</span>
     </span>
-  )
+  );
 }

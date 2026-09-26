@@ -17,11 +17,11 @@ const PATHS = {
   copy: 'M9 9h10v10H9V9zM5 15V5h10',
   check: 'M5 12.5l4.5 4.5L19 7',
   shield: 'M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6l8-3zm-3.5 9 2.5 2.5 4.5-5',
-}
+};
 
 export default function Icon({ name, size = 18, className = '' }) {
-  const d = PATHS[name]
-  if (!d) return null
+  const d = PATHS[name];
+  if (!d) return null;
   return (
     <svg
       width={size}
@@ -36,5 +36,5 @@ export default function Icon({ name, size = 18, className = '' }) {
     >
       <path d={d} />
     </svg>
-  )
+  );
 }

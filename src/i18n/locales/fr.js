@@ -243,4 +243,4 @@ export default {
       legal: 'Mentions légales · Confidentialité · Conditions d’utilisation',
     },
   },
-}
+};

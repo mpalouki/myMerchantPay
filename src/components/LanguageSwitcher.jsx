@@ -1,7 +1,7 @@
-import { LOCALES, useTranslation } from '../i18n/I18nContext.jsx'
+import { LOCALES, useTranslation } from '../i18n/I18nContext.jsx';
 
 export default function LanguageSwitcher({ className = '' }) {
-  const { locale, setLocale, t } = useTranslation()
+  const { locale, setLocale, t } = useTranslation();
 
   return (
     <label className={`language-switcher ${className}`}>
@@ -14,5 +14,5 @@ export default function LanguageSwitcher({ className = '' }) {
         ))}
       </select>
     </label>
-  )
+  );
 }

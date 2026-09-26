@@ -242,4 +242,4 @@ export default {
       legal: 'Legal notice · Privacy · Terms of use',
     },
   },
-}
+};

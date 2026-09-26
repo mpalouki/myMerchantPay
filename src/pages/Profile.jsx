@@ -1,25 +1,25 @@
-import { useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx';
 
 const STATUS_TONE = {
   authorized: 'success',
   pending: 'warning',
   suspended: 'danger',
   rejected: 'danger',
-}
+};
 
 function formatDate(isoString) {
-  if (!isoString) return '—'
+  if (!isoString) return '—';
   try {
     return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(
       new Date(isoString),
-    )
+    );
   } catch {
-    return isoString
+    return isoString;
   }
 }
 
 export default function Profile() {
-  const { user, merchant } = useAuth()
+  const { user, merchant } = useAuth();
 
   const rows = [
     ['Nom du marchand', merchant?.name ?? '—'],
@@ -29,7 +29,7 @@ export default function Profile() {
     ["Secteur d'activité", merchant?.sector ?? '—'],
     ['Pays', merchant?.country ?? '—'],
     ['Date de création', formatDate(merchant?.createdAt)],
-  ]
+  ];
 
   return (
     <div className="card">
@@ -66,9 +66,9 @@ export default function Profile() {
         </table>
       </div>
     </div>
-  )
+  );
 }
 
 function Icon() {
-  return <span className="card__header-icon">&#9881;</span>
+  return <span className="card__header-icon">&#9881;</span>;
 }

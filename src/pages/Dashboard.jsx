@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -7,26 +7,26 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-} from 'recharts'
-import Tabs from '../components/Tabs.jsx'
-import Flag from '../components/Flag.jsx'
-import { useCountries } from '../hooks/useCountries.js'
-import { TRANSACTION_SERIES, RECENT_TRANSACTIONS, PENDING_PAYMENTS } from '../data/mockData.js'
+} from 'recharts';
+import Tabs from '../components/Tabs.jsx';
+import Flag from '../components/Flag.jsx';
+import { useCountries } from '../hooks/useCountries.js';
+import { TRANSACTION_SERIES, RECENT_TRANSACTIONS, PENDING_PAYMENTS } from '../data/mockData.js';
 
 const TABS = [
   { key: 'state', label: 'Etat actuel du compte' },
   { key: 'transactions', label: 'Transactions récentes' },
   { key: 'pending', label: `Paiements dus/en attente (${PENDING_PAYMENTS.length})` },
-]
+];
 
 export default function Dashboard() {
-  const { countries, error: countriesError } = useCountries()
-  const [country, setCountry] = useState(null)
-  const [tab, setTab] = useState('state')
-  const [hideDetails, setHideDetails] = useState(false)
+  const { countries, error: countriesError } = useCountries();
+  const [country, setCountry] = useState(null);
+  const [tab, setTab] = useState('state');
+  const [hideDetails, setHideDetails] = useState(false);
 
   // Default to the last country once the list has loaded.
-  const activeCountry = countries.find((c) => c.codeAlpha2 === country) ?? countries[countries.length - 1]
+  const activeCountry = countries.find((c) => c.codeAlpha2 === country) ?? countries[countries.length - 1];
 
   return (
     <div className="dashboard">
@@ -105,7 +105,7 @@ export default function Dashboard() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function BalanceCell({ label, value, tone }) {
@@ -114,7 +114,7 @@ function BalanceCell({ label, value, tone }) {
       <div className="balance-cell__label">{label}</div>
       <div className={`balance-cell__value ${tone ? `balance-cell__value--${tone}` : ''}`}>{value}</div>
     </div>
-  )
+  );
 }
 
 function EmptyTable({ columns, rows }) {
@@ -145,5 +145,5 @@ function EmptyTable({ columns, rows }) {
         )}
       </tbody>
     </table>
-  )
+  );
 }

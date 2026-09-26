@@ -1,24 +1,24 @@
-import { Link } from 'react-router-dom'
-import Logo from '../components/Logo.jsx'
-import Icon from '../components/Icon.jsx'
-import Flag from '../components/Flag.jsx'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
-import { useAuth } from '../context/AuthContext.jsx'
-import { useCountries } from '../hooks/useCountries.js'
-import { useTranslation } from '../i18n/I18nContext.jsx'
+import { Link } from 'react-router-dom';
+import Logo from '../components/Logo.jsx';
+import Icon from '../components/Icon.jsx';
+import Flag from '../components/Flag.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useCountries } from '../hooks/useCountries.js';
+import { useTranslation } from '../i18n/I18nContext.jsx';
 
 const FEATURES = [
   { key: 'collect', icon: 'collect' },
   { key: 'disburse', icon: 'disburse' },
   { key: 'send', icon: 'send' },
   { key: 'request', icon: 'qr' },
-]
+];
 
-const OPERATORS = ['Orange Money', 'MTN MoMo', 'Moov Money', 'Wave', 'T-Money', 'Free Money', 'Visa', 'Mastercard']
+const OPERATORS = ['Orange Money', 'MTN MoMo', 'Moov Money', 'Wave', 'T-Money', 'Free Money', 'Visa', 'Mastercard'];
 
-const STEPS = ['signup', 'kyc', 'integrate']
+const STEPS = ['signup', 'kyc', 'integrate'];
 
-const SECURITY_POINTS = ['encryption', 'kyc', 'monitoring', 'keys']
+const SECURITY_POINTS = ['encryption', 'kyc', 'monitoring', 'keys'];
 
 // Illustrative request only — the key is a placeholder, never a real credential.
 const CODE_SAMPLE = `curl -X POST https://api.mymerchantpay.com/v1/payments \\
@@ -30,12 +30,12 @@ const CODE_SAMPLE = `curl -X POST https://api.mymerchantpay.com/v1/payments \\
     "country": "SN",
     "method": "WAVE_SENEGAL",
     "reference": "CMD-10482"
-  }'`
+  }'`;
 
 export default function Home() {
-  const { t } = useTranslation()
-  const { isAuthenticated } = useAuth()
-  const { countries } = useCountries()
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const { countries } = useCountries();
 
   return (
     <div className="home">
@@ -283,7 +283,7 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
 
 function SectionHeading({ eyebrow, title, subtitle }) {
@@ -293,7 +293,7 @@ function SectionHeading({ eyebrow, title, subtitle }) {
       <h2>{title}</h2>
       {subtitle && <p className="home-lead">{subtitle}</p>}
     </div>
-  )
+  );
 }
 
 function MockRow({ flag, label, amount, negative = false }) {
@@ -303,7 +303,7 @@ function MockRow({ flag, label, amount, negative = false }) {
       <span>{label}</span>
       <strong className={negative ? 'is-negative' : 'is-positive'}>{amount} FCFA</strong>
     </li>
-  )
+  );
 }
 
 function FooterColumn({ title, links }) {
@@ -318,5 +318,5 @@ function FooterColumn({ title, links }) {
         ))}
       </ul>
     </div>
-  )
+  );
 }

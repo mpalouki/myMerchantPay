@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import Logo from '../components/Logo.jsx'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
-import { ApiError, registerMerchant } from '../api/client.js'
-import Flag from '../components/Flag.jsx'
-import { useCountries } from '../hooks/useCountries.js'
-import { useTranslation } from '../i18n/I18nContext.jsx'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Logo from '../components/Logo.jsx';
+import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
+import { ApiError, registerMerchant } from '../api/client.js';
+import Flag from '../components/Flag.jsx';
+import { useCountries } from '../hooks/useCountries.js';
+import { useTranslation } from '../i18n/I18nContext.jsx';
 
-const STEPS = ['company', 'representative', 'documents', 'account']
+const STEPS = ['company', 'representative', 'documents', 'account'];
 
 // Codes are what the API receives; labels come from register.legalForms / sectors / idTypes.
-const LEGAL_FORMS = ['SOLE_PROPRIETORSHIP', 'SARL', 'SARLU', 'SA', 'SAS', 'SASU', 'GIE', 'ASSOCIATION', 'NGO']
+const LEGAL_FORMS = ['SOLE_PROPRIETORSHIP', 'SARL', 'SARLU', 'SA', 'SAS', 'SASU', 'GIE', 'ASSOCIATION', 'NGO'];
 
 const SECTORS = [
   'RETAIL',
@@ -23,9 +23,9 @@ const SECTORS = [
   'TELECOM',
   'REAL_ESTATE',
   'OTHER',
-]
+];
 
-const ID_TYPES = ['CNI', 'PASSPORT', 'RESIDENCE_PERMIT']
+const ID_TYPES = ['CNI', 'PASSPORT', 'RESIDENCE_PERMIT'];
 
 const DOCUMENTS = [
   { key: 'rccm', required: true },
@@ -33,10 +33,10 @@ const DOCUMENTS = [
   { key: 'idDocument', required: true },
   { key: 'proofOfAddress', required: true },
   { key: 'statutes', required: false },
-]
+];
 
-const ACCEPTED_FILES = '.pdf,.jpg,.jpeg,.png'
-const MAX_FILE_SIZE = 5 * 1024 * 1024
+const ACCEPTED_FILES = '.pdf,.jpg,.jpeg,.png';
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const INITIAL_FORM = {
   company: {
@@ -71,26 +71,26 @@ const INITIAL_FORM = {
     passwordConfirm: '',
   },
   acceptedTerms: false,
-}
+};
 
 // Returns a translation key (plus params) for the first problem on the step, or null.
 function validateStep(step, form, files) {
   if (STEPS[step] === 'documents') {
-    const missing = DOCUMENTS.find((d) => d.required && !files[d.key])
-    if (missing) return { key: 'register.errors.missingDocument', document: missing.key }
+    const missing = DOCUMENTS.find((d) => d.required && !files[d.key]);
+    if (missing) return { key: 'register.errors.missingDocument', document: missing.key };
   }
   if (STEPS[step] === 'account') {
-    if (form.account.password.length < 8) return { key: 'register.errors.passwordTooShort' }
+    if (form.account.password.length < 8) return { key: 'register.errors.passwordTooShort' };
     if (form.account.password !== form.account.passwordConfirm)
-      return { key: 'register.errors.passwordMismatch' }
-    if (!form.acceptedTerms) return { key: 'register.errors.termsRequired' }
+      return { key: 'register.errors.passwordMismatch' };
+    if (!form.acceptedTerms) return { key: 'register.errors.termsRequired' };
   }
-  return null
+  return null;
 }
 
 function buildPayload(form, files) {
-  const { passwordConfirm, ...account } = form.account
-  const data = new FormData()
+  const { passwordConfirm, ...account } = form.account;
+  const data = new FormData();
   data.append(
     'data',
     JSON.stringify({
@@ -99,11 +99,11 @@ function buildPayload(form, files) {
       account,
       acceptedTerms: form.acceptedTerms,
     }),
-  )
+  );
   Object.entries(files).forEach(([key, file]) => {
-    if (file) data.append(`documents[${key}]`, file)
-  })
-  return data
+    if (file) data.append(`documents[${key}]`, file);
+  });
+  return data;
 }
 
 function Field({ label, required, full, children }) {
@@ -115,66 +115,66 @@ function Field({ label, required, full, children }) {
       </span>
       {children}
     </label>
-  )
+  );
 }
 
 export default function Register() {
-  const { t } = useTranslation()
-  const { countries } = useCountries()
-  const [step, setStep] = useState(0)
-  const [form, setForm] = useState(INITIAL_FORM)
-  const [files, setFiles] = useState({})
+  const { t } = useTranslation();
+  const { countries } = useCountries();
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [files, setFiles] = useState({});
   // Stored as { key, message? } so the text re-renders in the new language on switch.
-  const [error, setError] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [done, setDone] = useState(false)
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
 
   const update = (section, key) => (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    setForm((f) => (section ? { ...f, [section]: { ...f[section], [key]: value } } : { ...f, [key]: value }))
-  }
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setForm((f) => (section ? { ...f, [section]: { ...f[section], [key]: value } } : { ...f, [key]: value }));
+  };
 
   const updateFile = (key) => (e) => {
-    const file = e.target.files?.[0] || null
+    const file = e.target.files?.[0] || null;
     if (file && file.size > MAX_FILE_SIZE) {
-      setError({ key: 'register.errors.fileTooLarge' })
-      e.target.value = ''
-      return
+      setError({ key: 'register.errors.fileTooLarge' });
+      e.target.value = '';
+      return;
     }
-    setError(null)
-    setFiles((f) => ({ ...f, [key]: file }))
-  }
+    setError(null);
+    setFiles((f) => ({ ...f, [key]: file }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const invalid = validateStep(step, form, files)
+    e.preventDefault();
+    const invalid = validateStep(step, form, files);
     if (invalid) {
-      setError(invalid)
-      return
+      setError(invalid);
+      return;
     }
-    setError(null)
+    setError(null);
 
     if (step < STEPS.length - 1) {
-      setStep(step + 1)
-      return
+      setStep(step + 1);
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
-      await registerMerchant(buildPayload(form, files))
-      setDone(true)
+      await registerMerchant(buildPayload(form, files));
+      setDone(true);
     } catch (err) {
       // Server messages are shown as-is; they aren't in our locale files.
-      setError(err instanceof ApiError ? { message: err.message } : { key: 'register.errors.submitFailed' })
+      setError(err instanceof ApiError ? { message: err.message } : { key: 'register.errors.submitFailed' });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const errorText =
     error &&
     (error.message ||
-      t(error.key, error.document ? { document: t(`register.documents.${error.document}`) } : undefined))
+      t(error.key, error.document ? { document: t(`register.documents.${error.document}`) } : undefined));
 
   const header = (
     <>
@@ -183,10 +183,10 @@ export default function Register() {
       </div>
       <LanguageSwitcher className="login-page__language" />
     </>
-  )
+  );
 
   if (done) {
-    const [before, after] = t('register.done.message').split('{{email}}')
+    const [before, after] = t('register.done.message').split('{{email}}');
     return (
       <div className="login-page">
         {header}
@@ -202,15 +202,15 @@ export default function Register() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const { company, representative, account } = form
+  const { company, representative, account } = form;
   const selectPlaceholder = (
     <option value="" disabled>
       {t('common.select')}
     </option>
-  )
+  );
 
   return (
     <div className="login-page">
@@ -444,8 +444,8 @@ export default function Register() {
               type="button"
               className="btn btn--outline"
               onClick={() => {
-                setError(null)
-                setStep(step - 1)
+                setError(null);
+                setStep(step - 1);
               }}
               disabled={submitting}
             >
@@ -468,5 +468,5 @@ export default function Register() {
         </Link>
       </form>
     </div>
-  )
+  );
 }

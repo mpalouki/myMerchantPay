@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
-import Icon from './Icon.jsx'
-import Logo from './Logo.jsx'
-import { SIDEBAR_ITEMS, RECHARGE_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import Icon from './Icon.jsx';
+import Logo from './Logo.jsx';
+import { SIDEBAR_ITEMS, RECHARGE_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Sidebar({ collapsed, onToggle }) {
-  const { merchant } = useAuth()
-  const location = useLocation()
+  const { merchant } = useAuth();
+  const location = useLocation();
   const [rechargeOpen, setRechargeOpen] = useState(
     location.pathname.startsWith('/dashboard/recharge'),
-  )
+  );
 
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
@@ -92,5 +92,5 @@ export default function Sidebar({ collapsed, onToggle }) {
         <Icon name={collapsed ? 'chevronRight' : 'chevronDown'} size={14} />
       </button>
     </aside>
-  )
+  );
 }
