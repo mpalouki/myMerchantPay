@@ -30,13 +30,15 @@ Node isn't installed on the host; run npm commands in the container, e.g. `docke
 
 There is no test runner or TypeScript — besides lint, verify changes by running the app against a running myPay backend.
 
-Config: `VITE_API_BASE_URL` (copy `.env.example` to `.env`; defaults to `http://localhost:8000`).
+Config (copy `.env.example` to `.env.local`): the app calls same-origin `/api/...`, which the Vite dev server proxies to `API_PROXY_TARGET` (default `http://localhost:8000`; `host.docker.internal:8000` in Docker) — see `server.proxy` in `vite.config.js`. `VITE_API_BASE_URL` is empty by default; set it only to call an API directly.
 
 ## Architecture
 
 **All HTTP goes through `src/api/client.js`.** `request()` adds JSON/Bearer headers, leaves `FormData` bodies alone (multipart uploads), and throws `ApiError(message, status, data)` on non-2xx or network failure (message from `data.message` / `data.error`). Add one exported function per endpoint with a comment giving the response shape — follow the existing ones. Don't call `fetch` directly from pages.
 
 **Auth lives in `src/context/AuthContext.jsx`.** `login()` does `POST /api/login` → decodes the JWT for `username`/`roles` (`src/api/jwt.js`, no signature check — display only) → `GET /api/merchant/me` for the merchant profile. Token and user are kept in `sessionStorage` (`mmp_token`, `mmp_user`) and dropped on load if expired. Consume with `const { token, user, merchant, isAuthenticated } = useAuth()`, and pass `token` to client functions. `ProtectedRoute` guards everything under `/dashboard`.
+
+**Selected account lives in `src/context/AccountContext.jsx`.** `AccountProvider` is mounted in `DashboardLayout` (so it wraps every logged-in page): it loads `GET /api/merchant/balances` once and tracks the selected country — stored in `sessionStorage` per merchant, else the merchant's home country (`merchant.countryCode` from `/me`), else the first account. Use `const { balances, selectedBalance, selectCountry, reload } = useAccount()`; any page showing country-specific data should read `selectedBalance` rather than keep its own country state. The sidebar shows `selectedBalance.accountNumberFormatted`.
 
 **Routing** is in `src/App.jsx`: public `/`, `/login`, `/register`; authenticated pages are nested under `/dashboard` inside `DashboardLayout` (topbar + sidebar). Sidebar entries come from `SIDEBAR_ITEMS` in `src/data/mockData.js`; screens without designs use `PlaceholderPage`.
 
