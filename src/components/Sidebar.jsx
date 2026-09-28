@@ -4,9 +4,12 @@ import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
 import { SIDEBAR_ITEMS, RECHARGE_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useAccount } from '../context/AccountContext.jsx';
+import Flag from './Flag.jsx';
 
 export default function Sidebar({ collapsed, onToggle }) {
   const { merchant } = useAuth();
+  const { selectedBalance, loading: accountLoading } = useAccount();
   const location = useLocation();
   const [rechargeOpen, setRechargeOpen] = useState(
     location.pathname.startsWith('/dashboard/recharge'),
@@ -21,8 +24,17 @@ export default function Sidebar({ collapsed, onToggle }) {
       {!collapsed && (
         <div className="sidebar__account">
           <div className="sidebar__account-type">({merchant?.name ?? 'COMPTE BUSINESS'})</div>
-          <div className="sidebar__account-label">Numéro de compte</div>
-          <div className="sidebar__account-number">{merchant?.id ? `(#${merchant.id})` : ''}</div>
+          <div className="sidebar__account-label">
+            Numéro de compte
+            {selectedBalance && (
+              <span className="sidebar__account-country">
+                <Flag code={selectedBalance.country.codeAlpha2} /> {selectedBalance.country.name}
+              </span>
+            )}
+          </div>
+          <div className="sidebar__account-number">
+            {selectedBalance ? selectedBalance.accountNumberFormatted : accountLoading ? '…' : '—'}
+          </div>
         </div>
       )}
 
