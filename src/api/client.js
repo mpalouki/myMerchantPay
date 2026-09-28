@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Empty by default: requests go to the same origin (/api/...), which the Vite dev server
+// proxies to myPay (see vite.config.js). Set VITE_API_BASE_URL to call an API elsewhere.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export class ApiError extends Error {
   constructor(message, status, data) {
@@ -74,6 +76,14 @@ export function updatePassword(token, { currentPassword, newPassword, confirmPas
 // Response shape: { id, status: 'PENDING_REVIEW' }
 export function registerMerchant(formData) {
   return request('/api/merchant/register', { method: 'POST', body: formData });
+}
+
+// The merchant's accounts, one per country, ordered by country name.
+// Response shape: [{ id, accountNumber, accountNumberFormatted, accountBalance, currency,
+//   status (bool, false = blocked), dateCreation, country: { id, name, codeAlpha2 },
+//   last7Days: { credits, debits } }] — amounts are decimal strings.
+export function getBalances(token) {
+  return request('/api/merchant/balances', { method: 'GET', token });
 }
 
 // Countries the platform operates in. Also used by the public registration form.
