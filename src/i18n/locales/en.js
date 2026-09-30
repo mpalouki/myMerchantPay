@@ -127,6 +127,7 @@ export default {
 
   home: {
     nav: {
+      home: 'Home',
       features: 'Features',
       countries: 'Countries',
       developers: 'Developers',

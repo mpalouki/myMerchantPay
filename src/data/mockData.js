@@ -86,10 +86,6 @@ export const RECHARGE_HISTORY = [
 
 export const SIDEBAR_ITEMS = [
   { key: 'dashboard', label: 'Tableau de bord', icon: 'dashboard', path: '/dashboard' },
-  { key: 'send', label: "Envoyer de l'argent", icon: 'send', path: '/dashboard/send-money' },
-  { key: 'request', label: 'Demander un paiement', icon: 'request', path: '/dashboard/request-payment' },
-  { key: 'collect', label: 'Collecter des paiements', icon: 'collect', path: '/dashboard/collect-payments' },
-  { key: 'disburse', label: 'Débourser des paiements', icon: 'disburse', path: '/dashboard/disburse-payments' },
   { key: 'api', label: 'Intégrez notre API', icon: 'api', path: '/dashboard/api-integration' },
   { key: 'roles', label: 'Gestion des rôles', icon: 'roles', path: '/dashboard/roles' },
 ];

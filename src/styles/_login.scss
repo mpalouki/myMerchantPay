@@ -2,21 +2,78 @@
 @use 'mixins' as *;
 
 .login-page {
-  position: relative;
   min-height: 100vh;
-  @include flex(center, center, 40px, wrap);
+  display: flex;
   flex-direction: column;
-  padding: 24px;
+  align-items: center;
+  gap: 32px;
+  padding: 0 24px 40px;
   background: radial-gradient(circle at 20% 20%, #123a66 0%, #0b1e3d 45%, #0a1730 100%);
 
-  &__logo {
-    margin-bottom: 8px;
+  // Auto margins centre the card in the space left under the header.
+  > .login-card {
+    margin: auto 0;
+  }
+}
+
+.auth-header {
+  align-self: stretch;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 72px;
+  @include flex(center, space-between, 24px);
+
+  &__brand {
+    text-decoration: none;
   }
 
-  &__language {
-    position: absolute;
-    top: 20px;
-    right: 24px;
+  &__nav {
+    @include flex(center, center, 28px);
+    flex: 1;
+
+    a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 14.5px;
+      font-weight: 600;
+
+      &:hover {
+        color: #fff;
+      }
+    }
+  }
+
+  &__actions {
+    @include flex(center, flex-end, 10px);
+  }
+
+  &__cta {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+    text-decoration: none;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+@media (max-width: 980px) {
+  .auth-header__section {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-header {
+    gap: 12px;
+  }
+
+  .auth-header__cta {
+    display: none;
   }
 }
 
