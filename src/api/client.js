@@ -91,6 +91,26 @@ export function updatePersonalInfo(token, { tradeName, legalName, email, phone, 
   return request('/api/merchant/personal-info', { method: 'POST', body, token });
 }
 
+// Account creation link sent from KYC review (CreateAccount.jsx, /create-account?token=…).
+// Sent as form data. Response shape: { email, merchantName, expiresAt }. An invalid, expired
+// or used link is 422 with { errors: { token } }.
+export function checkInvitation(token) {
+  const body = new FormData();
+  body.append('token', token);
+  return request('/api/merchant/invitation', { method: 'POST', body });
+}
+
+// Creates the portal login (the link's email) — then sign in with login(). Sent as form data.
+// Response shape: { email } (201). Validation failures are 422 with
+// { errors: { token?, password?, confirm_password? } }; a bad password doesn't consume the link.
+export function acceptInvitation({ token, password, confirmPassword }) {
+  const body = new FormData();
+  body.append('token', token);
+  body.append('password', password);
+  body.append('confirm_password', confirmPassword);
+  return request('/api/merchant/invitation/accept', { method: 'POST', body });
+}
+
 // Public "information and contact" form (Register.jsx). Creates the merchant and starts its KYC
 // as a draft with the representative's contact details — no documents, no login: the merchant
 // completes the KYC from the portal (submitKyc) once MyPay has created their login.

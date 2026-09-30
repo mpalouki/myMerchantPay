@@ -12,6 +12,7 @@ import ApiIntegration from './pages/ApiIntegration.jsx';
 import Recharge from './pages/Recharge.jsx';
 import RechargeHistory from './pages/RechargeHistory.jsx';
 import KycValidation from './pages/KycValidation.jsx';
+import CreateAccount from './pages/CreateAccount.jsx';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/create-account" element={<CreateAccount />} />
 
       <Route
         path="/dashboard"

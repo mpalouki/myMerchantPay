@@ -103,6 +103,19 @@
     font-size: 13px;
   }
 
+  &__intro {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    color: $color-text-muted;
+  }
+
+  .field input[readonly] {
+    background: $color-bg;
+    color: $color-text-muted;
+  }
+
   &__forgot {
     text-align: left;
     font-size: 14px;

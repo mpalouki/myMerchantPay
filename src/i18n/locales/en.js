@@ -126,6 +126,29 @@ export default {
     },
   },
 
+  createAccount: {
+    title: 'Create your merchant login',
+    intro: 'Choose the password for your {{merchant}} merchant space. You will then be able to complete your KYC.',
+    checking: 'Checking your link…',
+    email: 'Login email address',
+    password: 'Password',
+    passwordHint: 'At least 10 characters, including a letter and a number.',
+    confirm: 'Confirm password',
+    submitting: 'Creating…',
+    submit: 'Create my login',
+    invalid: {
+      title: 'Invalid link',
+      message: 'This link is no longer valid: it has expired, has already been used, or a newer link was sent to you. Contact us to receive a new one, or sign in if your login already exists.',
+      toLogin: 'Go to sign in',
+    },
+    errors: {
+      passwordTooShort: 'The password must be at least 10 characters long.',
+      passwordWeak: 'The password must contain at least one letter and one number.',
+      passwordMismatch: 'The passwords do not match.',
+      failed: 'Unable to create your login. Please try again.',
+    },
+  },
+
   kyc: {
     title: 'KYC validation',
     subtitle: 'Complete and validate your company information to activate your merchant space.',
