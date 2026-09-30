@@ -58,6 +58,21 @@ export function AuthProvider({ children }) {
     return nextUser;
   };
 
+  // Re-reads GET /api/merchant/me, e.g. after the KYC status changed. Pass `nextToken` when
+  // the API issued a new one (the login email changed): it replaces the stored token.
+  const refreshProfile = async (nextToken = token) => {
+    if (!nextToken) return null;
+    const profile = await getMerchantProfile(nextToken);
+    const nextUser = { ...user, email: profile?.email || user?.email, merchant: profile?.merchant || null };
+    if (nextToken !== token) {
+      setToken(nextToken);
+      sessionStorage.setItem(TOKEN_KEY, nextToken);
+    }
+    setUser(nextUser);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+    return nextUser;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -73,7 +88,10 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!token,
       login,
       logout,
+      refreshProfile,
     }),
+    // login/logout/refreshProfile only read user and token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, token],
   );
 

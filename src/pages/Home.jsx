@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo.jsx';
 import Icon from '../components/Icon.jsx';
 import Flag from '../components/Flag.jsx';
@@ -36,6 +37,12 @@ export default function Home() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { countries } = useCountries();
+  const { hash } = useLocation();
+
+  // Client-side navigation to /#section (e.g. from the login/register menu) doesn't scroll by itself.
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash]);
 
   return (
     <div className="home">

@@ -20,12 +20,13 @@ export default {
   },
 
   register: {
-    title: 'Créer mon compte marchand',
+    title: 'Formulaire de renseignement et contact ',
     steps: {
       company: 'Entreprise',
       representative: 'Représentant légal',
       documents: 'Documents',
       account: 'Compte',
+      confirmation: 'Confirmation',
     },
 
     company: {
@@ -126,8 +127,67 @@ export default {
     },
   },
 
+  createAccount: {
+    title: 'Créez votre accès marchand',
+    intro: 'Choisissez le mot de passe de votre espace marchand {{merchant}}. Vous pourrez ensuite compléter votre KYC.',
+    checking: 'Vérification du lien…',
+    email: 'Adresse électronique de connexion',
+    password: 'Mot de passe',
+    passwordHint: 'Au moins 10 caractères, dont une lettre et un chiffre.',
+    confirm: 'Confirmer le mot de passe',
+    submitting: 'Création en cours…',
+    submit: 'Créer mon accès',
+    invalid: {
+      title: 'Lien invalide',
+      message: "Ce lien n'est plus valable : il a expiré, a déjà été utilisé ou un nouveau lien vous a été envoyé. Contactez-nous pour en recevoir un nouveau, ou connectez-vous si votre accès est déjà créé.",
+      toLogin: 'Aller à la connexion',
+    },
+    errors: {
+      passwordTooShort: 'Le mot de passe doit contenir au moins 10 caractères.',
+      passwordWeak: 'Le mot de passe doit contenir au moins une lettre et un chiffre.',
+      passwordMismatch: 'Les mots de passe ne correspondent pas.',
+      failed: 'Impossible de créer votre accès. Veuillez réessayer.',
+    },
+  },
+
+  kyc: {
+    title: 'Validation KYC',
+    subtitle: 'Complétez et validez les informations de votre entreprise pour activer votre espace marchand.',
+    loading: 'Chargement de vos informations KYC…',
+    steps: {
+      company: 'Entreprise',
+      representative: 'Représentant légal',
+      documents: 'Documents',
+      validation: 'Validation',
+    },
+    rejected: 'Votre précédente soumission KYC a été rejetée.',
+    documentOnFile: 'Déjà fourni — choisissez un fichier pour le remplacer.',
+    recap: {
+      hint: 'Vérifiez vos informations avant de valider. Elles seront examinées par notre équipe conformité.',
+      representative: 'Représentant légal',
+    },
+    submit: 'Valider mon KYC',
+    goToDashboard: 'Accéder à mon tableau de bord',
+    banner: 'Votre KYC est en cours de vérification par notre équipe conformité.',
+    bannerLink: 'Voir le statut',
+    status: {
+      pending: {
+        title: 'KYC en cours de vérification',
+        message: 'Vos informations KYC ont été soumises le {{date}}. Notre équipe conformité les examine ; vous serez averti par email dès leur validation.',
+      },
+      approved: {
+        title: 'KYC validé',
+        message: 'Vos informations KYC ont été validées. Votre espace marchand est entièrement activé.',
+      },
+    },
+    errors: {
+      loadFailed: 'Impossible de charger vos informations KYC. Veuillez réessayer.',
+    },
+  },
+
   home: {
     nav: {
+      home: 'Accueil',
       features: 'Fonctionnalités',
       countries: 'Pays',
       developers: 'Développeurs',
