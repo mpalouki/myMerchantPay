@@ -20,12 +20,13 @@ export default {
   },
 
   register: {
-    title: 'Create my merchant account',
+    title: 'Information and contact form',
     steps: {
       company: 'Company',
       representative: 'Legal representative',
       documents: 'Documents',
       account: 'Account',
+      confirmation: 'Confirmation',
     },
 
     company: {
@@ -122,6 +123,41 @@ export default {
       message:
         'Your KYC information has been submitted. Our compliance team will review it and you will receive an email at {{email}} as soon as your account is activated.',
       backToLogin: 'Back to sign in',
+    },
+  },
+
+  kyc: {
+    title: 'KYC validation',
+    subtitle: 'Complete and validate your company information to activate your merchant space.',
+    loading: 'Loading your KYC information…',
+    steps: {
+      company: 'Company',
+      representative: 'Legal representative',
+      documents: 'Documents',
+      validation: 'Validation',
+    },
+    rejected: 'Your previous KYC submission was rejected.',
+    documentOnFile: 'Already provided — choose a file to replace it.',
+    recap: {
+      hint: 'Check your information before validating. It will be reviewed by our compliance team.',
+      representative: 'Legal representative',
+    },
+    submit: 'Validate my KYC',
+    goToDashboard: 'Go to my dashboard',
+    banner: 'Your KYC is being reviewed by our compliance team.',
+    bannerLink: 'View status',
+    status: {
+      pending: {
+        title: 'KYC under review',
+        message: 'Your KYC information was submitted on {{date}}. Our compliance team is reviewing it; you will be notified by email once it is validated.',
+      },
+      approved: {
+        title: 'KYC validated',
+        message: 'Your KYC information has been validated. Your merchant space is fully activated.',
+      },
+    },
+    errors: {
+      loadFailed: 'Unable to load your KYC information. Please try again.',
     },
   },
 

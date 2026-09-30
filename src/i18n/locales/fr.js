@@ -20,12 +20,13 @@ export default {
   },
 
   register: {
-    title: 'Créer mon compte marchand',
+    title: 'Formulaire de renseignement et contact ',
     steps: {
       company: 'Entreprise',
       representative: 'Représentant légal',
       documents: 'Documents',
       account: 'Compte',
+      confirmation: 'Confirmation',
     },
 
     company: {
@@ -123,6 +124,41 @@ export default {
       message:
         'Vos informations KYC ont bien été transmises. Notre équipe de conformité va les vérifier et vous recevrez un e-mail à {{email}} dès que votre compte sera activé.',
       backToLogin: 'Retour à la connexion',
+    },
+  },
+
+  kyc: {
+    title: 'Validation KYC',
+    subtitle: 'Complétez et validez les informations de votre entreprise pour activer votre espace marchand.',
+    loading: 'Chargement de vos informations KYC…',
+    steps: {
+      company: 'Entreprise',
+      representative: 'Représentant légal',
+      documents: 'Documents',
+      validation: 'Validation',
+    },
+    rejected: 'Votre précédente soumission KYC a été rejetée.',
+    documentOnFile: 'Déjà fourni — choisissez un fichier pour le remplacer.',
+    recap: {
+      hint: 'Vérifiez vos informations avant de valider. Elles seront examinées par notre équipe conformité.',
+      representative: 'Représentant légal',
+    },
+    submit: 'Valider mon KYC',
+    goToDashboard: 'Accéder à mon tableau de bord',
+    banner: 'Votre KYC est en cours de vérification par notre équipe conformité.',
+    bannerLink: 'Voir le statut',
+    status: {
+      pending: {
+        title: 'KYC en cours de vérification',
+        message: 'Vos informations KYC ont été soumises le {{date}}. Notre équipe conformité les examine ; vous serez averti par email dès leur validation.',
+      },
+      approved: {
+        title: 'KYC validé',
+        message: 'Vos informations KYC ont été validées. Votre espace marchand est entièrement activé.',
+      },
+    },
+    errors: {
+      loadFailed: 'Impossible de charger vos informations KYC. Veuillez réessayer.',
     },
   },
 

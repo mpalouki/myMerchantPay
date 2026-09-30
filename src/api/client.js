@@ -53,7 +53,8 @@ export function login(email, password) {
   return request('/api/login', { method: 'POST', body: { email, password } });
 }
 
-// Response shape: { email, merchant: { id, name, email, sector, country, status, underSurveillance, createdAt } }
+// Response shape: { email, merchant: { id, name, email, sector, country, countryCode, status,
+//   kycStatus ('not_submitted' | 'pending' | 'approved' | 'rejected'), underSurveillance, createdAt } }
 export function getMerchantProfile(token) {
   return request('/api/merchant/me', { method: 'GET', token });
 }
@@ -69,13 +70,33 @@ export function updatePassword(token, { currentPassword, newPassword, confirmPas
   return request('/api/merchant/update-password', { method: 'POST', body, token });
 }
 
-// Merchant self-registration with KYC data, reviewed by the back office before
-// the account is activated. Sent as multipart/form-data:
-//   - `data`: JSON string { company: {...}, representative: {...}, account: { email, password }, acceptedTerms }
-//   - `documents[<type>]`: one file per KYC document (see Register.jsx DOCUMENTS)
-// Response shape: { id, status: 'PENDING_REVIEW' }
+// Public "information and contact" form (Register.jsx). Creates the merchant and starts its KYC
+// as a draft with the representative's contact details — no documents, no login: the merchant
+// completes the KYC from the portal (submitKyc) once MyPay has created their login.
+// Sent as multipart/form-data with a `data` field: JSON string { company: { name, tradeName,
+//   legalForm, sector, creationDate, country, address, website }, representative: { lastName,
+//   firstName, nationality, position, phone, email }, acceptedTerms }. Other keys are ignored.
+// Response shape: { merchantId, status, kycStatus: 'not_submitted' }. 409 when a merchant already
+// uses representative.email.
 export function registerMerchant(formData) {
   return request('/api/merchant/register', { method: 'POST', body: formData });
+}
+
+// KYC application of the logged-in merchant, to pre-fill the KYC validation form.
+// Response shape: { status ('not_submitted' | 'pending' | 'approved' | 'rejected'), canSubmit,
+//   rejectionReason, submittedAt, company: {...same keys as registration},
+//   representative: {...same keys as registration} | null,
+//   documents: { rccm, taxCertificate, idDocument, proofOfAddress, statutes } (bool: file on record) }
+export function getKyc(token) {
+  return request('/api/merchant/kyc', { method: 'GET', token });
+}
+
+// KYC validation from inside the portal: same multipart body as registerMerchant, minus
+// `account` (data: { company, representative, acceptedTerms }). Documents already on
+// record may be omitted. Only allowed while canSubmit; 409 otherwise.
+// Response shape: { kycStatus: 'pending' }
+export function submitKyc(token, formData) {
+  return request('/api/merchant/kyc', { method: 'POST', body: formData, token });
 }
 
 // The merchant's accounts, one per country, ordered by country name.
