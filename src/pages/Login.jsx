@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo.jsx';
+import AuthHeader from '../components/AuthHeader.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ApiError } from '../api/client.js';
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx';
 import { useTranslation } from '../i18n/I18nContext.jsx';
 
 export default function Login() {
@@ -37,10 +36,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-page__logo">
-        <Logo variant="white" size={32} />
-      </div>
-      <LanguageSwitcher className="login-page__language" />
+      <AuthHeader page="login" />
       <form className="login-card" onSubmit={handleSubmit}>
         <h1>{t('login.title')}</h1>
 

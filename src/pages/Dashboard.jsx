@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import Tabs from '../components/Tabs.jsx';
 import Flag from '../components/Flag.jsx';
-import { useCountries } from '../hooks/useCountries.js';
+import { useAccount } from '../context/AccountContext.jsx';
 import { TRANSACTION_SERIES, RECENT_TRANSACTIONS, PENDING_PAYMENTS } from '../data/mockData.js';
 
 const TABS = [
@@ -19,22 +19,36 @@ const TABS = [
   { key: 'pending', label: `Paiements dus/en attente (${PENDING_PAYMENTS.length})` },
 ];
 
+const moneyFormat = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// API amounts are decimal strings, e.g. '18466534.98' -> '18 466 534,98 FCFA(XOF)'.
+function formatMoney(amount, currency) {
+  const value = moneyFormat.format(Number(amount));
+  return currency === 'XOF' ? `${value} FCFA(XOF)` : `${value} ${currency}`;
+}
+
 export default function Dashboard() {
-  const { countries, error: countriesError } = useCountries();
-  const [country, setCountry] = useState(null);
+  // Selected account lives in AccountContext (defaults to the merchant's home country),
+  // so it's shared with the sidebar and kept across navigation.
+  const {
+    balances,
+    loading: balancesLoading,
+    error: balancesError,
+    selectedBalance: activeBalance,
+    selectCountry,
+  } = useAccount();
   const [tab, setTab] = useState('state');
   const [hideDetails, setHideDetails] = useState(false);
 
-  // Default to the last country once the list has loaded.
-  const activeCountry = countries.find((c) => c.codeAlpha2 === country) ?? countries[countries.length - 1];
-
   return (
     <div className="dashboard">
-      <div className="alert alert--warning">
-        Pour profiter pleinement de nos services, merci de renseigner les informations de votre
-        entreprise pour ce pays <strong>({activeCountry?.name})</strong>{' '}
-        <a href="#company-info">en cliquer ici</a>.
-      </div>
+      {activeBalance && (
+        <div className="alert alert--warning">
+          Pour profiter pleinement de nos services, merci de renseigner les informations de votre
+          entreprise pour ce pays <strong>({activeBalance.country.name})</strong>{' '}
+          <a href="#company-info">en cliquer ici</a>.
+        </div>
+      )}
 
       <div className="page-header">
         <h1>Tableau de bord</h1>
@@ -44,15 +58,19 @@ export default function Dashboard() {
       </div>
 
       <div className="country-pills">
-        {countriesError && <span className="muted">Impossible de charger la liste des pays.</span>}
-        {countries.map((c) => (
+        {balancesLoading && <span className="muted">Chargement de vos comptes…</span>}
+        {balancesError && <span className="muted">Impossible de charger vos comptes.</span>}
+        {!balancesLoading && !balancesError && balances.length === 0 && (
+          <span className="muted">Aucun compte n&apos;est encore ouvert.</span>
+        )}
+        {balances.map((b) => (
           <button
-            key={c.codeAlpha2}
+            key={b.id}
             type="button"
-            className={`country-pill ${activeCountry?.codeAlpha2 === c.codeAlpha2 ? 'country-pill--active' : ''}`}
-            onClick={() => setCountry(c.codeAlpha2)}
+            className={`country-pill ${activeBalance?.id === b.id ? 'country-pill--active' : ''}`}
+            onClick={() => selectCountry(b.country.codeAlpha2)}
           >
-            <Flag code={c.codeAlpha2} className="country-pill__flag" /> {c.name}
+            <Flag code={b.country.codeAlpha2} className="country-pill__flag" /> {b.country.name}
           </button>
         ))}
       </div>
@@ -63,12 +81,32 @@ export default function Dashboard() {
         {tab === 'state' && (
           <>
             {!hideDetails ? (
-              <div className="balance-grid">
-                <BalanceCell label="Solde Principal" value="0.00 FCFA(XOF)" />
-                <BalanceCell label="Solde Opération" value="0.00 FCFA(XOF)" />
-                <BalanceCell label="Débits (7 derniers jours)" value="0.00 FCFA(XOF)" tone="danger" />
-                <BalanceCell label="Crédits (7 derniers jours)" value="0.00 FCFA(XOF)" tone="success" />
-              </div>
+              <>
+                {activeBalance && (
+                  <div className="dashboard__account">
+                    Compte n° <strong>{activeBalance.accountNumberFormatted}</strong>
+                    {!activeBalance.status && <span className="badge badge--danger">Bloqué</span>}
+                  </div>
+                )}
+                <div className="balance-grid">
+                  <BalanceCell
+                    label="Solde Principal"
+                    value={activeBalance ? formatMoney(activeBalance.accountBalance, activeBalance.currency) : '—'}
+                  />
+                  {/* No backend concept for this yet. */}
+                  <BalanceCell label="Solde Opération" value="—" />
+                  <BalanceCell
+                    label="Débits (7 derniers jours)"
+                    value={activeBalance ? formatMoney(activeBalance.last7Days.debits, activeBalance.currency) : '—'}
+                    tone="danger"
+                  />
+                  <BalanceCell
+                    label="Crédits (7 derniers jours)"
+                    value={activeBalance ? formatMoney(activeBalance.last7Days.credits, activeBalance.currency) : '—'}
+                    tone="success"
+                  />
+                </div>
+              </>
             ) : (
               <div className="balance-grid balance-grid--hidden">Détails du compte masqués.</div>
             )}

@@ -44,9 +44,32 @@
   border-bottom: 1px solid $color-border;
   font-size: 14px;
 
+  flex-wrap: wrap;
+  gap: 4px 12px;
+
   &__label {
     font-weight: 700;
   }
+
+  &__value {
+    flex: 1;
+    min-width: 0;
+    color: $color-text-muted;
+    overflow-wrap: anywhere;
+  }
+
+  &__hint {
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  &__error {
+    flex-basis: 100%;
+  }
+}
+
+.settings-form__loading {
+  color: $color-text-muted;
 }
 
 .phone-input,

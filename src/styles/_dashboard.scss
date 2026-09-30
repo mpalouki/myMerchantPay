@@ -6,6 +6,20 @@
   border-radius: 0 0 8px 8px;
 }
 
+.dashboard__account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 24px 0;
+  font-size: 14px;
+  color: $color-text-muted;
+
+  strong {
+    color: $color-text;
+    letter-spacing: 0.5px;
+  }
+}
+
 .balance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

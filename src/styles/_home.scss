@@ -123,6 +123,11 @@ $home-max-width: 1160px;
   }
 }
 
+// Keep anchored sections clear of the sticky header.
+.home section[id] {
+  scroll-margin-top: 72px;
+}
+
 // ---- Hero ----
 .home-hero {
   background: radial-gradient(circle at 15% 20%, #123a66 0%, $home-navy 45%, $home-navy-deep 100%);

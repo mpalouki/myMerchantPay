@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
     .map((host) => host.trim())
     .filter(Boolean);
   const port = Number(env.HOST_PORT) || 5173;
+  // Where /api/* is forwarded in dev. Inside the Docker container "localhost" is the
+  // container itself, so docker-compose.yml sets this to http://host.docker.internal:8000.
+  const apiProxyTarget = env.API_PROXY_TARGET || 'http://localhost:8000';
 
   return {
     plugins: [react()],
@@ -19,6 +22,18 @@ export default defineConfig(({ mode }) => {
       port,
       strictPort: true,
       allowedHosts,
+      // http://localhost:5173/api/* -> {apiProxyTarget}/api/* (path kept: every myPay
+      // route already starts with /api). Same-origin for the browser, so no CORS and it
+      // also works through a tunnel (ngrok) without exposing the API separately.
+      proxy: {
+        '/api': {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          // Rewrite redirect Location headers (e.g. /api/doc -> /api/doc/) back to the
+          // dev server's host, instead of the internal proxy target.
+          autoRewrite: true,
+        },
+      },
     },
     css: {
       preprocessorOptions: {

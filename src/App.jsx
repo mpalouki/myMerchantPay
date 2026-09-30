@@ -11,6 +11,8 @@ import Settings from './pages/Settings.jsx';
 import ApiIntegration from './pages/ApiIntegration.jsx';
 import Recharge from './pages/Recharge.jsx';
 import RechargeHistory from './pages/RechargeHistory.jsx';
+import KycValidation from './pages/KycValidation.jsx';
+import CreateAccount from './pages/CreateAccount.jsx';
 
 export default function App() {
   return (
@@ -18,6 +20,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/create-account" element={<CreateAccount />} />
 
       <Route
         path="/dashboard"
@@ -28,6 +31,7 @@ export default function App() {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="kyc" element={<KycValidation />} />
         <Route path="send-money" element={<PlaceholderPage title="Envoyer de l'argent" icon="send" />} />
         <Route
           path="request-payment"
