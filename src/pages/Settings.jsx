@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Tabs from '../components/Tabs.jsx';
 import Flag from '../components/Flag.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ApiError, updatePassword } from '../api/client.js';
+import { ApiError, getPersonalInfo, updatePassword, updatePersonalInfo } from '../api/client.js';
 
 const TABS = [
   { key: 'info', label: 'Changer vos informations personnelles' },
   { key: 'password', label: 'Changer de mot de passe' },
-  { key: 'sav', label: 'Ajouter vos contacts SAV' },
   { key: 'others', label: 'Autres' },
 ];
 
@@ -22,7 +21,6 @@ export default function Settings() {
         <div className="tab-panel">
           {tab === 'info' && <PersonalInfoTab />}
           {tab === 'password' && <PasswordTab />}
-          {tab === 'sav' && <SavTab />}
           {tab === 'others' && <OthersTab />}
         </div>
       </div>
@@ -30,33 +28,175 @@ export default function Settings() {
   );
 }
 
+// The stored phone is international (+228...): the form edits the local part after the
+// home country's calling code.
+function localPhone(phone, callingCode) {
+  if (!phone) return '';
+  return callingCode && phone.startsWith(callingCode) ? phone.slice(callingCode.length).trim() : phone;
+}
+
+// Server field errors come back in English, keyed by API field name.
+function mapServerInfoErrors(serverErrors = {}) {
+  const errors = {};
+  if (serverErrors.trade_name) errors.tradeName = 'Le nom commercial ne doit pas dépasser 150 caractères.';
+  if (serverErrors.legal_name)
+    errors.legalName = serverErrors.legal_name.includes('KYC')
+      ? 'Le nom juridique ne peut plus être modifié après la soumission du KYC. Contactez le support.'
+      : 'Veuillez saisir un nom juridique valide (150 caractères maximum).';
+  if (serverErrors.email)
+    errors.email = serverErrors.email.includes('already exists')
+      ? 'Cette adresse est déjà utilisée par un autre compte.'
+      : 'Veuillez saisir une adresse électronique valide.';
+  if (serverErrors.phone) errors.phone = 'Veuillez saisir un numéro de téléphone valide.';
+  if (serverErrors.current_password)
+    errors.currentPassword =
+      serverErrors.current_password === 'This field is required.'
+        ? 'Veuillez saisir votre mot de passe actuel.'
+        : 'Le mot de passe actuel est incorrect.';
+  return errors;
+}
+
+// One "Nom commercial" / "Nom juridique" line: the current value, and an input once
+// "Modifier" is clicked. `lockedHint` replaces the button when the value can't be changed.
+function EditableRow({ label, value, editing, onEdit, onChange, error, disabled, lockedHint }) {
+  if (editing) {
+    return (
+      <label className="field field--stacked">
+        <span>{label}</span>
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} aria-invalid={!!error} />
+        {error && <small className="field__error">{error}</small>}
+      </label>
+    );
+  }
+  return (
+    <div className="settings-row">
+      <span className="settings-row__label">{label}</span>
+      <span className="settings-row__value">{value || '—'}</span>
+      {lockedHint ? (
+        <small className="settings-row__hint">{lockedHint}</small>
+      ) : (
+        <button type="button" className="link-btn" onClick={onEdit} disabled={disabled}>
+          Modifier
+        </button>
+      )}
+      {error && <small className="field__error settings-row__error">{error}</small>}
+    </div>
+  );
+}
+
 function PersonalInfoTab() {
-  const { user } = useAuth();
-  const [email, setEmail] = useState(user?.email ?? '');
+  const { token, refreshProfile } = useAuth();
+  // Last values returned by the API; the form only sends fields that differ from them.
+  const [info, setInfo] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [tradeName, setTradeName] = useState('');
+  const [legalName, setLegalName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [editing, setEditing] = useState({ tradeName: false, legalName: false });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const applyInfo = (data) => {
+    setInfo(data);
+    setTradeName(data.tradeName ?? '');
+    setLegalName(data.legalName ?? '');
+    setEmail(data.email ?? '');
+    setPhone(localPhone(data.phone, data.callingCode));
+    setEditing({ tradeName: false, legalName: false });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    getPersonalInfo(token)
+      .then((data) => {
+        if (!cancelled) applyInfo(data);
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setLoadError(err instanceof ApiError && err.status === 0 ? err.message : 'Impossible de charger vos informations.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  if (loadError) return <div className="toast-inline toast-inline--error">{loadError}</div>;
+  if (!info) return <p className="settings-form__loading">Chargement…</p>;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setMessage('');
+    setFormError('');
+
+    const fullPhone = phone.trim() ? `${info.callingCode}${phone.replace(/\s+/g, '')}` : '';
+    const changes = {};
+    if (tradeName.trim() !== (info.tradeName ?? '')) changes.tradeName = tradeName.trim();
+    if (legalName.trim() !== info.legalName) changes.legalName = legalName.trim();
+    if (email.trim().toLowerCase() !== info.email) changes.email = email.trim();
+    if (phone.trim() !== localPhone(info.phone, info.callingCode)) changes.phone = fullPhone;
+
+    const errors = {};
+    if ('legalName' in changes && !changes.legalName) errors.legalName = 'Veuillez saisir le nom juridique.';
+    if ('email' in changes && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(changes.email))
+      errors.email = 'Veuillez saisir une adresse électronique valide.';
+    if ('phone' in changes && !/^\+?\d{6,20}$/.test(changes.phone))
+      errors.phone = 'Veuillez saisir un numéro de téléphone valide.';
+    if (Object.keys(changes).length > 0 && !currentPassword)
+      errors.currentPassword = 'Veuillez saisir votre mot de passe actuel.';
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    if (Object.keys(changes).length === 0) {
+      setMessage('Aucune modification à enregistrer.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { token: nextToken, ...data } = await updatePersonalInfo(token, { ...changes, currentPassword });
+      applyInfo(data);
+      setCurrentPassword('');
+      setMessage('Modifications enregistrées.');
+      // Updates the topbar name, and switches to the new token when the email changed.
+      await refreshProfile(nextToken ?? token).catch(() => {});
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
+        setFieldErrors(mapServerInfoErrors(err.data.errors));
+      } else if (err instanceof ApiError && err.status === 401) {
+        setFormError('Votre session a expiré. Veuillez vous reconnecter.');
+      } else {
+        setFormError(err instanceof ApiError && err.status === 0 ? err.message : 'Une erreur est survenue. Veuillez réessayer.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <form className="settings-form" onSubmit={handleSubmit}>
-      <div className="settings-row">
-        <span className="settings-row__label">Nom commercial</span>
-        <button type="button" className="link-btn">
-          Modifier
-        </button>
-      </div>
-      <div className="settings-row">
-        <span className="settings-row__label">Nom juridique</span>
-        <button type="button" className="link-btn">
-          Modifier
-        </button>
-      </div>
+    <form className="settings-form" onSubmit={handleSubmit} noValidate>
+      <EditableRow
+        label="Nom commercial"
+        value={tradeName}
+        editing={editing.tradeName}
+        onEdit={() => setEditing((v) => ({ ...v, tradeName: true }))}
+        onChange={setTradeName}
+        error={fieldErrors.tradeName}
+        disabled={submitting}
+      />
+      <EditableRow
+        label="Nom juridique"
+        value={legalName}
+        editing={editing.legalName}
+        onEdit={() => setEditing((v) => ({ ...v, legalName: true }))}
+        onChange={setLegalName}
+        error={fieldErrors.legalName}
+        disabled={submitting}
+        lockedHint={info.legalNameEditable ? null : 'Verrouillé après la soumission du KYC'}
+      />
 
       <label className="field field--stacked">
         <span>Logo de l'entreprise</span>
@@ -69,33 +209,61 @@ function PersonalInfoTab() {
 
       <label className="field field--stacked">
         <span>Adresse électronique</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={submitting}
+          aria-invalid={!!fieldErrors.email}
+        />
+        {fieldErrors.email ? (
+          <small className="field__error">{fieldErrors.email}</small>
+        ) : (
+          <small>C'est l'adresse que vous utilisez pour vous connecter.</small>
+        )}
       </label>
 
       <label className="field field--stacked">
         <span>Numéro de téléphone</span>
         <div className="phone-input">
           <span className="phone-input__flag">
-            <Flag code="tg" /> +228
+            <Flag code={info.countryCode} /> {info.callingCode}
           </span>
-          <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input
+            type="tel"
+            autoComplete="tel-national"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            disabled={submitting}
+            aria-invalid={!!fieldErrors.phone}
+          />
         </div>
+        {fieldErrors.phone && <small className="field__error">{fieldErrors.phone}</small>}
       </label>
 
       <label className="field field--stacked">
         <span>Mot de passe actuel</span>
         <input
           type="password"
+          autoComplete="current-password"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
+          disabled={submitting}
+          aria-invalid={!!fieldErrors.currentPassword}
         />
-        <small>Vous devez entrer votre mot de passe actuel afin de confirmer les modifications.</small>
+        {fieldErrors.currentPassword ? (
+          <small className="field__error">{fieldErrors.currentPassword}</small>
+        ) : (
+          <small>Vous devez entrer votre mot de passe actuel afin de confirmer les modifications.</small>
+        )}
       </label>
 
-      <button type="submit" className="btn btn--teal">
-        Appliquer les modifications
+      <button type="submit" className="btn btn--teal" disabled={submitting}>
+        {submitting ? 'Enregistrement…' : 'Appliquer les modifications'}
       </button>
-      {saved && <div className="toast-inline">Modifications enregistrées.</div>}
+      {message && <div className="toast-inline">{message}</div>}
+      {formError && <div className="toast-inline toast-inline--error">{formError}</div>}
     </form>
   );
 }
@@ -210,43 +378,6 @@ function PasswordTab() {
       </button>
       {success && <div className="toast-inline">Mot de passe changé avec succès.</div>}
       {formError && <div className="toast-inline toast-inline--error">{formError}</div>}
-    </form>
-  );
-}
-
-function SavTab() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [added, setAdded] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setAdded(true);
-    setName('');
-    setEmail('');
-    setPhone('');
-    setTimeout(() => setAdded(false), 2500);
-  };
-
-  return (
-    <form className="settings-form" onSubmit={handleSubmit}>
-      <label className="field field--stacked">
-        <span>Nom du contact</span>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      <label className="field field--stacked">
-        <span>Adresse électronique</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <label className="field field--stacked">
-        <span>Numéro de téléphone</span>
-        <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      </label>
-      <button type="submit" className="btn btn--teal">
-        Ajouter le contact
-      </button>
-      {added && <div className="toast-inline">Contact SAV ajouté.</div>}
     </form>
   );
 }

@@ -70,6 +70,27 @@ export function updatePassword(token, { currentPassword, newPassword, confirmPas
   return request('/api/merchant/update-password', { method: 'POST', body, token });
 }
 
+// Settings → personal information.
+// Response shape: { tradeName (nullable), legalName, legalNameEditable (false once the KYC is
+//   pending/approved), email (login email), phone (nullable), countryCode, callingCode }
+export function getPersonalInfo(token) {
+  return request('/api/merchant/personal-info', { method: 'GET', token });
+}
+
+// Sent as form data; only the fields given are changed, `currentPassword` is always required.
+// Response shape: same as getPersonalInfo, plus `token` when the email changed — the old token
+// no longer authenticates, so pass it to refreshProfile(). Validation failures are 422 with
+// { errors: { trade_name?, legal_name?, email?, phone?, current_password? } }.
+export function updatePersonalInfo(token, { tradeName, legalName, email, phone, currentPassword }) {
+  const body = new FormData();
+  const fields = { trade_name: tradeName, legal_name: legalName, email, phone };
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== undefined) body.append(key, value);
+  });
+  body.append('current_password', currentPassword);
+  return request('/api/merchant/personal-info', { method: 'POST', body, token });
+}
+
 // Public "information and contact" form (Register.jsx). Creates the merchant and starts its KYC
 // as a draft with the representative's contact details — no documents, no login: the merchant
 // completes the KYC from the portal (submitKyc) once MyPay has created their login.
