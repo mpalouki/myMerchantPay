@@ -8,6 +8,7 @@ import {
   getTeamOptions,
   getTeams,
   removeTeamMember,
+  resendTeamInvitation,
   updateTeam,
 } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
@@ -109,25 +110,31 @@ export default function Roles() {
   const createTeam = async ({ name, habilitation, emails, access }) => {
     const team = await createTeamRequest(token, { balance: balanceId, name, habilitation, access, emails });
     setTeams((list) => [...list, team]);
-    done(`Équipe « ${team.name} » créée avec ${team.members.length} membre(s) en attente d'invitation.`);
+    done(`Équipe « ${team.name} » créée. Une invitation a été envoyée à ${team.members.length} membre(s).`);
   };
 
   const editTeam = async (values) => {
+    const before = new Set(dialogTeam.members.map((m) => m.email));
     const team = await updateTeam(token, dialogTeam.id, values);
     replaceTeam(team);
-    done(`Équipe « ${team.name} » modifiée.`);
+    const invited = team.members.filter((m) => !before.has(m.email)).length;
+    done(`Équipe « ${team.name} » modifiée.${invited ? ` Une invitation a été envoyée à ${invited} nouveau(x) membre(s).` : ''}`);
   };
 
   const addMember = async (email) => {
     const team = await addTeamMember(token, dialogTeam.id, email);
     replaceTeam(team);
-    done(`${email} a été ajouté à l'équipe « ${team.name} » (invitation en attente).`);
+    done(`Invitation envoyée à ${email} pour rejoindre l'équipe « ${team.name} ».`);
   };
 
   const removeMember = async (member) => {
     const team = await removeTeamMember(token, dialogTeam.id, member.id);
     replaceTeam(team);
     setNotice(`${member.email} a été retiré de l'équipe « ${team.name} ».`);
+  };
+
+  const resendInvitation = async (member) => {
+    replaceTeam(await resendTeamInvitation(token, dialogTeam.id, member.id));
   };
 
   const deleteTeam = async () => {
@@ -378,6 +385,7 @@ export default function Roles() {
           team={dialogTeam}
           permissions={options?.permissions ?? []}
           onRemoveMember={removeMember}
+          onResendInvitation={resendInvitation}
           onClose={close}
         />
       )}

@@ -14,6 +14,7 @@ import RechargeHistory from './pages/RechargeHistory.jsx';
 import Roles from './pages/Roles.jsx';
 import KycValidation from './pages/KycValidation.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
+import JoinTeam from './pages/JoinTeam.jsx';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/create-account" element={<CreateAccount />} />
+      <Route path="/join-team" element={<JoinTeam />} />
 
       <Route
         path="/dashboard"

@@ -133,7 +133,10 @@ export function TeamFormDialog({ team, profiles, permissions, takenNames, onSubm
               disabled={submitting}
             />
             {errors.emails && <small className="field__error">{errors.emails}</small>}
-            {editing && <small>Les nouveaux membres sont ajoutés avec une invitation en attente.</small>}
+            <small>
+              {editing ? 'Les nouveaux membres' : 'Chaque membre'} reçoit un email d&apos;invitation pour rejoindre
+              l&apos;équipe.
+            </small>
           </div>
 
           <fieldset className="team-form__accesses">
@@ -207,7 +210,8 @@ export function MemberDialog({ team, onSubmit, onClose }) {
     <Modal title="Nouveau Collaborateur" onClose={onClose} size="sm">
       <form className="team-form" onSubmit={handleSubmit} noValidate>
         <p className="team-form__hint">
-          Équipe <strong>{team.name}</strong> — la personne est ajoutée avec une invitation en attente.
+          Équipe <strong>{team.name}</strong> — une invitation à rejoindre l&apos;équipe sera envoyée à cette
+          adresse.
         </p>
         <label className="field field--stacked">
           <span>
@@ -235,21 +239,33 @@ export function MemberDialog({ team, onSubmit, onClose }) {
   );
 }
 
-// Details of a team (the "i" action and the "et N autres" link). onRemoveMember(member)
-export function TeamDetailsDialog({ team, permissions, onRemoveMember, onClose }) {
-  const [removing, setRemoving] = useState(null);
+// Details of a team (the "i" action and the "et N autres" link).
+// onRemoveMember(member), onResendInvitation(member)
+export function TeamDetailsDialog({ team, permissions, onRemoveMember, onResendInvitation, onClose }) {
+  // Id of the member being removed or re-invited.
+  const [busy, setBusy] = useState(null);
   const [error, setError] = useState('');
+  const [sent, setSent] = useState('');
   const label = (reference) => permissions.find((p) => p.reference === reference)?.label ?? reference;
 
-  const remove = async (member) => {
-    setRemoving(member.id);
+  const run = async (member, action, failure) => {
+    setBusy(member.id);
     setError('');
+    setSent('');
     try {
-      await onRemoveMember(member);
+      await action(member);
+      return true;
     } catch (err) {
-      setError(readApiErrors(err).message ?? 'Impossible de retirer ce membre.');
+      setError(readApiErrors(err).message ?? failure);
+      return false;
     } finally {
-      setRemoving(null);
+      setBusy(null);
+    }
+  };
+  const remove = (member) => run(member, onRemoveMember, 'Impossible de retirer ce membre.');
+  const resend = async (member) => {
+    if (await run(member, onResendInvitation, "Impossible de renvoyer l'invitation.")) {
+      setSent(`Invitation renvoyée à ${member.email}.`);
     }
   };
 
@@ -294,6 +310,11 @@ export function TeamDetailsDialog({ team, permissions, onRemoveMember, onClose }
 
       <h3 className="team-details__title">Membres ({team.members.length})</h3>
       <FormError message={error} />
+      {sent && (
+        <div className="toast-inline" role="status">
+          {sent}
+        </div>
+      )}
       {team.members.length === 0 ? (
         <p className="team-form__hint">Aucun membre pour le moment.</p>
       ) : (
@@ -317,11 +338,23 @@ export function TeamDetailsDialog({ team, permissions, onRemoveMember, onClose }
                     <span className={`badge badge--${status.tone}`}>{status.label}</span>
                   </td>
                   <td className="team-details__remove">
+                    {m.status === 'invited' && (
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        onClick={() => resend(m)}
+                        disabled={busy !== null}
+                        aria-label={`Renvoyer l'invitation à ${m.email}`}
+                        title="Renvoyer l'invitation"
+                      >
+                        <Icon name="send" size={15} />
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="icon-btn icon-btn--danger"
                       onClick={() => remove(m)}
-                      disabled={removing !== null}
+                      disabled={busy !== null}
                       aria-label={`Retirer ${m.email} de l'équipe`}
                       title="Retirer de l'équipe"
                     >

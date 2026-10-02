@@ -149,6 +149,29 @@ export default {
     },
   },
 
+  joinTeam: {
+    title: 'Join the {{team}} team',
+    intro: '{{merchant}} invites you to join this team on their merchant space, with the {{habilitation}} habilitation.',
+    checking: 'Checking your invitation…',
+    existingLogin: 'You already have a MyMerchantPay login with this address: accept, then sign in as usual.',
+    submitting: 'Confirming…',
+    submit: 'Accept the invitation',
+    submitWithPassword: 'Create my login and join the team',
+    toLogin: 'Go to sign in',
+    invalid: {
+      title: 'Invalid invitation',
+      message: 'This invitation is no longer valid: it has expired, was already accepted, or a newer one was sent to you. Ask the merchant to send it again.',
+      emailTaken: "This address is already used by another merchant's account, so the invitation can't be accepted. Ask the merchant to invite you with another address.",
+    },
+    joined: {
+      title: 'Invitation accepted',
+      message: 'You are now a member of the {{team}} team. Sign in with your usual credentials.',
+    },
+    errors: {
+      failed: 'Unable to accept the invitation. Please try again.',
+    },
+  },
+
   kyc: {
     title: 'KYC validation',
     subtitle: 'Complete and validate your company information to activate your merchant space.',

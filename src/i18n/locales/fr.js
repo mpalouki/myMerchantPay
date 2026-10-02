@@ -150,6 +150,29 @@ export default {
     },
   },
 
+  joinTeam: {
+    title: "Rejoindre l'équipe {{team}}",
+    intro: '{{merchant}} vous invite à rejoindre cette équipe sur son espace marchand, avec l’habilitation {{habilitation}}.',
+    checking: "Vérification de l'invitation…",
+    existingLogin: 'Vous avez déjà un accès MyMerchantPay avec cette adresse : acceptez, puis connectez-vous comme d’habitude.',
+    submitting: 'Validation…',
+    submit: "Accepter l'invitation",
+    submitWithPassword: "Créer mon accès et rejoindre l'équipe",
+    toLogin: 'Aller à la connexion',
+    invalid: {
+      title: 'Invitation invalide',
+      message: "Cette invitation n'est plus valable : elle a expiré, a déjà été acceptée ou une nouvelle invitation vous a été envoyée. Demandez au marchand de vous la renvoyer.",
+      emailTaken: "Cette adresse est déjà utilisée par le compte d'un autre marchand : l'invitation ne peut pas être acceptée. Demandez au marchand de vous inviter avec une autre adresse.",
+    },
+    joined: {
+      title: 'Invitation acceptée',
+      message: "Vous faites maintenant partie de l'équipe {{team}}. Connectez-vous avec vos identifiants habituels.",
+    },
+    errors: {
+      failed: "Impossible d'accepter l'invitation. Veuillez réessayer.",
+    },
+  },
+
   kyc: {
     title: 'Validation KYC',
     subtitle: 'Complétez et validez les informations de votre entreprise pour activer votre espace marchand.',
