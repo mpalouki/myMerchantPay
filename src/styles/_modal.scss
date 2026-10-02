@@ -1,0 +1,199 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Dialogs (components/Modal.jsx) and the small controls used inside them.
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 64px 16px 24px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.modal {
+  @include card;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+
+  &:focus {
+    outline: none;
+  }
+
+  &--md {
+    max-width: 420px;
+  }
+
+  &--sm {
+    max-width: 420px;
+  }
+
+  &--lg {
+    max-width: 640px;
+  }
+
+  &__header {
+    @include flex(center, space-between, 12px);
+    padding: 14px 18px;
+    background: $color-info-bg;
+    border-bottom: 1px solid $color-border;
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+    }
+  }
+
+  &__close {
+    @include flex(center, center);
+    padding: 4px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: $color-text-muted;
+    cursor: pointer;
+
+    &:hover {
+      color: $color-text;
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &__body {
+    padding: 20px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+
+    .btn {
+      min-width: 160px;
+    }
+
+    &--split {
+      justify-content: flex-end;
+
+      .btn {
+        min-width: 0;
+      }
+    }
+  }
+}
+
+// Square icon-only button (table row actions, remove buttons).
+.icon-btn {
+  @include flex(center, center);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+
+  &:hover {
+    background: #f1f3f6;
+  }
+
+  &--info {
+    color: $color-teal;
+  }
+
+  &--danger {
+    color: $color-danger;
+
+    &:hover {
+      background: $color-danger-bg;
+    }
+  }
+}
+
+.required {
+  font-style: normal;
+  color: $color-danger;
+}
+
+// components/EmailTagsInput.jsx
+.email-tags-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.email-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 70px;
+  padding: 8px 10px;
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  background: #fff;
+  cursor: text;
+
+  &:focus-within {
+    border-color: $color-primary;
+  }
+
+  &--invalid {
+    border-color: $color-danger;
+  }
+
+  &--disabled {
+    background: $color-bg;
+    cursor: not-allowed;
+  }
+
+  &__tag {
+    @include flex(center, flex-start, 4px);
+    height: 26px;
+    padding: 0 6px 0 10px;
+    border-radius: 4px;
+    background: $color-teal;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+
+    button {
+      @include flex(center, center);
+      padding: 2px;
+      border: none;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      opacity: 0.85;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  // Overrides the generic .field input look: the box is the wrapper.
+  input,
+  input:focus {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: 4px 2px;
+    border: none;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    font-size: 13px;
+  }
+}

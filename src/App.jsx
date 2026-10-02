@@ -11,6 +11,7 @@ import Settings from './pages/Settings.jsx';
 import ApiIntegration from './pages/ApiIntegration.jsx';
 import Recharge from './pages/Recharge.jsx';
 import RechargeHistory from './pages/RechargeHistory.jsx';
+import Roles from './pages/Roles.jsx';
 import KycValidation from './pages/KycValidation.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 
@@ -46,7 +47,7 @@ export default function App() {
           element={<PlaceholderPage title="Débourser des paiements" icon="disburse" />}
         />
         <Route path="api-integration" element={<ApiIntegration />} />
-        <Route path="roles" element={<PlaceholderPage title="Gestion des rôles" icon="roles" />} />
+        <Route path="roles" element={<Roles />} />
         <Route path="recharge" element={<Recharge />} />
         <Route path="recharge/history" element={<RechargeHistory />} />
         <Route path="withdraw" element={<PlaceholderPage title="Retirer de l'argent" icon="withdraw" />} />

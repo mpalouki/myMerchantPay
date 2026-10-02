@@ -148,6 +148,51 @@ export function getBalances(token) {
   return request('/api/merchant/balances', { method: 'GET', token });
 }
 
+// --- Role management ("Gestion des rôles", pages/Roles.jsx). Bodies are JSON. A team is:
+// { id, name, dateCreation, status (bool, true = active), habilitation: { id, name, accessType },
+//   access: ['DASHBOARD', …] (permission references), balance: { id, accountNumberFormatted,
+//   country: { codeAlpha2, name } }, activeMembers, members: [{ id, email,
+//   status: 'invited' | 'active' | 'inactive', habilitation: { id, name, accessType } }] }.
+// Validation failures are 422 with { errors: { <body field>: message } }.
+
+// Choices for the team form. Response shape: { profiles: [{ id, name, accessType }],
+//   permissions: [{ reference, label }] }
+export function getTeamOptions(token) {
+  return request('/api/merchant/teams/options', { token });
+}
+
+// Teams of one account (balance id), by name. Response shape: [team]
+export function getTeams(token, balanceId) {
+  return request(`/api/merchant/teams?balance=${encodeURIComponent(balanceId)}`, { token });
+}
+
+// { balance (id), name, habilitation (profile id), access: [reference], emails: [email] }
+// Members are added as 'invited'. Response shape: team (201)
+export function createTeam(token, team) {
+  return request('/api/merchant/teams', { method: 'POST', body: team, token });
+}
+
+// { name, habilitation, access, emails, status (bool) }: replaces the member list by email (kept
+// members keep their status, new ones are invited). Response shape: team
+export function updateTeam(token, id, team) {
+  return request(`/api/merchant/teams/${id}`, { method: 'PUT', body: team, token });
+}
+
+// 204, no body.
+export function deleteTeam(token, id) {
+  return request(`/api/merchant/teams/${id}`, { method: 'DELETE', token });
+}
+
+// Response shape: the updated team (201). 422 { errors: { email } } if invalid or already a member.
+export function addTeamMember(token, teamId, email) {
+  return request(`/api/merchant/teams/${teamId}/members`, { method: 'POST', body: { email }, token });
+}
+
+// Response shape: the updated team.
+export function removeTeamMember(token, teamId, memberId) {
+  return request(`/api/merchant/teams/${teamId}/members/${memberId}`, { method: 'DELETE', token });
+}
+
 // Countries the platform operates in. Also used by the public registration form.
 // Response shape: [{ id, name, codeAlpha2, callingCode, currency }]
 export function getCountries(token) {
