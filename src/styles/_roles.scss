@@ -171,7 +171,13 @@
     font-size: 15px;
   }
 
+  // Resend-invitation and remove buttons.
   &__remove {
-    width: 48px;
+    width: 84px;
+    white-space: nowrap;
+
+    .icon-btn {
+      display: inline-flex;
+    }
   }
 }

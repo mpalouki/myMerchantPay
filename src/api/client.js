@@ -193,6 +193,35 @@ export function removeTeamMember(token, teamId, memberId) {
   return request(`/api/merchant/teams/${teamId}/members/${memberId}`, { method: 'DELETE', token });
 }
 
+// Sends an invited member a new invitation email (the previous link stops working).
+// Response shape: the team. 409 if the member already accepted, 502 if the email failed.
+export function resendTeamInvitation(token, teamId, memberId) {
+  return request(`/api/merchant/teams/${teamId}/members/${memberId}/invitation`, { method: 'POST', token });
+}
+
+// Team invitation link (JoinTeam.jsx, /join-team?token=…). Sent as form data.
+// Response shape: { email, merchantName, teamName, habilitation, needsPassword, expiresAt }.
+// An invalid, expired or used link — or an email used by another merchant's login — is 422
+// with { errors: { token } }.
+export function checkTeamInvitation(token) {
+  const body = new FormData();
+  body.append('token', token);
+  return request('/api/merchant/team-invitation', { method: 'POST', body });
+}
+
+// Activates the membership; with needsPassword, also creates the portal login (password and
+// confirmPassword required). Response shape: { email, loginCreated }. Validation failures are
+// 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
+export function acceptTeamInvitation({ token, password, confirmPassword }) {
+  const body = new FormData();
+  body.append('token', token);
+  if (password !== undefined) {
+    body.append('password', password);
+    body.append('confirm_password', confirmPassword);
+  }
+  return request('/api/merchant/team-invitation/accept', { method: 'POST', body });
+}
+
 // Countries the platform operates in. Also used by the public registration form.
 // Response shape: [{ id, name, codeAlpha2, callingCode, currency }]
 export function getCountries(token) {
