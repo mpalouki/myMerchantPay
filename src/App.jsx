@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashboard.jsx';
 import Profile from './pages/Profile.jsx';
 import Settings from './pages/Settings.jsx';
 import ApiIntegration from './pages/ApiIntegration.jsx';
+import ApiApplicationDetails from './pages/ApiApplicationDetails.jsx';
+import ApiApplicationEdit from './pages/ApiApplicationEdit.jsx';
+import ApiApplicationNew from './pages/ApiApplicationNew.jsx';
 import Recharge from './pages/Recharge.jsx';
 import RechargeHistory from './pages/RechargeHistory.jsx';
 import Roles from './pages/Roles.jsx';
@@ -49,6 +52,9 @@ export default function App() {
           element={<PlaceholderPage title="Débourser des paiements" icon="disburse" />}
         />
         <Route path="api-integration" element={<ApiIntegration />} />
+        <Route path="api-integration/new" element={<ApiApplicationNew />} />
+        <Route path="api-integration/:appId" element={<ApiApplicationDetails />} />
+        <Route path="api-integration/:appId/edit" element={<ApiApplicationEdit />} />
         <Route path="roles" element={<Roles />} />
         <Route path="recharge" element={<Recharge />} />
         <Route path="recharge/history" element={<RechargeHistory />} />

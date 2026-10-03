@@ -222,6 +222,48 @@ export function acceptTeamInvitation({ token, password, confirmPassword }) {
   return request('/api/merchant/team-invitation/accept', { method: 'POST', body });
 }
 
+// --- API applications ("Intégrez notre API"). Bodies are JSON. An application is:
+// { id, createdAt, name, description, productionMode, balance: { id, accountNumberFormatted,
+//   country: { codeAlpha2, name } } } in lists, plus, when read one by one: website (or null),
+// services: ['PAYIN' | 'PAYOUT'], invoiceEnabled, cashOnDeliveryEnabled (PAL),
+// disbursementEnabled (PER), paymentMethods: [paymentMethod], ipn: { endpoint, enabled },
+// keys: { master, test: { public, private, token }, live: { public, private, token } },
+// keysGeneratedAt. A paymentMethod is { id, name, country: { codeAlpha2, name } | null }
+// (null = every country). Validation failures are 422 with { errors: { <body field>: message } }
+// (`ipn.endpoint` for the IPN).
+
+// Response shape: { services: ['PAYIN', 'PAYOUT'], paymentMethods: [paymentMethod] }
+export function getApplicationOptions(token) {
+  return request('/api/merchant/applications/options', { token });
+}
+
+// Applications of one account (balance id), newest first. Response shape: [application]
+export function getApplications(token, balanceId) {
+  return request(`/api/merchant/applications?balance=${encodeURIComponent(balanceId)}`, { token });
+}
+
+// Response shape: application, with its keys.
+export function getApplication(token, id) {
+  return request(`/api/merchant/applications/${id}`, { token });
+}
+
+// { balance (id), name, description, website, services, productionMode, invoiceEnabled,
+//   paymentMethods: [id], ipn: { endpoint, enabled } } — generates the keys.
+// Response shape: application (201)
+export function createApplication(token, application) {
+  return request('/api/merchant/applications', { method: 'POST', body: application, token });
+}
+
+// Same body without `balance`; keys are kept. Response shape: application
+export function updateApplication(token, id, application) {
+  return request(`/api/merchant/applications/${id}`, { method: 'PUT', body: application, token });
+}
+
+// 204, no body. The application's keys stop working.
+export function deleteApplication(token, id) {
+  return request(`/api/merchant/applications/${id}`, { method: 'DELETE', token });
+}
+
 // Countries the platform operates in. Also used by the public registration form.
 // Response shape: [{ id, name, codeAlpha2, callingCode, currency }]
 export function getCountries(token) {

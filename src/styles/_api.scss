@@ -1,4 +1,41 @@
 @use 'variables' as *;
+@use 'mixins' as *;
+
+// Applications list (pages/ApiIntegration.jsx).
+.api-intro {
+  margin: 0 0 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid $color-border;
+  font-size: 14.5px;
+}
+
+.api-apps {
+  &__notice {
+    margin-bottom: 16px;
+  }
+
+  &__table {
+    min-width: 640px;
+    margin-top: 24px;
+  }
+
+  &__actions {
+    white-space: nowrap;
+
+    .link-btn {
+      font-size: inherit;
+    }
+  }
+
+  &__buttons {
+    @include flex(center, center, 6px, wrap);
+    margin: 48px 0 8px;
+
+    a.btn {
+      text-decoration: none;
+    }
+  }
+}
 
 .key-group {
   display: flex;
@@ -54,6 +91,17 @@
   padding: 8px 0;
   max-width: 300px;
   font-size: 14px;
+
+  &--wide {
+    max-width: 640px;
+    gap: 16px;
+  }
+
+  &__value {
+    color: $color-text-muted;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
 }
 
 .action-row {
@@ -61,10 +109,137 @@
   gap: 12px;
   margin: 12px 0 16px;
   flex-wrap: wrap;
+
+  a.btn {
+    text-decoration: none;
+  }
 }
 
 .empty-panel {
   color: $color-text-muted;
   padding: 40px 0;
   text-align: center;
+}
+
+// Application configuration form (components/ApplicationForm.jsx).
+.app-form {
+  max-width: 720px;
+  margin: 8px auto 0;
+  font-size: 14px;
+
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    @include field-input;
+  }
+
+  textarea {
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: minmax(160px, 2fr) 3fr;
+    align-items: start;
+    gap: 6px 16px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__label {
+    padding-top: 10px;
+  }
+
+  &__control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__inline-checks {
+    @include flex(center, flex-start, 18px, wrap);
+    padding-top: 9px;
+  }
+
+  &__section {
+    margin-top: 40px;
+
+    h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+      font-weight: 600;
+    }
+  }
+
+  &__hint {
+    margin: 0 0 18px;
+    font-size: 12.5px;
+    color: $color-text-muted;
+  }
+
+  &__group {
+    margin: 0 0 14px;
+    padding: 0;
+    border: none;
+    min-width: 0;
+
+    legend {
+      margin-bottom: 6px;
+      padding: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: $color-text-muted;
+    }
+  }
+
+  &__group-box {
+    @include flex(center, center, 8px 18px, wrap);
+    padding: 14px 16px;
+    border: 1px solid $color-border;
+    border-radius: 4px;
+  }
+
+  &__ipn {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  &__actions {
+    @include flex(center, center, 8px, wrap);
+    margin: 28px 0 8px;
+    color: $color-text-muted;
+  }
+}
+
+.app-form {
+  &__fields {
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-width: 0;
+  }
+
+  &__error {
+    margin-top: 20px;
+  }
+
+  // "Compte : …" line above the creation form.
+  &__account {
+    max-width: 720px;
+    margin: 8px auto 4px;
+    font-size: 13.5px;
+    color: $color-text-muted;
+  }
 }
