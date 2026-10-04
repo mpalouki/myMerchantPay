@@ -22,6 +22,7 @@
   max-width: 1200px;
   margin: 0 auto;
   min-height: 72px;
+  position: relative;
   @include flex(center, space-between, 24px);
 
   &__brand {
@@ -32,14 +33,28 @@
     @include flex(center, center, 28px);
     flex: 1;
 
-    a {
+    > a,
+    .site-dropdown__toggle {
       color: rgba(255, 255, 255, 0.8);
       text-decoration: none;
       font-size: 14.5px;
       font-weight: 600;
 
-      &:hover {
+      &:hover,
+      &.active {
         color: #fff;
+      }
+    }
+
+    // Dropdown panels stay white, with dark links.
+    .site-dropdown__menu a {
+      color: $color-text;
+      text-decoration: none;
+      font-size: 14.5px;
+      font-weight: 600;
+
+      &.active {
+        color: $color-primary;
       }
     }
   }
@@ -61,9 +76,83 @@
   }
 }
 
+// Under 980px the menu becomes a dark panel toggled by the burger; groups (Product, Help)
+// show as small headings over their links.
 @media (max-width: 980px) {
-  .auth-header__section {
+  .auth-header .site-burger {
+    display: flex;
+  }
+
+  .auth-header__nav {
     display: none;
+  }
+
+  .auth-header.is-menu-open .auth-header__nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 20px 16px;
+    border-radius: 0 0 16px 16px;
+    background: #0b1e3d;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+
+    > a {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .site-dropdown {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+
+    .site-dropdown__toggle {
+      width: 100%;
+      padding: 12px 0 4px;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    .site-dropdown__arrow {
+      display: none;
+    }
+
+    .site-dropdown__menu {
+      position: static;
+      display: block;
+      min-width: 0;
+      padding: 0 0 8px;
+      border: 0;
+      background: none;
+      box-shadow: none;
+
+      &::before {
+        display: none;
+      }
+
+      a {
+        padding: 10px 12px;
+        color: rgba(255, 255, 255, 0.85);
+
+        &:hover,
+        &.active {
+          background: rgba(255, 255, 255, 0.08);
+          color: #fff;
+        }
+      }
+    }
   }
 }
 

@@ -2,9 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import fr from './locales/fr.js';
 import en from './locales/en.js';
 
+// `flag`: ISO 3166-1 alpha-2 code of the flag shown in the language switcher.
 export const LOCALES = {
-  fr: { label: 'Français', messages: fr },
-  en: { label: 'English', messages: en },
+  fr: { label: 'Français', flag: 'fr', messages: fr },
+  en: { label: 'English', flag: 'gb', messages: en },
 };
 
 const DEFAULT_LOCALE = 'fr';
@@ -38,6 +39,13 @@ function translate(locale, key, params) {
   return message.replace(/\{\{(\w+)\}\}/g, (match, name) => (name in params ? params[name] : match));
 }
 
+// Like translate(), but returns the raw node (array or object) for structured content —
+// FAQ entries, legal sections — with the same fallback to the default locale; null if missing.
+function translateRaw(locale, key) {
+  const node = lookup(LOCALES[locale].messages, key);
+  return node ?? lookup(LOCALES[DEFAULT_LOCALE].messages, key) ?? null;
+}
+
 export function I18nProvider({ children }) {
   const [locale, setLocaleState] = useState(readStoredLocale);
 
@@ -56,8 +64,9 @@ export function I18nProvider({ children }) {
   }, []);
 
   const t = useCallback((key, params) => translate(locale, key, params), [locale]);
+  const tRaw = useCallback((key) => translateRaw(locale, key), [locale]);
 
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+  const value = useMemo(() => ({ locale, setLocale, t, tRaw }), [locale, setLocale, t, tRaw]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
