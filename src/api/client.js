@@ -47,10 +47,26 @@ async function request(path, { method = 'GET', body, token } = {}) {
   return data;
 }
 
-// Response shape: { token: '<JWT>' } — no user/merchant payload, see jwt.js to
-// read the identity claims embedded in the token itself.
+// Step 1 of the login: checks the password and emails a login code. Response shape (202):
+// { otpRequired: true, challenge, email (masked), codeLength, expiresAt, resendAvailableIn (s) }.
+// Wrong credentials are 401 { code, message }; 503 { error } if the email couldn't be sent.
 export function login(email, password) {
   return request('/api/login', { method: 'POST', body: { email, password } });
+}
+
+// Step 2: exchanges the challenge and the emailed code for the JWT. Response shape:
+// { token: '<JWT>' } — no user/merchant payload, see jwt.js to read the identity claims.
+// 422 with { errors: { code }, remainingAttempts } for a wrong code, or { errors: { challenge } }
+// when the challenge is expired, used or out of attempts (sign in again).
+export function verifyLoginCode(challenge, code) {
+  return request('/api/login/otp', { method: 'POST', body: { challenge, code } });
+}
+
+// Emails a new code for the challenge (the previous one stops working). Response shape (202):
+// { expiresAt, resendAvailableIn (s, null when no resend is left) }. 429 { error,
+// resendAvailableIn } if too early; 422 { errors: { challenge } } when it can't be resent.
+export function resendLoginCode(challenge) {
+  return request('/api/login/otp/resend', { method: 'POST', body: { challenge } });
 }
 
 // Response shape: { email, merchant: { id, name, email, sector, country, countryCode, status,
@@ -100,8 +116,8 @@ export function checkInvitation(token) {
   return request('/api/merchant/invitation', { method: 'POST', body });
 }
 
-// Creates the portal login (the link's email) — then sign in with login(). Sent as form data.
-// Response shape: { email } (201). Validation failures are 422 with
+// Creates the portal login (the link's email). Sent as form data. Response shape (201):
+// { email, token } — the JWT of the new login (no login code: the link proved the email). Validation failures are 422 with
 // { errors: { token?, password?, confirm_password? } }; a bad password doesn't consume the link.
 export function acceptInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
@@ -210,7 +226,8 @@ export function checkTeamInvitation(token) {
 }
 
 // Activates the membership; with needsPassword, also creates the portal login (password and
-// confirmPassword required). Response shape: { email, loginCreated }. Validation failures are
+// confirmPassword required). Response shape: { email, loginCreated, token } — token is the
+// JWT of the new login when loginCreated (no login code: the link proved the email), else null. Validation failures are
 // 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
 export function acceptTeamInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
