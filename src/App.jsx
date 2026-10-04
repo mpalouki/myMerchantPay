@@ -2,7 +2,17 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import PlaceholderPage from './components/PlaceholderPage.jsx';
 import DashboardLayout from './layouts/DashboardLayout.jsx';
-import Home from './pages/Home.jsx';
+import SiteLayout from './components/site/SiteLayout.jsx';
+import Home from './pages/site/Home.jsx';
+import Presentation from './pages/site/Presentation.jsx';
+import Services from './pages/site/Services.jsx';
+import Partners from './pages/site/Partners.jsx';
+import Contact from './pages/site/Contact.jsx';
+import Faq from './pages/site/Faq.jsx';
+import Pricing from './pages/site/Pricing.jsx';
+import Support from './pages/site/Support.jsx';
+import ApiDocs from './pages/site/ApiDocs.jsx';
+import { Legal, Privacy, Terms } from './pages/site/LegalPages.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -22,7 +32,22 @@ import JoinTeam from './pages/JoinTeam.jsx';
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* Public showcase site */}
+      <Route element={<SiteLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/presentation" element={<Presentation />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/legal" element={<Legal />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/docs" element={<ApiDocs />} />
+      </Route>
+
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/create-account" element={<CreateAccount />} />

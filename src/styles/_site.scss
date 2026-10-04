@@ -1,0 +1,944 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Showcase site pages (src/pages/site/*), on top of the .home-* styles in _home.scss.
+
+$site-navy: #0b1e3d;
+
+// ---- Page hero (every page but the home page) ----
+.site-hero {
+  background: radial-gradient(circle at 15% 20%, #123a66 0%, $site-navy 50%, #0a1730 100%);
+  color: #fff;
+  padding-block: 72px 64px;
+
+  h1 {
+    max-width: 22em;
+    font-size: clamp(30px, 4.4vw, 46px);
+    line-height: 1.1;
+    margin: 14px 0 16px;
+  }
+
+  p {
+    max-width: 40em;
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .home-hero__ctas {
+    margin-top: 28px;
+  }
+
+  &__meta {
+    margin-top: 18px !important;
+    font-size: 13.5px !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+  }
+}
+
+// ---- Hamburger (components/site/SiteNav.jsx MenuBurger), shown by each header's breakpoint ----
+.site-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid $color-border;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+
+  span {
+    height: 2px;
+    border-radius: 2px;
+    background: $color-text;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  &.is-open span {
+    &:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    &:nth-child(2) {
+      opacity: 0;
+    }
+
+    &:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+  }
+
+  &--dark {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: transparent;
+
+    span {
+      background: #fff;
+    }
+  }
+}
+
+// ---- Header dropdowns ("Product", "Help") ----
+.site-dropdown {
+  position: relative;
+
+  &__toggle {
+    @include flex(center, flex-start, 4px);
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover,
+    &.active {
+      color: $color-primary;
+    }
+  }
+
+  &__arrow {
+    transition: transform 0.2s ease;
+  }
+
+  &.is-open &__arrow {
+    transform: rotate(180deg);
+  }
+
+  &__menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: -16px;
+    z-index: 30;
+    display: none;
+    min-width: 220px;
+    margin: 0;
+    padding: 8px;
+    list-style: none;
+    background: #fff;
+    border: 1px solid $color-border;
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+
+    // Invisible bridge over the gap, so moving the mouse down doesn't close the menu.
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -14px;
+      height: 14px;
+    }
+
+    a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    a:hover,
+    a.active {
+      background: $color-info-bg;
+    }
+  }
+
+  &.is-open &__menu {
+    display: block;
+  }
+}
+
+// In the mobile menu panel, groups are a label followed by their links, always shown.
+@media (max-width: 1180px) {
+  .home-header.is-menu-open .site-dropdown {
+    border-bottom: 1px solid $color-border;
+
+    &__toggle {
+      width: 100%;
+      padding: 12px 0 4px;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $color-text-muted;
+      pointer-events: none;
+    }
+
+    &__arrow {
+      display: none;
+    }
+
+    &__menu {
+      position: static;
+      display: block;
+      min-width: 0;
+      padding: 0 0 8px;
+      border: 0;
+      box-shadow: none;
+
+      &::before {
+        display: none;
+      }
+
+      a {
+        padding: 10px 12px;
+        border-bottom: 0;
+      }
+    }
+  }
+}
+
+// ---- Small shared pieces ----
+.home-heading--left {
+  text-align: left;
+  margin-inline: 0;
+}
+
+.site-center {
+  @include flex(center, center);
+  margin-top: 40px;
+}
+
+.site-narrow {
+  max-width: 860px;
+}
+
+.site-gap-top {
+  margin-top: 28px;
+}
+
+.site-subtitle {
+  margin: 48px 0 20px !important;
+  text-align: center;
+  font-size: 20px;
+}
+
+.site-more {
+  @include flex(center, flex-start, 6px, nowrap);
+  display: inline-flex;
+  margin-top: 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: $color-primary;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &--lg {
+    margin-top: 24px;
+    font-size: 15.5px;
+  }
+
+  &--light {
+    color: #7cc0ff;
+  }
+}
+
+.site-cta__actions {
+  @include flex(center, flex-start, 12px, wrap);
+}
+
+.site-note {
+  @include flex(flex-start, flex-start, 8px);
+  margin-top: 24px !important;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: $color-info-bg;
+  color: $color-text;
+  font-size: 13.5px;
+  line-height: 1.5;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: $color-primary;
+  }
+
+  &--warning {
+    background: $color-warning-bg;
+
+    svg {
+      color: $color-warning;
+    }
+  }
+}
+
+// Highlight list (home presentation, partner types): bordered items, title + text.
+.site-highlights {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  li {
+    @include flex(flex-start, flex-start, 6px);
+    flex-direction: column;
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid $color-border;
+    background: #fff;
+  }
+
+  strong {
+    font-size: 16px;
+  }
+
+  span {
+    font-size: 14px;
+    line-height: 1.55;
+    color: $color-text-muted;
+  }
+}
+
+// Light banner with text and an action.
+.site-band {
+  @include flex(center, space-between, 24px, wrap);
+  padding: 36px 40px;
+  border-radius: 20px;
+  background: #f5f8fc;
+  border: 1px solid $color-border;
+
+  h2 {
+    margin: 10px 0 10px !important;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  &--column {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fff;
+
+    p {
+      @include flex(center, flex-start, 8px);
+      margin: 0;
+    }
+
+    a:not(.btn) {
+      color: $color-primary;
+    }
+  }
+}
+
+.home-section--tinted .site-band {
+  background: #fff;
+}
+
+// ---- FAQ accordions (home, FAQ, pricing) ----
+.site-faq {
+  display: grid;
+  gap: 12px;
+
+  &__item {
+    border: 1px solid $color-border;
+    border-radius: 14px;
+    background: #fff;
+
+    summary {
+      @include flex(center, space-between, 16px);
+      padding: 18px 22px;
+      font-weight: 600;
+      font-size: 15.5px;
+      cursor: pointer;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      svg {
+        flex-shrink: 0;
+        color: $color-text-muted;
+        transition: transform 0.2s ease;
+      }
+    }
+
+    &[open] summary svg {
+      transform: rotate(180deg);
+    }
+
+    p {
+      padding: 0 22px 20px;
+      color: $color-text-muted;
+      font-size: 14.5px;
+    }
+  }
+}
+
+.site-faq-group {
+  scroll-margin-top: 90px;
+
+  & + & {
+    margin-top: 40px;
+  }
+
+  h2 {
+    font-size: 22px !important;
+    margin: 0 0 16px !important;
+  }
+}
+
+.site-search {
+  @include flex(center, flex-start, 10px);
+  max-width: 520px;
+  margin-top: 28px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #fff;
+  color: $color-text-muted;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 0;
+    border: 0;
+    outline: none;
+    font: inherit;
+    font-size: 15px;
+    color: $color-text;
+    background: transparent;
+  }
+}
+
+// ---- Pages with a sticky table of contents (FAQ, legal, docs) ----
+.site-with-toc {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.site-toc {
+  position: sticky;
+  top: 92px;
+  @include flex(stretch, flex-start, 2px);
+  flex-direction: column;
+  padding-left: 14px;
+  border-left: 2px solid $color-border;
+
+  a {
+    padding: 6px 0;
+    font-size: 14px;
+    color: $color-text-muted;
+    text-decoration: none;
+
+    &:hover {
+      color: $color-primary;
+    }
+  }
+}
+
+// Long-form text (legal pages, docs).
+.site-prose {
+  max-width: 780px;
+
+  section {
+    scroll-margin-top: 90px;
+
+    & + section {
+      margin-top: 40px;
+    }
+  }
+
+  h2 {
+    font-size: 22px !important;
+    margin: 0 0 14px !important;
+  }
+
+  p + p,
+  p + ul,
+  ul + p {
+    margin-top: 12px;
+  }
+
+  p,
+  li {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #3a4655;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 22px;
+  }
+
+  a {
+    color: $color-primary;
+  }
+
+  code {
+    font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+
+  p code,
+  li code,
+  td code {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #f1f4f8;
+  }
+}
+
+.site-identity {
+  margin-bottom: 40px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: #f5f8fc;
+  border: 1px solid $color-border;
+
+  dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 24px;
+    margin: 0;
+  }
+
+  dt {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $color-text-muted;
+  }
+
+  dd {
+    margin: 4px 0 0;
+    font-size: 15px;
+  }
+}
+
+.site-steps-list {
+  margin: 20px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+
+  li {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+// ---- Services ----
+.site-chips {
+  @include flex(center, flex-start, 10px, wrap);
+  margin-top: 28px;
+
+  a {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 14px;
+    text-decoration: none;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+}
+
+.site-rows {
+  display: grid;
+  gap: 72px;
+}
+
+.site-row {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 56px;
+  align-items: center;
+  scroll-margin-top: 90px;
+
+  &--reverse {
+    grid-template-columns: 1fr 320px;
+
+    .site-row__visual {
+      order: 2;
+    }
+  }
+
+  h2 {
+    font-size: clamp(24px, 3vw, 32px) !important;
+    margin: 0 0 12px !important;
+  }
+
+  &__visual {
+    @include flex(center, center);
+    aspect-ratio: 4 / 3;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f5f8fc 100%);
+    color: $color-primary;
+  }
+}
+
+// ---- Partners ----
+.site-logos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  li {
+    @include flex(center, center);
+    min-height: 84px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid $color-border;
+    background: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-text;
+    text-align: center;
+  }
+}
+
+// ---- Pricing ----
+.site-pricing {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.site-price {
+  padding: 28px 24px;
+  border-radius: 18px;
+  border: 1px solid $color-border;
+  background: #fff;
+
+  h3 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  &__fee {
+    margin: 14px 0 10px !important;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: $color-primary-dark;
+
+    small {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: $color-text-muted;
+    }
+  }
+
+  p:last-child {
+    font-size: 14px;
+    color: $color-text-muted;
+  }
+
+  &--free {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+    border-color: transparent;
+    color: #fff;
+
+    .site-price__fee,
+    p:last-child {
+      color: #fff;
+    }
+  }
+}
+
+// ---- Contact ----
+.site-contact {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 48px;
+  align-items: start;
+
+  h2 {
+    font-size: 22px !important;
+    margin: 0 0 20px !important;
+  }
+
+  &__channels ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+  }
+
+  &__channels li {
+    @include flex(center, flex-start, 14px);
+
+    .home-card__icon {
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    div {
+      @include flex(flex-start, flex-start, 2px);
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    strong {
+      font-size: 14px;
+    }
+
+    a,
+    span {
+      font-size: 15px;
+      color: $color-text-muted;
+      overflow-wrap: anywhere;
+    }
+
+    a {
+      color: $color-primary;
+      text-decoration: none;
+    }
+  }
+
+  &__help {
+    margin-top: 28px !important;
+    font-size: 14px;
+    color: $color-text-muted;
+
+    a {
+      color: $color-primary;
+    }
+  }
+}
+
+.site-form {
+  @include flex(stretch, flex-start, 18px);
+  flex-direction: column;
+  padding: 32px;
+  border-radius: 20px;
+  border: 1px solid $color-border;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  textarea {
+    @include field-input;
+    resize: vertical;
+    font: inherit;
+
+    &[aria-invalid='true'] {
+      border-color: $color-danger;
+    }
+  }
+
+  .btn {
+    align-self: flex-start;
+  }
+
+  &__notice {
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: $color-success-bg;
+    color: $color-success;
+    font-size: 14px;
+  }
+
+  &__hint {
+    font-size: 13px;
+    color: $color-text-muted;
+  }
+}
+
+// ---- Support ----
+.site-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-split--top {
+  align-items: start;
+}
+
+.site-table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+  border: 1px solid $color-border;
+  border-radius: 14px;
+}
+
+.site-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid $color-border;
+  }
+
+  th {
+    background: #f5f8fc;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-text-muted;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.site-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &--critical {
+    background: $color-danger-bg;
+    color: $color-danger;
+  }
+
+  &--high {
+    background: $color-warning-bg;
+    color: $color-warning;
+  }
+
+  &--normal {
+    background: $color-info-bg;
+    color: $color-primary-dark;
+  }
+}
+
+// ---- API docs ----
+.site-docs .home-code {
+  margin-top: 16px;
+}
+
+.site-endpoint {
+  @include flex(center, flex-start, 10px);
+  margin-top: 16px !important;
+
+  code {
+    font-size: 14px !important;
+    font-weight: 600;
+  }
+
+  &__method {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #fff;
+
+    &--get {
+      background: $color-success;
+    }
+
+    &--post {
+      background: $color-primary;
+    }
+  }
+}
+
+.site-code {
+  pre code {
+    font-size: 13px;
+  }
+
+  &__copy {
+    @include flex(center, center, 4px);
+    margin-left: 12px;
+    padding: 3px 8px;
+    border: 1px solid #2b3d57;
+    border-radius: 6px;
+    background: transparent;
+    color: #8fa3bf;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+// ---- Responsive ----
+@media (max-width: 1000px) {
+  .site-pricing,
+  .site-logos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .site-with-toc,
+  .site-contact {
+    grid-template-columns: 1fr;
+  }
+
+  .site-toc {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding: 0 0 16px;
+    border-left: 0;
+    border-bottom: 1px solid $color-border;
+  }
+
+  .site-row,
+  .site-row--reverse {
+    grid-template-columns: 1fr;
+    gap: 24px;
+
+    .site-row__visual {
+      order: 0;
+      aspect-ratio: auto;
+      height: 140px;
+    }
+  }
+
+  .site-band {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .site-hero {
+    padding-block: 56px 48px;
+  }
+
+  .site-highlights,
+  .site-pricing,
+  .site-logos,
+  .site-form__grid,
+  .site-identity dl {
+    grid-template-columns: 1fr;
+  }
+
+  .site-form {
+    padding: 22px 18px;
+  }
+}

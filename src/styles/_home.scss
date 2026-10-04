@@ -101,8 +101,10 @@ $home-max-width: 1160px;
       text-decoration: none;
       font-size: 14.5px;
       font-weight: 600;
+      white-space: nowrap;
 
-      &:hover {
+      &:hover,
+      &.active {
         color: $color-primary;
       }
     }
@@ -114,12 +116,6 @@ $home-max-width: 1160px;
     .btn {
       border-radius: 999px;
     }
-  }
-
-  // The shared switcher is styled for dark backgrounds; invert it here.
-  &__language select {
-    color: $color-text;
-    border-color: $color-border;
   }
 }
 
@@ -592,7 +588,7 @@ $home-max-width: 1160px;
 
   &__top {
     display: grid;
-    grid-template-columns: 2fr repeat(3, 1fr);
+    grid-template-columns: 2fr repeat(4, 1fr);
     gap: 32px;
     padding-bottom: 40px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -637,11 +633,42 @@ $home-max-width: 1160px;
 }
 
 // ---- Responsive ----
-@media (max-width: 1000px) {
+@media (max-width: 1180px) {
+  .home-header .site-burger {
+    display: flex;
+  }
+
   .home-header__nav {
     display: none;
   }
 
+  // The open menu drops down under the sticky header.
+  .home-header.is-menu-open .home-header__nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 24px 16px;
+    background: #fff;
+    border-bottom: 1px solid $color-border;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+
+    a {
+      padding: 12px 0;
+      border-bottom: 1px solid $color-border;
+
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 1000px) {
   .home-grid--4 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -688,6 +715,7 @@ $home-max-width: 1160px;
     grid-template-columns: 1fr;
   }
 
+  // Sign in stays reachable on phones; sign-up is in the hero and closing banner.
   .home-header__language,
   .home-header__signup {
     display: none;
