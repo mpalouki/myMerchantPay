@@ -125,16 +125,91 @@
 }
 
 
-.language-switcher select {
-  padding: 6px 10px;
-  border-radius: $radius;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: transparent;
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
+// Language picker (components/LanguageSwitcher.jsx). Default: on dark backgrounds (auth pages);
+// --light: on light ones (site header).
+.language-switcher {
+  position: relative;
 
-  option {
+  &__toggle {
+    @include flex(center, flex-start, 6px);
+    padding: 6px 10px;
+    border-radius: $radius;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__flag {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+    background-size: cover;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  &__arrow {
+    transition: transform 0.2s ease;
+  }
+
+  &.is-open &__arrow {
+    transform: rotate(180deg);
+  }
+
+  &__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 40;
+    min-width: 170px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: #fff;
+    border: 1px solid $color-border;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+
+    button {
+      @include flex(center, flex-start, 10px);
+      width: 100%;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: 8px;
+      background: none;
+      color: $color-text;
+      font: inherit;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+
+      &:hover {
+        background: $color-info-bg;
+      }
+
+      &[aria-checked='true'] {
+        font-weight: 600;
+      }
+
+      svg {
+        color: $color-primary;
+      }
+    }
+  }
+
+  &--light &__toggle {
+    border-color: $color-border;
     color: $color-text;
+
+    &:hover {
+      background: #f5f8fc;
+    }
   }
 }
