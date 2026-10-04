@@ -13,36 +13,6 @@ export const RECENT_TRANSACTIONS = [];
 
 export const PENDING_PAYMENTS = [];
 
-export const PAYMENT_METHODS_BY_COUNTRY = {
-  'Carte Bancaire': ['CARD'],
-  Sénégal: ['ORANGE MONEY SENEGAL', 'EXPRESSO SN', 'FREE MONEY SENEGAL', 'WAVE SENEGAL'],
-  Bénin: ['MOOV BENIN', 'MTN BENIN'],
-  'Burkina Faso': ['ORANGE MONEY BURKINA', 'MOOV BURKINA FASO'],
-  "Cote d'ivoire": ['ORANGE MONEY CI', 'MTN CI', 'MOOV CI', 'Wave CI'],
-  Mali: ['ORANGE MONEY MALI'],
-  Togo: ['T MONEY TOGO', 'MOOV TOGO'],
-  Cameroun: [],
-};
-
-export const APPLICATION_INFO = {
-  name: 'Paytogo',
-  description: 'Paytogo for money transfer',
-  website: '',
-  status: 'Mode test',
-  services: ['Payin', 'Payout'],
-  invoiceEnabled: true,
-};
-
-function maskKey() {
-  return '*'.repeat(28);
-}
-
-export const API_KEYS = {
-  main: maskKey(),
-  test: { public: maskKey(), private: maskKey(), token: maskKey() },
-  production: { public: maskKey(), private: maskKey(), token: maskKey() },
-};
-
 export const BANK_ACCOUNTS = [
   { id: 'eco-ci', label: 'Ecobank (CI059 01056 122506607001 55)' },
   { id: 'uba-ci', label: 'UBA (CI142 01234 987654321001 12)' },

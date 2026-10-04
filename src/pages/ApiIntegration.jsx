@@ -1,33 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Tabs from '../components/Tabs.jsx';
 import Icon from '../components/Icon.jsx';
-import { APPLICATION_INFO, API_KEYS, PAYMENT_METHODS_BY_COUNTRY } from '../data/mockData.js';
+import DeleteApplicationDialog from '../components/DeleteApplicationDialog.jsx';
+import { deleteApplication, getApplications } from '../api/client.js';
+import { useAccount } from '../context/AccountContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { API_INTEGRATION_TABS, formatCreatedAt } from '../data/apiApplications.js';
+import { readApiErrors } from '../data/teams.js';
 
-const TABS = [
-  { key: 'apps', label: 'Applications' },
-  { key: 'clients', label: 'Clients fictifs' },
-  { key: 'data', label: 'Données internes fictives' },
-];
+// "Intégrez notre API" (design: "1- List of applications - API Keys.pdf"): the applications
+// of the account selected in the dashboard (GET /api/merchant/applications?balance=…), each
+// with its own API keys. "Détails" opens ApiApplicationDetails.jsx.
 
-const FAKE_KEY = 'fake_demo_7f8a7d6c0b4e3e0d1c0c9a8f5e6d5c4f';
+// No developer guide exists yet: set VITE_DEVELOPER_GUIDE_URL once it does.
+const DEVELOPER_GUIDE_URL = import.meta.env.VITE_DEVELOPER_GUIDE_URL || '/#developers';
 
 export default function ApiIntegration() {
-  const [tab, setTab] = useState('apps');
-  const [revealed, setRevealed] = useState(false);
+  // Other pages link back to a given tab, or with a notice, through navigate(…, { state }).
+  const { state } = useLocation();
+  const [tab, setTab] = useState(state?.tab ?? 'apps');
+  const { selectedBalance } = useAccount();
 
   return (
     <div className="card">
-      <div className="card__header">Configuration de vos Applications</div>
+      <div className="card__header">
+        <Icon name="settings" size={16} className="card__header-icon" /> Configuration de vos Applications
+        {selectedBalance && (
+          <div className="card__subheader">
+            Compte {selectedBalance.country.name} — {selectedBalance.accountNumberFormatted}. Changez de compte depuis
+            le tableau de bord.
+          </div>
+        )}
+      </div>
       <div className="card__body">
-        <p className="muted">
-          Intégrer notre API au sein de vos applications en générant vos clés API ici.
-        </p>
-        <Tabs tabs={TABS} active={tab} onChange={setTab} />
+        <p className="api-intro">Intégrer notre API au sein de vos applications en générant vos clés API ici.</p>
+        <Tabs tabs={API_INTEGRATION_TABS} active={tab} onChange={setTab} />
 
         <div className="tab-panel">
-          {tab === 'apps' && (
-            <ApplicationsPanel revealed={revealed} onToggleReveal={() => setRevealed((v) => !v)} />
-          )}
+          {tab === 'apps' && <ApplicationsList initialNotice={state?.notice ?? ''} />}
           {tab === 'clients' && <EmptyPanel label="Aucun client fictif configuré." />}
           {tab === 'data' && <EmptyPanel label="Aucune donnée interne fictive disponible." />}
         </div>
@@ -36,162 +47,112 @@ export default function ApiIntegration() {
   );
 }
 
-function ApplicationsPanel({ revealed, onToggleReveal }) {
-  return (
-    <>
-      <div className="section-row">
-        <h3 className="section-title">Informations sur l'application</h3>
-        <button type="button" className="btn btn--outline" onClick={onToggleReveal}>
-          <Icon name="eye" size={16} /> {revealed ? 'Masquer les clés api' : 'Afficher les clés api'}
-        </button>
-      </div>
+function ApplicationsList({ initialNotice }) {
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const { selectedBalance, loading: accountsLoading, error: accountsError } = useAccount();
+  const balanceId = selectedBalance?.id;
+  // null while loading.
+  const [applications, setApplications] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [toDelete, setToDelete] = useState(null);
+  const [notice, setNotice] = useState(initialNotice);
 
-      <table className="kv-table">
-        <tbody>
-          <tr>
-            <th>Nom de l'application</th>
-            <td>{APPLICATION_INFO.name}</td>
-          </tr>
-          <tr>
-            <th>Description</th>
-            <td>{APPLICATION_INFO.description}</td>
-          </tr>
-          <tr>
-            <th>URL du site Web</th>
-            <td>{APPLICATION_INFO.website || '—'}</td>
-          </tr>
-          <tr>
-            <th>Statut de l'application</th>
-            <td>
-              <span className="badge badge--danger">{APPLICATION_INFO.status}</span>
-            </td>
-          </tr>
-          <tr>
-            <th>Services</th>
-            <td>
-              {APPLICATION_INFO.services.map((s) => (
-                <span key={s} className="badge badge--info">
-                  {s}
-                </span>
-              ))}
-            </td>
-          </tr>
-          <tr>
-            <th>Envoie de Facture de paiement</th>
-            <td>
-              <span className="badge badge--success">
-                {APPLICATION_INFO.invoiceEnabled ? 'Activé' : 'Désactivé'}
-              </span>
-            </td>
-          </tr>
-          <tr>
-            <th>Clé Principale</th>
-            <td>
-              <KeyField value={API_KEYS.main} revealed={revealed} />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  // Reloads when the account selected in the dashboard changes.
+  useEffect(() => {
+    if (!balanceId) return undefined;
+    let cancelled = false;
+    getApplications(token, balanceId)
+      .then((data) => {
+        if (cancelled) return;
+        setApplications(Array.isArray(data) ? data : []);
+        setLoadError('');
+      })
+      .catch((err) => !cancelled && setLoadError(readApiErrors(err).message));
+    return () => {
+      cancelled = true;
+    };
+  }, [token, balanceId]);
 
-      <h3 className="section-title">Clés API de Test</h3>
-      <div className="key-group">
-        <KeyRow label="Clé Publique" value={API_KEYS.test.public} revealed={revealed} />
-        <KeyRow label="Clé Privée" value={API_KEYS.test.private} revealed={revealed} />
-        <KeyRow label="Token" value={API_KEYS.test.token} revealed={revealed} />
-      </div>
-
-      <h3 className="section-title">Clés API de Production</h3>
-      <div className="key-group">
-        <KeyRow label="Clé Publique" value={API_KEYS.production.public} revealed={revealed} />
-        <KeyRow label="Clé Privée" value={API_KEYS.production.private} revealed={revealed} />
-        <KeyRow label="Token" value={API_KEYS.production.token} revealed={revealed} />
-      </div>
-
-      <h3 className="section-title">Méthodes de paiement autorisées</h3>
-      {Object.entries(PAYMENT_METHODS_BY_COUNTRY).map(([country, methods]) => (
-        <div key={country} className="pm-group">
-          <div className="pm-group__label">{country}</div>
-          <div className="pm-group__badges">
-            {methods.length === 0 ? (
-              <span className="muted">Aucune méthode configurée</span>
-            ) : (
-              methods.map((m) => (
-                <span key={m} className="badge badge--info">
-                  {m}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
-      ))}
-
-      <h3 className="section-title">Paiement à la livraison (PAL)</h3>
-      <div className="status-row">
-        <span>Etat</span>
-        <span className="badge badge--danger">Désactivé</span>
-      </div>
-
-      <h3 className="section-title">Paiement ET Redistribution (PER) / Déboursement</h3>
-      <div className="status-row">
-        <span>Etat</span>
-        <span className="badge badge--success">Activé</span>
-      </div>
-
-      <h3 className="section-title">Instant Payment Notification (IPN)</h3>
-      <div className="status-row">
-        <span>Endpoint IPN</span>
-      </div>
-      <div className="status-row">
-        <span>Etat</span>
-        <span className="badge badge--danger">Désactivé</span>
-      </div>
-
-      <h3 className="section-title">Actions</h3>
-      <div className="action-row">
-        <button type="button" className="btn btn--primary">
-          Modifier la configuration
-        </button>
-        <button type="button" className="btn btn--danger">
-          Supprimer la configuration
-        </button>
-      </div>
-      <a href="#back" className="link-btn">
-        Retour à la page précédente
-      </a>
-    </>
-  );
-}
-
-function KeyRow({ label, value, revealed }) {
-  return (
-    <div className="field field--stacked key-row">
-      <span>{label}</span>
-      <KeyField value={value} revealed={revealed} />
-    </div>
-  );
-}
-
-function KeyField({ value, revealed }) {
-  const [copied, setCopied] = useState(false);
-  const display = revealed ? FAKE_KEY : value;
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(FAKE_KEY);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopied(false);
-    }
+  const confirmDelete = async () => {
+    await deleteApplication(token, toDelete.id);
+    setApplications((list) => list.filter((a) => a.id !== toDelete.id));
+    setNotice(`L'application « ${toDelete.name} » a été supprimée.`);
+    setToDelete(null);
   };
 
+  const noAccount = !accountsLoading && !selectedBalance;
+  let placeholder = null;
+  if (loadError || accountsError)
+    placeholder = `Impossible de charger les applications : ${loadError || readApiErrors(accountsError).message}`;
+  else if (noAccount) placeholder = "Aucun compte n'est disponible pour ce marchand.";
+  else if (applications === null) placeholder = 'Chargement des applications…';
+  else if (applications.length === 0)
+    placeholder = 'Aucune application configurée sur ce compte. Configurez-en une pour obtenir vos clés API.';
+
   return (
-    <div className="key-field">
-      <input type="text" readOnly value={display} />
-      <button type="button" className="btn btn--ghost btn--sm" onClick={handleCopy}>
-        <Icon name="copy" size={14} /> {copied ? 'Copié !' : 'Copier'}
-      </button>
-    </div>
+    <>
+      {notice && (
+        <div className="toast-inline api-apps__notice" role="status">
+          {notice}
+        </div>
+      )}
+
+      <div className="table-scroll">
+        <table className="data-table data-table--bordered api-apps__table">
+          <thead>
+            <tr>
+              <th>Date de création</th>
+              <th>Nom de l&apos;application</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {placeholder ? (
+              <tr>
+                <td colSpan={4} className="data-table__empty">
+                  {placeholder}
+                </td>
+              </tr>
+            ) : (
+              applications.map((app) => (
+                <tr key={app.id}>
+                  <td>{formatCreatedAt(app.createdAt)}</td>
+                  <td>{app.name}</td>
+                  <td>{app.description || '—'}</td>
+                  <td className="api-apps__actions">
+                    <Link to={`/dashboard/api-integration/${app.id}`} className="link-btn">
+                      Détails
+                    </Link>
+                    <span aria-hidden="true"> | </span>
+                    <button type="button" className="link-btn" onClick={() => setToDelete(app)}>
+                      Supprimer
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="api-apps__buttons">
+        <button
+          type="button"
+          className="btn btn--teal"
+          onClick={() => navigate('/dashboard/api-integration/new')}
+          disabled={noAccount}
+        >
+          Configurer une nouvelle application
+        </button>
+        <a href={DEVELOPER_GUIDE_URL} className="btn btn--danger" target="_blank" rel="noreferrer">
+          <Icon name="book" size={16} /> Voir le Guide des développeurs
+        </a>
+      </div>
+
+      {toDelete && <DeleteApplicationDialog app={toDelete} onConfirm={confirmDelete} onClose={() => setToDelete(null)} />}
+    </>
   );
 }
 

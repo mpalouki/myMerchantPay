@@ -47,10 +47,26 @@ async function request(path, { method = 'GET', body, token } = {}) {
   return data;
 }
 
-// Response shape: { token: '<JWT>' } — no user/merchant payload, see jwt.js to
-// read the identity claims embedded in the token itself.
+// Step 1 of the login: checks the password and emails a login code. Response shape (202):
+// { otpRequired: true, challenge, email (masked), codeLength, expiresAt, resendAvailableIn (s) }.
+// Wrong credentials are 401 { code, message }; 503 { error } if the email couldn't be sent.
 export function login(email, password) {
   return request('/api/login', { method: 'POST', body: { email, password } });
+}
+
+// Step 2: exchanges the challenge and the emailed code for the JWT. Response shape:
+// { token: '<JWT>' } — no user/merchant payload, see jwt.js to read the identity claims.
+// 422 with { errors: { code }, remainingAttempts } for a wrong code, or { errors: { challenge } }
+// when the challenge is expired, used or out of attempts (sign in again).
+export function verifyLoginCode(challenge, code) {
+  return request('/api/login/otp', { method: 'POST', body: { challenge, code } });
+}
+
+// Emails a new code for the challenge (the previous one stops working). Response shape (202):
+// { expiresAt, resendAvailableIn (s, null when no resend is left) }. 429 { error,
+// resendAvailableIn } if too early; 422 { errors: { challenge } } when it can't be resent.
+export function resendLoginCode(challenge) {
+  return request('/api/login/otp/resend', { method: 'POST', body: { challenge } });
 }
 
 // Response shape: { email, merchant: { id, name, email, sector, country, countryCode, status,
@@ -100,8 +116,8 @@ export function checkInvitation(token) {
   return request('/api/merchant/invitation', { method: 'POST', body });
 }
 
-// Creates the portal login (the link's email) — then sign in with login(). Sent as form data.
-// Response shape: { email } (201). Validation failures are 422 with
+// Creates the portal login (the link's email). Sent as form data. Response shape (201):
+// { email, token } — the JWT of the new login (no login code: the link proved the email). Validation failures are 422 with
 // { errors: { token?, password?, confirm_password? } }; a bad password doesn't consume the link.
 export function acceptInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
@@ -210,7 +226,8 @@ export function checkTeamInvitation(token) {
 }
 
 // Activates the membership; with needsPassword, also creates the portal login (password and
-// confirmPassword required). Response shape: { email, loginCreated }. Validation failures are
+// confirmPassword required). Response shape: { email, loginCreated, token } — token is the
+// JWT of the new login when loginCreated (no login code: the link proved the email), else null. Validation failures are
 // 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
 export function acceptTeamInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
@@ -220,6 +237,48 @@ export function acceptTeamInvitation({ token, password, confirmPassword }) {
     body.append('confirm_password', confirmPassword);
   }
   return request('/api/merchant/team-invitation/accept', { method: 'POST', body });
+}
+
+// --- API applications ("Intégrez notre API"). Bodies are JSON. An application is:
+// { id, createdAt, name, description, productionMode, balance: { id, accountNumberFormatted,
+//   country: { codeAlpha2, name } } } in lists, plus, when read one by one: website (or null),
+// services: ['PAYIN' | 'PAYOUT'], invoiceEnabled, cashOnDeliveryEnabled (PAL),
+// disbursementEnabled (PER), paymentMethods: [paymentMethod], ipn: { endpoint, enabled },
+// keys: { master, test: { public, private, token }, live: { public, private, token } },
+// keysGeneratedAt. A paymentMethod is { id, name, country: { codeAlpha2, name } | null }
+// (null = every country). Validation failures are 422 with { errors: { <body field>: message } }
+// (`ipn.endpoint` for the IPN).
+
+// Response shape: { services: ['PAYIN', 'PAYOUT'], paymentMethods: [paymentMethod] }
+export function getApplicationOptions(token) {
+  return request('/api/merchant/applications/options', { token });
+}
+
+// Applications of one account (balance id), newest first. Response shape: [application]
+export function getApplications(token, balanceId) {
+  return request(`/api/merchant/applications?balance=${encodeURIComponent(balanceId)}`, { token });
+}
+
+// Response shape: application, with its keys.
+export function getApplication(token, id) {
+  return request(`/api/merchant/applications/${id}`, { token });
+}
+
+// { balance (id), name, description, website, services, productionMode, invoiceEnabled,
+//   paymentMethods: [id], ipn: { endpoint, enabled } } — generates the keys.
+// Response shape: application (201)
+export function createApplication(token, application) {
+  return request('/api/merchant/applications', { method: 'POST', body: application, token });
+}
+
+// Same body without `balance`; keys are kept. Response shape: application
+export function updateApplication(token, id, application) {
+  return request(`/api/merchant/applications/${id}`, { method: 'PUT', body: application, token });
+}
+
+// 204, no body. The application's keys stop working.
+export function deleteApplication(token, id) {
+  return request(`/api/merchant/applications/${id}`, { method: 'DELETE', token });
 }
 
 // Countries the platform operates in. Also used by the public registration form.
