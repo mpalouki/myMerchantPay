@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import DeleteApplicationDialog from '../components/DeleteApplicationDialog.jsx';
 import { deleteApplication, getApplication } from '../api/client.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { SERVICE_LABELS, groupPaymentMethods } from '../data/apiApplications.js';
 import { readApiErrors } from '../data/teams.js';
 
@@ -14,7 +13,6 @@ import { readApiErrors } from '../data/teams.js';
 
 export default function ApiApplicationDetails() {
   const { appId } = useParams();
-  const { token } = useAuth();
   const navigate = useNavigate();
   // null while loading, false when it can't be loaded.
   const [app, setApp] = useState(null);
@@ -26,7 +24,7 @@ export default function ApiApplicationDetails() {
 
   useEffect(() => {
     let cancelled = false;
-    getApplication(token, appId)
+    getApplication(appId)
       .then((data) => !cancelled && setApp(data))
       .catch((err) => {
         if (cancelled) return;
@@ -36,10 +34,10 @@ export default function ApiApplicationDetails() {
     return () => {
       cancelled = true;
     };
-  }, [token, appId]);
+  }, [appId]);
 
   const handleDelete = async () => {
-    await deleteApplication(token, app.id);
+    await deleteApplication(app.id);
     navigate('/dashboard/api-integration', { state: { notice: `L'application « ${app.name} » a été supprimée.` } });
   };
 

@@ -26,7 +26,7 @@ function homeCountryCode(merchant, balances) {
 // tracks which country is selected. Mounted in DashboardLayout, so the selection is shared
 // by the sidebar and every page, and survives navigation and page reloads.
 export function AccountProvider({ children }) {
-  const { token, merchant } = useAuth();
+  const { merchant } = useAuth();
   const merchantId = merchant?.id;
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export function AccountProvider({ children }) {
 
   const load = useCallback(() => {
     let cancelled = false;
-    getBalances(token)
+    getBalances()
       .then((data) => {
         if (!cancelled) {
           setBalances(Array.isArray(data) ? data : []);
@@ -51,7 +51,7 @@ export function AccountProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, []);
 
   useEffect(() => load(), [load]);
 

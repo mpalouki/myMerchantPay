@@ -85,7 +85,7 @@ function EditableRow({ label, value, editing, onEdit, onChange, error, disabled,
 }
 
 function PersonalInfoTab() {
-  const { token, refreshProfile } = useAuth();
+  const { refreshProfile } = useAuth();
   // Last values returned by the API; the form only sends fields that differ from them.
   const [info, setInfo] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -111,7 +111,7 @@ function PersonalInfoTab() {
 
   useEffect(() => {
     let cancelled = false;
-    getPersonalInfo(token)
+    getPersonalInfo()
       .then((data) => {
         if (!cancelled) applyInfo(data);
       })
@@ -122,7 +122,7 @@ function PersonalInfoTab() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, []);
 
   if (loadError) return <div className="toast-inline toast-inline--error">{loadError}</div>;
   if (!info) return <p className="settings-form__loading">Chargement…</p>;
@@ -157,12 +157,12 @@ function PersonalInfoTab() {
 
     setSubmitting(true);
     try {
-      const { token: nextToken, ...data } = await updatePersonalInfo(token, { ...changes, currentPassword });
+      const data = await updatePersonalInfo({ ...changes, currentPassword });
       applyInfo(data);
       setCurrentPassword('');
       setMessage('Modifications enregistrées.');
-      // Updates the topbar name, and switches to the new token when the email changed.
-      await refreshProfile(nextToken ?? token).catch(() => {});
+      // Updates the topbar name (the API renewed the session cookie if the email changed).
+      await refreshProfile().catch(() => {});
     } catch (err) {
       if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
         setFieldErrors(mapServerInfoErrors(err.data.errors));
@@ -293,7 +293,6 @@ function mapServerPasswordErrors(serverErrors = {}) {
 }
 
 function PasswordTab() {
-  const { token } = useAuth();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -313,7 +312,7 @@ function PasswordTab() {
 
     setSubmitting(true);
     try {
-      await updatePassword(token, { currentPassword: current, newPassword: next, confirmPassword: confirm });
+      await updatePassword({ currentPassword: current, newPassword: next, confirmPassword: confirm });
       setSuccess(true);
       setCurrent('');
       setNext('');

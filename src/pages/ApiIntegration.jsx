@@ -5,7 +5,6 @@ import Icon from '../components/Icon.jsx';
 import DeleteApplicationDialog from '../components/DeleteApplicationDialog.jsx';
 import { deleteApplication, getApplications } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import { API_INTEGRATION_TABS, formatCreatedAt } from '../data/apiApplications.js';
 import { readApiErrors } from '../data/teams.js';
 
@@ -49,7 +48,6 @@ export default function ApiIntegration() {
 
 function ApplicationsList({ initialNotice }) {
   const navigate = useNavigate();
-  const { token } = useAuth();
   const { selectedBalance, loading: accountsLoading, error: accountsError } = useAccount();
   const balanceId = selectedBalance?.id;
   // null while loading.
@@ -62,7 +60,7 @@ function ApplicationsList({ initialNotice }) {
   useEffect(() => {
     if (!balanceId) return undefined;
     let cancelled = false;
-    getApplications(token, balanceId)
+    getApplications(balanceId)
       .then((data) => {
         if (cancelled) return;
         setApplications(Array.isArray(data) ? data : []);
@@ -72,10 +70,10 @@ function ApplicationsList({ initialNotice }) {
     return () => {
       cancelled = true;
     };
-  }, [token, balanceId]);
+  }, [balanceId]);
 
   const confirmDelete = async () => {
-    await deleteApplication(token, toDelete.id);
+    await deleteApplication(toDelete.id);
     setApplications((list) => list.filter((a) => a.id !== toDelete.id));
     setNotice(`L'application « ${toDelete.name} » a été supprimée.`);
     setToDelete(null);

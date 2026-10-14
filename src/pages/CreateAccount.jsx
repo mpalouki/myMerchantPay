@@ -20,7 +20,7 @@ function validate(password, confirm) {
 
 export default function CreateAccount() {
   const { t } = useTranslation();
-  const { signInWithToken } = useAuth();
+  const { startSession } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
@@ -57,9 +57,8 @@ export default function CreateAccount() {
     if (Object.keys(errors).length > 0) return;
 
     setSubmitting(true);
-    let result;
     try {
-      result = await acceptInvitation({ token, password, confirmPassword: confirm });
+      await acceptInvitation({ token, password, confirmPassword: confirm });
     } catch (err) {
       const serverErrors = err instanceof ApiError ? err.data?.errors : null;
       if (serverErrors?.token) setInvitation(false);
@@ -74,7 +73,7 @@ export default function CreateAccount() {
     }
 
     try {
-      await signInWithToken(result.token, invitation.email);
+      await startSession();
       navigate('/dashboard');
     } catch {
       // The login exists; only the automatic sign-in failed.

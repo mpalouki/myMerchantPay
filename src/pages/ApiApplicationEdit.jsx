@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import ApiIntegrationCard from '../components/ApiIntegrationCard.jsx';
 import ApplicationForm from '../components/ApplicationForm.jsx';
 import { getApplication, updateApplication } from '../api/client.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { readApiErrors } from '../data/teams.js';
 import { useApplicationOptions } from '../hooks/useApplicationOptions.js';
 
@@ -13,7 +12,6 @@ import { useApplicationOptions } from '../hooks/useApplicationOptions.js';
 export default function ApiApplicationEdit() {
   const { appId } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
   const { options, error: optionsError } = useApplicationOptions();
   // null while loading, false when it can't be loaded.
   const [app, setApp] = useState(null);
@@ -22,7 +20,7 @@ export default function ApiApplicationEdit() {
 
   useEffect(() => {
     let cancelled = false;
-    getApplication(token, appId)
+    getApplication(appId)
       .then((data) => !cancelled && setApp(data))
       .catch((err) => {
         if (cancelled) return;
@@ -32,10 +30,10 @@ export default function ApiApplicationEdit() {
     return () => {
       cancelled = true;
     };
-  }, [token, appId]);
+  }, [appId]);
 
   const handleSubmit = async (values) => {
-    const updated = await updateApplication(token, appId, values);
+    const updated = await updateApplication(appId, values);
     navigate(detailsPath, { state: { notice: `La configuration de « ${updated.name} » a été mise à jour.` } });
   };
 

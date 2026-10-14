@@ -12,7 +12,6 @@ import {
   updateTeam,
 } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import { readApiErrors } from '../data/teams.js';
 
 // "Gestion des rôles" (design: roles-management.pdf): the teams of the account selected in
@@ -32,7 +31,6 @@ const SORTERS = {
 };
 
 export default function Roles() {
-  const { token } = useAuth();
   const { selectedBalance, loading: accountsLoading, error: accountsError } = useAccount();
   const balanceId = selectedBalance?.id;
   const [options, setOptions] = useState(null);
@@ -49,18 +47,18 @@ export default function Roles() {
 
   useEffect(() => {
     let cancelled = false;
-    getTeamOptions(token)
+    getTeamOptions()
       .then((data) => !cancelled && setOptions(data))
       .catch((err) => !cancelled && setLoadError(readApiErrors(err).message));
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, []);
 
   const loadTeams = useCallback(() => {
     if (!balanceId) return undefined;
     let cancelled = false;
-    getTeams(token, balanceId)
+    getTeams(balanceId)
       .then((data) => {
         if (cancelled) return;
         setTeams(Array.isArray(data) ? data : []);
@@ -70,7 +68,7 @@ export default function Roles() {
     return () => {
       cancelled = true;
     };
-  }, [token, balanceId]);
+  }, [balanceId]);
 
   // Reloads when the account selected in the dashboard changes. The previous account's teams
   // stay on screen until the new ones arrive (the header names the account they belong to).
@@ -108,37 +106,37 @@ export default function Roles() {
 
   // The handlers below throw on API errors: the open dialog catches and shows them.
   const createTeam = async ({ name, habilitation, emails, access }) => {
-    const team = await createTeamRequest(token, { balance: balanceId, name, habilitation, access, emails });
+    const team = await createTeamRequest({ balance: balanceId, name, habilitation, access, emails });
     setTeams((list) => [...list, team]);
     done(`Équipe « ${team.name} » créée. Une invitation a été envoyée à ${team.members.length} membre(s).`);
   };
 
   const editTeam = async (values) => {
     const before = new Set(dialogTeam.members.map((m) => m.email));
-    const team = await updateTeam(token, dialogTeam.id, values);
+    const team = await updateTeam(dialogTeam.id, values);
     replaceTeam(team);
     const invited = team.members.filter((m) => !before.has(m.email)).length;
     done(`Équipe « ${team.name} » modifiée.${invited ? ` Une invitation a été envoyée à ${invited} nouveau(x) membre(s).` : ''}`);
   };
 
   const addMember = async (email) => {
-    const team = await addTeamMember(token, dialogTeam.id, email);
+    const team = await addTeamMember(dialogTeam.id, email);
     replaceTeam(team);
     done(`Invitation envoyée à ${email} pour rejoindre l'équipe « ${team.name} ».`);
   };
 
   const removeMember = async (member) => {
-    const team = await removeTeamMember(token, dialogTeam.id, member.id);
+    const team = await removeTeamMember(dialogTeam.id, member.id);
     replaceTeam(team);
     setNotice(`${member.email} a été retiré de l'équipe « ${team.name} ».`);
   };
 
   const resendInvitation = async (member) => {
-    replaceTeam(await resendTeamInvitation(token, dialogTeam.id, member.id));
+    replaceTeam(await resendTeamInvitation(dialogTeam.id, member.id));
   };
 
   const deleteTeam = async () => {
-    await deleteTeamRequest(token, dialogTeam.id);
+    await deleteTeamRequest(dialogTeam.id);
     setTeams((list) => list.filter((t) => t.id !== dialogTeam.id));
     done(`Équipe « ${dialogTeam.name} » supprimée.`);
   };

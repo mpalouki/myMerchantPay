@@ -27,7 +27,7 @@ const invalidReason = (err) =>
 
 export default function JoinTeam() {
   const { t } = useTranslation();
-  const { signInWithToken } = useAuth();
+  const { startSession } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
@@ -87,7 +87,7 @@ export default function JoinTeam() {
       return;
     }
     try {
-      await signInWithToken(result.token, invitation.email);
+      await startSession();
       navigate('/dashboard');
     } catch {
       // The login exists; only the automatic sign-in failed.

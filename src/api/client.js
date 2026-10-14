@@ -2,6 +2,15 @@
 // proxies to myPay (see vite.config.js). Set VITE_API_BASE_URL to call an API elsewhere.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+// The session is the API's HttpOnly `mmp_session` cookie, set by the login responses: this code
+// never sees the token. `credentials: 'include'` makes the browser send it to the API's domain.
+// Called when an authenticated request answers 401 (session expired or revoked); AuthContext
+// uses it to sign the user out.
+let onUnauthorized = null;
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
 export class ApiError extends Error {
   constructor(message, status, data) {
     super(message);
@@ -19,18 +28,19 @@ async function parseBody(response) {
   }
 }
 
-async function request(path, { method = 'GET', body, token } = {}) {
+// `auth: true` for endpoints that need the session: a 401 there means it has ended.
+async function request(path, { method = 'GET', body, auth = false } = {}) {
   const headers = { Accept: 'application/json' };
   // FormData bodies (file uploads) set their own multipart boundary header.
   const isFormData = body instanceof FormData;
   if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
-  if (token) headers.Authorization = `Bearer ${token}`;
 
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
+      credentials: 'include',
       body: body === undefined || isFormData ? body : JSON.stringify(body),
     });
   } catch {
@@ -40,6 +50,7 @@ async function request(path, { method = 'GET', body, token } = {}) {
   const data = await parseBody(response);
 
   if (!response.ok) {
+    if (auth && response.status === 401) onUnauthorized?.();
     const message = data?.message || data?.error || 'Une erreur est survenue.';
     throw new ApiError(message, response.status, data);
   }
@@ -54,8 +65,8 @@ export function login(email, password) {
   return request('/api/login', { method: 'POST', body: { email, password } });
 }
 
-// Step 2: exchanges the challenge and the emailed code for the JWT. Response shape:
-// { token: '<JWT>' } — no user/merchant payload, see jwt.js to read the identity claims.
+// Step 2: exchanges the challenge and the emailed code for the session. Response shape:
+// { email } plus the HttpOnly session cookie (never readable here); then call getMerchantProfile().
 // 422 with { errors: { code }, remainingAttempts } for a wrong code, or { errors: { challenge } }
 // when the challenge is expired, used or out of attempts (sign in again).
 export function verifyLoginCode(challenge, code) {
@@ -69,42 +80,47 @@ export function resendLoginCode(challenge) {
   return request('/api/login/otp/resend', { method: 'POST', body: { challenge } });
 }
 
+// Ends the session: the API revokes the token and deletes the cookie. 204, no body.
+export function logout() {
+  return request('/api/logout', { method: 'POST' });
+}
+
 // Response shape: { email, merchant: { id, name, email, sector, country, countryCode, status,
 //   kycStatus ('not_submitted' | 'pending' | 'approved' | 'rejected'), underSurveillance, createdAt } }
-export function getMerchantProfile(token) {
-  return request('/api/merchant/me', { method: 'GET', token });
+export function getMerchantProfile() {
+  return request('/api/merchant/me', { method: 'GET', auth: true });
 }
 
 // Sent as form data (the endpoint reads $request->request, not a JSON body).
 // Response shape: { message }. Validation failures are 422 with
 // { errors: { current_password?, new_password?, confirm_password? } }.
-export function updatePassword(token, { currentPassword, newPassword, confirmPassword }) {
+export function updatePassword({ currentPassword, newPassword, confirmPassword }) {
   const body = new FormData();
   body.append('current_password', currentPassword);
   body.append('new_password', newPassword);
   body.append('confirm_password', confirmPassword);
-  return request('/api/merchant/update-password', { method: 'POST', body, token });
+  return request('/api/merchant/update-password', { method: 'POST', body, auth: true });
 }
 
 // Settings → personal information.
 // Response shape: { tradeName (nullable), legalName, legalNameEditable (false once the KYC is
 //   pending/approved), email (login email), phone (nullable), countryCode, callingCode }
-export function getPersonalInfo(token) {
-  return request('/api/merchant/personal-info', { method: 'GET', token });
+export function getPersonalInfo() {
+  return request('/api/merchant/personal-info', { method: 'GET', auth: true });
 }
 
 // Sent as form data; only the fields given are changed, `currentPassword` is always required.
-// Response shape: same as getPersonalInfo, plus `token` when the email changed — the old token
-// no longer authenticates, so pass it to refreshProfile(). Validation failures are 422 with
+// Response shape: same as getPersonalInfo. When the email changed, the response also renews the
+// session cookie (the previous one no longer authenticates). Validation failures are 422 with
 // { errors: { trade_name?, legal_name?, email?, phone?, current_password? } }.
-export function updatePersonalInfo(token, { tradeName, legalName, email, phone, currentPassword }) {
+export function updatePersonalInfo({ tradeName, legalName, email, phone, currentPassword }) {
   const body = new FormData();
   const fields = { trade_name: tradeName, legal_name: legalName, email, phone };
   Object.entries(fields).forEach(([key, value]) => {
     if (value !== undefined) body.append(key, value);
   });
   body.append('current_password', currentPassword);
-  return request('/api/merchant/personal-info', { method: 'POST', body, token });
+  return request('/api/merchant/personal-info', { method: 'POST', body, auth: true });
 }
 
 // Account creation link sent from KYC review (CreateAccount.jsx, /create-account?token=…).
@@ -117,7 +133,8 @@ export function checkInvitation(token) {
 }
 
 // Creates the portal login (the link's email). Sent as form data. Response shape (201):
-// { email, token } — the JWT of the new login (no login code: the link proved the email). Validation failures are 422 with
+// { email }, and signs the new login in (session cookie; no login code: the link proved the email).
+// Validation failures are 422 with
 // { errors: { token?, password?, confirm_password? } }; a bad password doesn't consume the link.
 export function acceptInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
@@ -144,24 +161,24 @@ export function registerMerchant(formData) {
 //   rejectionReason, submittedAt, company: {...same keys as registration},
 //   representative: {...same keys as registration} | null,
 //   documents: { rccm, taxCertificate, idDocument, proofOfAddress, statutes } (bool: file on record) }
-export function getKyc(token) {
-  return request('/api/merchant/kyc', { method: 'GET', token });
+export function getKyc() {
+  return request('/api/merchant/kyc', { method: 'GET', auth: true });
 }
 
 // KYC validation from inside the portal: same multipart body as registerMerchant, minus
 // `account` (data: { company, representative, acceptedTerms }). Documents already on
 // record may be omitted. Only allowed while canSubmit; 409 otherwise.
 // Response shape: { kycStatus: 'pending' }
-export function submitKyc(token, formData) {
-  return request('/api/merchant/kyc', { method: 'POST', body: formData, token });
+export function submitKyc(formData) {
+  return request('/api/merchant/kyc', { method: 'POST', body: formData, auth: true });
 }
 
 // The merchant's accounts, one per country, ordered by country name.
 // Response shape: [{ id, accountNumber, accountNumberFormatted, accountBalance, currency,
 //   status (bool, false = blocked), dateCreation, country: { id, name, codeAlpha2 },
 //   last7Days: { credits, debits } }] — amounts are decimal strings.
-export function getBalances(token) {
-  return request('/api/merchant/balances', { method: 'GET', token });
+export function getBalances() {
+  return request('/api/merchant/balances', { method: 'GET', auth: true });
 }
 
 // --- Role management ("Gestion des rôles", pages/Roles.jsx). Bodies are JSON. A team is:
@@ -173,46 +190,46 @@ export function getBalances(token) {
 
 // Choices for the team form. Response shape: { profiles: [{ id, name, accessType }],
 //   permissions: [{ reference, label }] }
-export function getTeamOptions(token) {
-  return request('/api/merchant/teams/options', { token });
+export function getTeamOptions() {
+  return request('/api/merchant/teams/options', { auth: true });
 }
 
 // Teams of one account (balance id), by name. Response shape: [team]
-export function getTeams(token, balanceId) {
-  return request(`/api/merchant/teams?balance=${encodeURIComponent(balanceId)}`, { token });
+export function getTeams(balanceId) {
+  return request(`/api/merchant/teams?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
 
 // { balance (id), name, habilitation (profile id), access: [reference], emails: [email] }
 // Members are added as 'invited'. Response shape: team (201)
-export function createTeam(token, team) {
-  return request('/api/merchant/teams', { method: 'POST', body: team, token });
+export function createTeam(team) {
+  return request('/api/merchant/teams', { method: 'POST', body: team, auth: true });
 }
 
 // { name, habilitation, access, emails, status (bool) }: replaces the member list by email (kept
 // members keep their status, new ones are invited). Response shape: team
-export function updateTeam(token, id, team) {
-  return request(`/api/merchant/teams/${id}`, { method: 'PUT', body: team, token });
+export function updateTeam(id, team) {
+  return request(`/api/merchant/teams/${id}`, { method: 'PUT', body: team, auth: true });
 }
 
 // 204, no body.
-export function deleteTeam(token, id) {
-  return request(`/api/merchant/teams/${id}`, { method: 'DELETE', token });
+export function deleteTeam(id) {
+  return request(`/api/merchant/teams/${id}`, { method: 'DELETE', auth: true });
 }
 
 // Response shape: the updated team (201). 422 { errors: { email } } if invalid or already a member.
-export function addTeamMember(token, teamId, email) {
-  return request(`/api/merchant/teams/${teamId}/members`, { method: 'POST', body: { email }, token });
+export function addTeamMember(teamId, email) {
+  return request(`/api/merchant/teams/${teamId}/members`, { method: 'POST', body: { email }, auth: true });
 }
 
 // Response shape: the updated team.
-export function removeTeamMember(token, teamId, memberId) {
-  return request(`/api/merchant/teams/${teamId}/members/${memberId}`, { method: 'DELETE', token });
+export function removeTeamMember(teamId, memberId) {
+  return request(`/api/merchant/teams/${teamId}/members/${memberId}`, { method: 'DELETE', auth: true });
 }
 
 // Sends an invited member a new invitation email (the previous link stops working).
 // Response shape: the team. 409 if the member already accepted, 502 if the email failed.
-export function resendTeamInvitation(token, teamId, memberId) {
-  return request(`/api/merchant/teams/${teamId}/members/${memberId}/invitation`, { method: 'POST', token });
+export function resendTeamInvitation(teamId, memberId) {
+  return request(`/api/merchant/teams/${teamId}/members/${memberId}/invitation`, { method: 'POST', auth: true });
 }
 
 // Team invitation link (JoinTeam.jsx, /join-team?token=…). Sent as form data.
@@ -226,9 +243,9 @@ export function checkTeamInvitation(token) {
 }
 
 // Activates the membership; with needsPassword, also creates the portal login (password and
-// confirmPassword required). Response shape: { email, loginCreated, token } — token is the
-// JWT of the new login when loginCreated (no login code: the link proved the email), else null. Validation failures are
-// 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
+// confirmPassword required). Response shape: { email, loginCreated }; when loginCreated, the new
+// login is also signed in (session cookie; no login code: the link proved the email).
+// Validation failures are 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
 export function acceptTeamInvitation({ token, password, confirmPassword }) {
   const body = new FormData();
   body.append('token', token);
@@ -250,39 +267,39 @@ export function acceptTeamInvitation({ token, password, confirmPassword }) {
 // (`ipn.endpoint` for the IPN).
 
 // Response shape: { services: ['PAYIN', 'PAYOUT'], paymentMethods: [paymentMethod] }
-export function getApplicationOptions(token) {
-  return request('/api/merchant/applications/options', { token });
+export function getApplicationOptions() {
+  return request('/api/merchant/applications/options', { auth: true });
 }
 
 // Applications of one account (balance id), newest first. Response shape: [application]
-export function getApplications(token, balanceId) {
-  return request(`/api/merchant/applications?balance=${encodeURIComponent(balanceId)}`, { token });
+export function getApplications(balanceId) {
+  return request(`/api/merchant/applications?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
 
 // Response shape: application, with its keys.
-export function getApplication(token, id) {
-  return request(`/api/merchant/applications/${id}`, { token });
+export function getApplication(id) {
+  return request(`/api/merchant/applications/${id}`, { auth: true });
 }
 
 // { balance (id), name, description, website, services, productionMode, invoiceEnabled,
 //   paymentMethods: [id], ipn: { endpoint, enabled } } — generates the keys.
 // Response shape: application (201)
-export function createApplication(token, application) {
-  return request('/api/merchant/applications', { method: 'POST', body: application, token });
+export function createApplication(application) {
+  return request('/api/merchant/applications', { method: 'POST', body: application, auth: true });
 }
 
 // Same body without `balance`; keys are kept. Response shape: application
-export function updateApplication(token, id, application) {
-  return request(`/api/merchant/applications/${id}`, { method: 'PUT', body: application, token });
+export function updateApplication(id, application) {
+  return request(`/api/merchant/applications/${id}`, { method: 'PUT', body: application, auth: true });
 }
 
 // 204, no body. The application's keys stop working.
-export function deleteApplication(token, id) {
-  return request(`/api/merchant/applications/${id}`, { method: 'DELETE', token });
+export function deleteApplication(id) {
+  return request(`/api/merchant/applications/${id}`, { method: 'DELETE', auth: true });
 }
 
 // Countries the platform operates in. Also used by the public registration form.
 // Response shape: [{ id, name, codeAlpha2, callingCode, currency }]
-export function getCountries(token) {
-  return request('/api/merchant/countries', { method: 'GET', token });
+export function getCountries() {
+  return request('/api/merchant/countries', { method: 'GET' });
 }
