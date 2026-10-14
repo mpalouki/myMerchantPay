@@ -2,7 +2,9 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, restoring } = useAuth();
+  // Still checking whether the session cookie signs us in (page reload).
+  if (restoring) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }

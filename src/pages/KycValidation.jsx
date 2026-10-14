@@ -57,7 +57,7 @@ function formatDate(isoString, locale) {
 
 export default function KycValidation() {
   const { t, locale } = useTranslation();
-  const { token, merchant, refreshProfile } = useAuth();
+  const { merchant, refreshProfile } = useAuth();
   const { countries } = useCountries();
   const [kyc, setKyc] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -70,7 +70,7 @@ export default function KycValidation() {
 
   useEffect(() => {
     let cancelled = false;
-    getKyc(token)
+    getKyc()
       .then((data) => {
         if (cancelled) return;
         setKyc(data);
@@ -85,7 +85,7 @@ export default function KycValidation() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []);
 
   if (loadError) {
     return (
@@ -156,7 +156,7 @@ export default function KycValidation() {
     setSubmitting(true);
     try {
       const { company, representative, acceptedTerms } = form;
-      await submitKyc(token, buildKycFormData({ company, representative, acceptedTerms }, files));
+      await submitKyc(buildKycFormData({ company, representative, acceptedTerms }, files));
       await refreshProfile().catch(() => {});
       setKyc((k) => ({ ...k, status: 'pending', canSubmit: false, submittedAt: new Date().toISOString() }));
     } catch (err) {

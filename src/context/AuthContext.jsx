@@ -1,115 +1,116 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-import { login as loginRequest, verifyLoginCode, getMerchantProfile } from '../api/client.js';
-import { decodeJwt, isTokenExpired } from '../api/jwt.js';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  login as loginRequest,
+  logout as logoutRequest,
+  verifyLoginCode,
+  getMerchantProfile,
+  setUnauthorizedHandler,
+} from '../api/client.js';
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEY = 'mmp_token';
-const USER_KEY = 'mmp_user';
+// Not a credential: the session is the API's HttpOnly cookie, which this code can't read. This
+// flag only says a session may exist, so that public pages don't call /me for every visitor.
+const SIGNED_IN_KEY = 'mmp_signed_in';
 
-function readStoredSession() {
-  const token = sessionStorage.getItem(TOKEN_KEY);
-  if (!token || isTokenExpired(token)) {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(USER_KEY);
-    return { token: null, user: null };
-  }
-
-  const saved = sessionStorage.getItem(USER_KEY);
-  let user = null;
+function readSignedInFlag() {
   try {
-    user = saved ? JSON.parse(saved) : null;
+    return localStorage.getItem(SIGNED_IN_KEY) === '1';
   } catch {
-    user = null;
+    return false;
   }
+}
 
-  return { token, user };
+function writeSignedInFlag(signedIn) {
+  try {
+    if (signedIn) localStorage.setItem(SIGNED_IN_KEY, '1');
+    else localStorage.removeItem(SIGNED_IN_KEY);
+  } catch {
+    // Storage unavailable (private mode): the session is just re-checked less often.
+  }
+}
+
+function toUser(profile) {
+  return { email: profile?.email ?? null, merchant: profile?.merchant ?? null };
 }
 
 export function AuthProvider({ children }) {
-  const initial = readStoredSession();
-  const [token, setToken] = useState(initial.token);
-  const [user, setUser] = useState(initial.user);
+  const [user, setUser] = useState(null);
+  // True while checking, on load, whether the session cookie still signs us in.
+  const [restoring, setRestoring] = useState(readSignedInFlag);
 
-  // Stores a JWT as the session: decodes it for username/roles, then
-  // GET /api/merchant/me (Bearer <token>) -> { email, merchant: {...} }.
-  const signInWithToken = async (nextToken, fallbackEmail) => {
-    const claims = decodeJwt(nextToken) || {};
+  const clearSession = () => {
+    setUser(null);
+    writeSignedInFlag(false);
+  };
 
-    let profile = null;
-    try {
-      profile = await getMerchantProfile(nextToken);
-    } catch {
-      profile = null;
-    }
+  // An authenticated request answering 401: the session expired or was revoked.
+  useEffect(() => {
+    setUnauthorizedHandler(clearSession);
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
-    const nextUser = {
-      email: profile?.email || claims.username || fallbackEmail,
-      roles: claims.roles || [],
-      merchant: profile?.merchant || null,
-    };
+  useEffect(() => {
+    if (!restoring) return;
+    getMerchantProfile()
+      .then((profile) => setUser(toUser(profile)))
+      .catch(() => clearSession())
+      .finally(() => setRestoring(false));
+    // Only on load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    setToken(nextToken);
+  // Once the API has set the session cookie (login code, account creation link, team
+  // invitation), loads the profile: GET /api/merchant/me -> { email, merchant: {...} }.
+  const startSession = async () => {
+    const nextUser = toUser(await getMerchantProfile());
     setUser(nextUser);
-    sessionStorage.setItem(TOKEN_KEY, nextToken);
-    sessionStorage.setItem(USER_KEY, JSON.stringify(nextUser));
-
+    writeSignedInFlag(true);
     return nextUser;
   };
 
   // Step 1, POST /api/login: a correct password emails a login code and resolves to the
   // challenge { otpRequired: true, challenge, email (masked), codeLength, expiresAt,
-  // resendAvailableIn }; finish with verifyCode(). Should the API answer with a token
-  // directly, the session starts right away and this resolves to { otpRequired: false, user }.
-  const login = async (email, password) => {
-    const result = await loginRequest(email, password);
-    if (result?.token) return { otpRequired: false, user: await signInWithToken(result.token, email) };
-    return result;
+  // resendAvailableIn }; finish with verifyCode().
+  const login = (email, password) => loginRequest(email, password);
+
+  // Step 2, POST /api/login/otp: the API answers the right code with the session cookie.
+  const verifyCode = async (challenge, code) => {
+    await verifyLoginCode(challenge, code);
+    return startSession();
   };
 
-  // Step 2, POST /api/login/otp: exchanges the challenge + emailed code for the JWT.
-  const verifyCode = async (challenge, code, email) => {
-    const { token: nextToken } = await verifyLoginCode(challenge, code);
-    return signInWithToken(nextToken, email);
-  };
-
-  // Re-reads GET /api/merchant/me, e.g. after the KYC status changed. Pass `nextToken` when
-  // the API issued a new one (the login email changed): it replaces the stored token.
-  const refreshProfile = async (nextToken = token) => {
-    if (!nextToken) return null;
-    const profile = await getMerchantProfile(nextToken);
-    const nextUser = { ...user, email: profile?.email || user?.email, merchant: profile?.merchant || null };
-    if (nextToken !== token) {
-      setToken(nextToken);
-      sessionStorage.setItem(TOKEN_KEY, nextToken);
-    }
+  // Re-reads GET /api/merchant/me, e.g. after the KYC status or the login email changed.
+  const refreshProfile = async () => {
+    const nextUser = toUser(await getMerchantProfile());
     setUser(nextUser);
-    sessionStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     return nextUser;
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(USER_KEY);
+  const logout = async () => {
+    clearSession();
+    try {
+      await logoutRequest();
+    } catch {
+      // Already signed out server-side, or offline: the cookie expires with the token anyway.
+    }
   };
 
   const value = useMemo(
     () => ({
       user,
-      token,
       merchant: user?.merchant ?? null,
-      isAuthenticated: !!token,
+      isAuthenticated: !!user,
+      restoring,
       login,
       verifyCode,
-      signInWithToken,
+      startSession,
       logout,
       refreshProfile,
     }),
-    // login/verifyCode/signInWithToken/logout/refreshProfile only read user and token.
+    // The functions only read state through setters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, token],
+    [user, restoring],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
