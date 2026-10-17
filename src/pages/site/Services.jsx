@@ -12,7 +12,7 @@ const SERVICES = [
   { key: 'send', icon: 'send' },
   { key: 'paymentLinks', icon: 'qr' },
   { key: 'accounts', icon: 'globe' },
-  { key: 'recharge', icon: 'withdraw' },
+  { key: 'reload', icon: 'withdraw' },
 ];
 
 const PRODUCTS = [

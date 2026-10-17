@@ -150,7 +150,7 @@ export default {
         accounts: { title: 'Comptes multi-pays', text: 'Un compte et un numéro de compte par pays, et un sélecteur pour passer de l’un à l’autre.' },
         teams: { title: 'Équipes et rôles', text: 'Invitez vos collaborateurs et attribuez-leur une habilitation : consultant, éditeur ou administrateur.' },
         applications: { title: 'Applications API', text: 'Créez vos applications, choisissez leurs moyens de paiement et récupérez leurs clés de test et de production.' },
-        recharge: { title: 'Recharges et retraits', text: 'Approvisionnez votre compte pour vos paiements et retirez vos fonds vers votre compte bancaire.' },
+        reload: { title: 'Recharges et retraits', text: 'Approvisionnez votre compte pour vos paiements et retirez vos fonds vers votre compte bancaire.' },
         reporting: { title: 'Rapports', text: 'Exportez l’historique de vos transactions pour votre comptabilité et vos rapprochements.' },
       },
     },
@@ -214,7 +214,7 @@ export default {
         text: 'Chaque pays dispose de son propre compte et de son propre solde dans la devise locale. Vous passez de l’un à l’autre en un clic depuis le tableau de bord.',
         points: ['Un numéro de compte par pays', 'Soldes et historiques séparés', 'Mouvements des sept derniers jours en un coup d’œil'],
       },
-      recharge: {
+      reload: {
         title: 'Recharges et retraits',
         summary: 'Approvisionnez votre compte et retirez vos fonds quand vous le souhaitez.',
         text: 'Rechargez votre compte pour financer vos paiements sortants, et retirez vos encaissements vers votre compte bancaire ou votre portefeuille mobile.',

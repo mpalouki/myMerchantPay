@@ -1,9 +1,9 @@
 @use 'variables' as *;
 @use 'mixins' as *;
 
-// "Recharger mon compte" (pages/Recharge.jsx).
+// "Recharger mon compte" (pages/Reload.jsx).
 
-.recharge {
+.reload {
   &__tabs {
     display: flex;
     border-bottom: 3px solid $color-border;
@@ -206,11 +206,11 @@
 }
 
 @media (max-width: 560px) {
-  .recharge__actions {
+  .reload__actions {
     grid-template-columns: 1fr;
   }
 
-  .recharge__bank div {
+  .reload__bank div {
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;

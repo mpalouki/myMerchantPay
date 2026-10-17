@@ -3,47 +3,47 @@ import { Link } from 'react-router-dom';
 import AlertDialog from '../components/AlertDialog.jsx';
 import Flag from '../components/Flag.jsx';
 import Icon from '../components/Icon.jsx';
-import { getRechargeBankAccounts, getRechargeWallets, submitRecharge } from '../api/client.js';
+import { getReloadBankAccounts, getReloadWallets, submitReload } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
 import {
   BANK_CUTOFF_HOUR_GMT,
-  MIN_RECHARGE_AMOUNT,
+  MIN_RELOAD_AMOUNT,
   TRANSFER_ZONES,
   currencyLabel,
   formatAmount,
   isValidPhone,
   normalizePhone,
   phonePlaceholder,
-} from '../data/recharge.js';
+} from '../data/reload.js';
 
 const METHODS = [
   { key: 'mobile', label: 'Mobile money' },
   { key: 'bank', label: 'Compte bancaire' },
 ];
 
-const HISTORY_PATH = '/dashboard/recharge/history';
+const HISTORY_PATH = '/dashboard/reload/history';
 
 // "Recharger mon compte": tops one of the merchant's accounts (one per country) up, either from
-// a mobile money wallet of that account's country (GET /api/merchant/recharge/wallets; wallet,
+// a mobile money wallet of that account's country (GET /api/merchant/reload/wallets; wallet,
 // number, amount -> confirmation -> the payer validates on their phone) or by bank transfer
-// (step 1: MyPay's bank accounts in that country, GET /api/merchant/recharge/bank-accounts;
+// (step 1: MyPay's bank accounts in that country, GET /api/merchant/reload/bank-accounts;
 // step 2: the merchant declares the transfer they made). The account is the dashboard's selected one (useAccount), switchable here in both tabs.
 // Submissions still go to mocks in data/mockData.js.
-export default function Recharge() {
+export default function Reload() {
   const [method, setMethod] = useState('mobile');
   const { balances, selectedBalance, selectCountry, loading, error } = useAccount();
 
   let content;
   if (loading) {
-    content = <p className="recharge__empty">Chargement de vos comptes…</p>;
+    content = <p className="reload__empty">Chargement de vos comptes…</p>;
   } else if (error) {
     content = <div className="toast-inline toast-inline--error">Impossible de charger vos comptes : {error.message}</div>;
   } else if (!selectedBalance) {
-    content = <p className="recharge__empty">Vous n&apos;avez encore aucun compte à recharger.</p>;
+    content = <p className="reload__empty">Vous n&apos;avez encore aucun compte à recharger.</p>;
   } else if (method === 'mobile') {
     // Keyed by account: another country means other wallets and another dial code.
     content = (
-      <MobileMoneyRecharge
+      <MobileMoneyReload
         key={selectedBalance.id}
         account={selectedBalance}
         accountSelect={<AccountSelect balances={balances} value={selectedBalance} onChange={selectCountry} />}
@@ -52,7 +52,7 @@ export default function Recharge() {
   } else {
     // Keyed by account: another country means other bank accounts.
     content = (
-      <BankRecharge
+      <BankReload
         key={selectedBalance.id}
         account={selectedBalance}
         accountSelect={<AccountSelect balances={balances} value={selectedBalance} onChange={selectCountry} />}
@@ -61,27 +61,27 @@ export default function Recharge() {
   }
 
   return (
-    <div className="card recharge">
+    <div className="card reload">
       <div className="card__header">
         Recharger mon compte
         <div className="card__subheader">Recharger via Mobile money ou Compte bancaire</div>
       </div>
       <div className="card__body">
-        <div className="recharge__tabs" role="tablist">
+        <div className="reload__tabs" role="tablist">
           {METHODS.map((m) => (
             <button
               key={m.key}
               type="button"
               role="tab"
               aria-selected={method === m.key}
-              className={`recharge__tab ${method === m.key ? 'recharge__tab--active' : ''}`}
+              className={`reload__tab ${method === m.key ? 'reload__tab--active' : ''}`}
               onClick={() => setMethod(m.key)}
             >
               {m.label}
             </button>
           ))}
         </div>
-        <div className="recharge__panel" role="tabpanel">
+        <div className="reload__panel" role="tabpanel">
           {content}
         </div>
       </div>
@@ -115,10 +115,10 @@ function AccountSelect({ balances, value, onChange }) {
 }
 
 // French messages for the API's validation errors (422 { errors: { field } }), by body field.
-const RECHARGE_ERRORS = {
+const RELOAD_ERRORS = {
   method: 'Mode de recharge inconnu.',
   balance: 'Ce compte ne peut pas être rechargé.',
-  amount: `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RECHARGE_AMOUNT)}`,
+  amount: `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RELOAD_AMOUNT)}`,
   paymentType: 'Veuillez choisir un wallet de ce pays',
   phone: 'Veuillez entrer un numéro de téléphone correct',
   bankAccount: "Ce compte bancaire n'est pas disponible pour les recharges. Choisissez-en un autre ou contactez le support.",
@@ -128,9 +128,9 @@ const RECHARGE_ERRORS = {
   label: 'Le libellé fait 140 caractères maximum',
 };
 
-function rechargeErrorMessage(err, fallback) {
+function reloadErrorMessage(err, fallback) {
   const field = Object.keys(err?.data?.errors ?? {})[0];
-  if (field) return RECHARGE_ERRORS[field] ?? err.data.errors[field];
+  if (field) return RELOAD_ERRORS[field] ?? err.data.errors[field];
   return err?.message || fallback;
 }
 
@@ -142,7 +142,7 @@ function DoneLink() {
   );
 }
 
-function MobileMoneyRecharge({ account, accountSelect }) {
+function MobileMoneyReload({ account, accountSelect }) {
   const [wallets, setWallets] = useState([]);
   const [walletsLoading, setWalletsLoading] = useState(true);
   const [walletsError, setWalletsError] = useState(null);
@@ -155,7 +155,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
 
   useEffect(() => {
     let cancelled = false;
-    getRechargeWallets(account.id)
+    getReloadWallets(account.id)
       .then((data) => {
         if (cancelled) return;
         const list = Array.isArray(data) ? data : [];
@@ -186,8 +186,8 @@ function MobileMoneyRecharge({ account, accountSelect }) {
       message = 'Veuillez choisir un wallet';
     } else if (!isValidPhone(countryCode, phone)) {
       message = 'Veuillez entrer un numéro de téléphone correct';
-    } else if (!(Number(amount) >= MIN_RECHARGE_AMOUNT) || !Number.isInteger(Number(amount))) {
-      message = `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RECHARGE_AMOUNT)} ${unit}`;
+    } else if (!(Number(amount) >= MIN_RELOAD_AMOUNT) || !Number.isInteger(Number(amount))) {
+      message = `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RELOAD_AMOUNT)} ${unit}`;
     } else if (account.status === false) {
       message = 'Ce compte est bloqué : il ne peut pas être rechargé.';
     }
@@ -197,7 +197,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
   const handleConfirm = async () => {
     setBusy(true);
     try {
-      const payment = await submitRecharge({
+      const payment = await submitReload({
         method: 'mobile_money',
         balance: account.id,
         paymentType: wallet.id,
@@ -206,7 +206,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
       });
       setDialog({ type: 'done', paymentId: payment.paymentId });
     } catch (err) {
-      setDialog({ type: 'error', message: rechargeErrorMessage(err, 'La recharge a échoué. Réessayez.') });
+      setDialog({ type: 'error', message: reloadErrorMessage(err, 'La recharge a échoué. Réessayez.') });
     } finally {
       setBusy(false);
     }
@@ -220,7 +220,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
 
   return (
     <>
-      <form className="recharge__form" onSubmit={handleSubmit} noValidate>
+      <form className="reload__form" onSubmit={handleSubmit} noValidate>
         {accountSelect}
 
         <label className="field field--stacked">
@@ -283,7 +283,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
           <input
             type="number"
             inputMode="numeric"
-            min={MIN_RECHARGE_AMOUNT}
+            min={MIN_RELOAD_AMOUNT}
             step="1"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -291,7 +291,7 @@ function MobileMoneyRecharge({ account, accountSelect }) {
           />
         </label>
 
-        <button type="submit" className="btn btn--teal recharge__submit" disabled={!wallet}>
+        <button type="submit" className="btn btn--teal reload__submit" disabled={!wallet}>
           Recharger
         </button>
       </form>
@@ -361,7 +361,7 @@ function todayIso() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-function BankRecharge({ account, accountSelect }) {
+function BankReload({ account, accountSelect }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(EMPTY_TRANSFER);
   // null | { type: 'error', message } | { type: 'done', amount, paymentId }
@@ -374,7 +374,7 @@ function BankRecharge({ account, accountSelect }) {
 
   useEffect(() => {
     let cancelled = false;
-    getRechargeBankAccounts(account.id)
+    getReloadBankAccounts(account.id)
       .then((data) => {
         if (!cancelled) setBanks(Array.isArray(data) ? data : []);
       })
@@ -401,7 +401,7 @@ function BankRecharge({ account, accountSelect }) {
     e.preventDefault();
     setBusy(true);
     try {
-      const payment = await submitRecharge({
+      const payment = await submitReload({
         method: 'bank_transfer',
         balance: account.id,
         bankAccount: Number(form.bankId),
@@ -413,7 +413,7 @@ function BankRecharge({ account, accountSelect }) {
       });
       setDialog({ type: 'done', amount: form.amount, paymentId: payment.paymentId });
     } catch (err) {
-      setDialog({ type: 'error', message: rechargeErrorMessage(err, "La déclaration n'a pas pu être envoyée. Réessayez.") });
+      setDialog({ type: 'error', message: reloadErrorMessage(err, "La déclaration n'a pas pu être envoyée. Réessayez.") });
     } finally {
       setBusy(false);
     }
@@ -427,36 +427,36 @@ function BankRecharge({ account, accountSelect }) {
 
   return (
     <>
-      <div className="recharge__step">Etape {step}/2</div>
-      <h2 className="recharge__title">{step === 1 ? 'Procédure de recharge' : 'Formulaire de recharge'}</h2>
+      <div className="reload__step">Etape {step}/2</div>
+      <h2 className="reload__title">{step === 1 ? 'Procédure de recharge' : 'Formulaire de recharge'}</h2>
 
       {step === 1 && (
-        <div className="recharge__form">
-          <p className="recharge__warning">
+        <div className="reload__form">
+          <p className="reload__warning">
             <Icon name="info" size={16} />
             <span>
               Les recharges sont traitées le jour même pour les virements reçus avant {BANK_CUTOFF_HOUR_GMT}H GMT.
               Après {BANK_CUTOFF_HOUR_GMT}h00, traitement reporté au jour ouvré suivant.
             </span>
           </p>
-          <p className="recharge__text">
+          <p className="reload__text">
             Pour recharger votre compte via un compte bancaire, effectuez dans un premier temps un virement dans
             l&apos;une de nos banques partenaires.
           </p>
-          <p className="recharge__text">Choisissez une de nos banques en fonction du compte MyPay à recharger.</p>
+          <p className="reload__text">Choisissez une de nos banques en fonction du compte MyPay à recharger.</p>
 
           {accountSelect}
 
-          {banksLoading && <p className="recharge__empty">Chargement des banques…</p>}
+          {banksLoading && <p className="reload__empty">Chargement des banques…</p>}
           {banksError && (
             <div className="toast-inline toast-inline--error">
               Impossible de charger les banques : {banksError.message}
             </div>
           )}
           {!banksLoading && !banksError && (banks.length ? (
-            <div className="recharge__banks">
+            <div className="reload__banks">
               {banks.map((bank) => (
-                <dl key={bank.id} className="recharge__bank">
+                <dl key={bank.id} className="reload__bank">
                   <div>
                     <dt>Nom de la banque</dt>
                     <dd>{bank.bankName}</dd>
@@ -476,7 +476,7 @@ function BankRecharge({ account, accountSelect }) {
               ))}
             </div>
           ) : (
-            <p className="recharge__empty">
+            <p className="reload__empty">
               Aucune banque partenaire n&apos;est encore disponible pour ce pays. Contactez le support.
             </p>
           ))}
@@ -488,7 +488,7 @@ function BankRecharge({ account, accountSelect }) {
       )}
 
       {step === 2 && (
-        <form className="recharge__form" onSubmit={handleSubmit}>
+        <form className="reload__form" onSubmit={handleSubmit}>
           <label className="field field--stacked">
             <span>
               Depuis quelle banque avez-vous effectué le virement ? <em className="required">*</em>
@@ -533,7 +533,7 @@ function BankRecharge({ account, accountSelect }) {
               <input
                 type="number"
                 inputMode="numeric"
-                min={MIN_RECHARGE_AMOUNT}
+                min={MIN_RELOAD_AMOUNT}
                 step="1"
                 value={form.amount}
                 onChange={update('amount')}
@@ -555,7 +555,7 @@ function BankRecharge({ account, accountSelect }) {
             <input type="text" value={form.label} onChange={update('label')} maxLength={140} />
           </label>
 
-          <div className="recharge__actions">
+          <div className="reload__actions">
             <button type="button" className="btn btn--outline" onClick={() => setStep(1)} disabled={busy}>
               Précédent
             </button>

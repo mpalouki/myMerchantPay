@@ -15,7 +15,7 @@ const PORTAL_FEATURES = [
   { key: 'accounts', icon: 'globe' },
   { key: 'teams', icon: 'users' },
   { key: 'applications', icon: 'api' },
-  { key: 'recharge', icon: 'card' },
+  { key: 'reload', icon: 'card' },
   { key: 'reporting', icon: 'book' },
 ];
 

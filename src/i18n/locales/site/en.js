@@ -149,7 +149,7 @@ export default {
         accounts: { title: 'Multi-country accounts', text: 'One account and account number per country, with a switcher to move between them.' },
         teams: { title: 'Teams and roles', text: 'Invite your colleagues and give them a role: viewer, editor or administrator.' },
         applications: { title: 'API applications', text: 'Create applications, choose their payment methods and get their test and production keys.' },
-        recharge: { title: 'Top-ups and withdrawals', text: 'Fund your account for payouts and withdraw your money to your bank account.' },
+        reload: { title: 'Top-ups and withdrawals', text: 'Fund your account for payouts and withdraw your money to your bank account.' },
         reporting: { title: 'Reports', text: 'Export your transaction history for accounting and reconciliation.' },
       },
     },
@@ -213,7 +213,7 @@ export default {
         text: 'Each country has its own account and balance in the local currency. Switch between them in one click from the dashboard.',
         points: ['One account number per country', 'Separate balances and histories', 'Last seven days of activity at a glance'],
       },
-      recharge: {
+      reload: {
         title: 'Top-ups and withdrawals',
         summary: 'Fund your account and withdraw your money whenever you want.',
         text: 'Top up your account to fund outgoing payments, and withdraw your collections to your bank account or mobile wallet.',

@@ -1,5 +1,5 @@
-// Reference data for "Recharger mon compte" (pages/Recharge.jsx). The wallets themselves come
-// from the API (getRechargeWallets), per account country.
+// Reference data for "Recharger mon compte" (pages/Reload.jsx). The wallets themselves come
+// from the API (getReloadWallets), per account country.
 
 // Digits in a national mobile number (without the dial code), per country (ISO alpha-2).
 // Countries not listed accept 8 to 10 digits.
@@ -11,7 +11,7 @@ export const TRANSFER_ZONES = ['UEMOA', 'CEMAC', 'International'];
 // Same-day processing for transfers received before this hour (GMT).
 export const BANK_CUTOFF_HOUR_GMT = 14;
 
-export const MIN_RECHARGE_AMOUNT = 100;
+export const MIN_RELOAD_AMOUNT = 100;
 
 // National number only: spaces, dots and dashes are ignored; the dial code is shown apart.
 export function normalizePhone(value) {

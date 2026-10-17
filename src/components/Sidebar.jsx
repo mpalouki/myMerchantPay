@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
-import { SIDEBAR_ITEMS, RECHARGE_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js';
+import { SIDEBAR_ITEMS, RELOAD_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useAccount } from '../context/AccountContext.jsx';
 import Flag from './Flag.jsx';
@@ -11,8 +11,8 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { merchant } = useAuth();
   const { selectedBalance, loading: accountLoading } = useAccount();
   const location = useLocation();
-  const [rechargeOpen, setRechargeOpen] = useState(
-    location.pathname.startsWith('/dashboard/recharge'),
+  const [reloadOpen, setReloadOpen] = useState(
+    location.pathname.startsWith('/dashboard/reload'),
   );
 
   return (
@@ -60,21 +60,21 @@ export default function Sidebar({ collapsed, onToggle }) {
         <button
           type="button"
           className="sidebar__link sidebar__link--button"
-          onClick={() => setRechargeOpen((v) => !v)}
+          onClick={() => setReloadOpen((v) => !v)}
         >
           <Icon name="plus" />
           {!collapsed && <span>Recharger le compte</span>}
           {!collapsed && (
             <Icon
-              name={rechargeOpen ? 'chevronDown' : 'chevronRight'}
+              name={reloadOpen ? 'chevronDown' : 'chevronRight'}
               size={14}
               className="sidebar__caret"
             />
           )}
         </button>
-        {rechargeOpen && !collapsed && (
+        {reloadOpen && !collapsed && (
           <div className="sidebar__submenu">
-            {RECHARGE_SUBMENU.map((sub) => (
+            {RELOAD_SUBMENU.map((sub) => (
               <NavLink
                 key={sub.key}
                 to={sub.path}

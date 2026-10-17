@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { RECHARGE_HISTORY } from '../data/mockData.js';
+import { RELOAD_HISTORY } from '../data/mockData.js';
 
 const STATUS_TONE = {
   Validé: 'success',
@@ -7,14 +7,14 @@ const STATUS_TONE = {
   Rejeté: 'danger',
 };
 
-export default function RechargeHistory() {
+export default function ReloadHistory() {
   const [pageSize, setPageSize] = useState(10);
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return RECHARGE_HISTORY;
+    if (!query.trim()) return RELOAD_HISTORY;
     const q = query.toLowerCase();
-    return RECHARGE_HISTORY.filter((r) =>
+    return RELOAD_HISTORY.filter((r) =>
       [r.date, r.phoneOrRib, r.amount, r.method, r.account, r.label, r.status]
         .join(' ')
         .toLowerCase()

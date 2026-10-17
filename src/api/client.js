@@ -298,20 +298,20 @@ export function deleteApplication(id) {
   return request(`/api/merchant/applications/${id}`, { method: 'DELETE', auth: true });
 }
 
-// --- "Recharger mon compte" (pages/Recharge.jsx).
+// --- "Recharger mon compte" (pages/Reload.jsx).
 
 // Mobile money wallets an account (balance id) can be topped up from: the active payment types
 // of its country, by name. Response shape: [{ id, name, country: { codeAlpha2, name,
 //   callingCode } }] — possibly empty.
-export function getRechargeWallets(balanceId) {
-  return request(`/api/merchant/recharge/wallets?balance=${encodeURIComponent(balanceId)}`, { auth: true });
+export function getReloadWallets(balanceId) {
+  return request(`/api/merchant/reload/wallets?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
 
 // MyPay's bank accounts that an account (balance id) is topped up by transfer to: those of its
 // country, by bank name. Response shape: [{ id, bankName, accountName, accountNumber,
 //   country: { codeAlpha2, name } }] — possibly empty.
-export function getRechargeBankAccounts(balanceId) {
-  return request(`/api/merchant/recharge/bank-accounts?balance=${encodeURIComponent(balanceId)}`, { auth: true });
+export function getReloadBankAccounts(balanceId) {
+  return request(`/api/merchant/reload/bank-accounts?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
 
 // Records a top-up, as pending, for the payer to validate (mobile money) or once the transfer
@@ -320,8 +320,8 @@ export function getRechargeBankAccounts(balanceId) {
 //   transferDate (YYYY-MM-DD), label? }. Response shape (201): { paymentId, type: 'reload',
 //   method, status: 'pending', amount, currency, phoneNumber, paymentType: { id, name },
 //   balance: { id, accountNumber }, dateCreation }. 422 { errors: { <body field>: message } }.
-export function submitRecharge(recharge) {
-  return request('/api/merchant/recharge', { method: 'POST', body: recharge, auth: true });
+export function submitReload(reload) {
+  return request('/api/merchant/reload', { method: 'POST', body: reload, auth: true });
 }
 
 // Countries the platform operates in. Also used by the public registration form.
