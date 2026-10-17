@@ -298,6 +298,24 @@ export function deleteApplication(id) {
   return request(`/api/merchant/applications/${id}`, { method: 'DELETE', auth: true });
 }
 
+// The merchant's transactions, newest first, one page at a time; `balance` (id) limits them to one
+// account, `type` to 'payin' or 'payout'. Response shape: { items: [{ id, type: 'payin' |
+//   'payout', amount, commission, createdAt, reference (payment id of the top-up it comes from,
+//   or null), balance: { id, accountNumberFormatted } | null }], total, page, limit }.
+export function getTransactions({ balance, type, page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ page, limit });
+  if (balance) params.set('balance', balance);
+  if (type) params.set('type', type);
+  return request(`/api/merchant/transactions?${params}`, { auth: true });
+}
+
+// An account's (balance id) payin and payout totals per day, for the dashboard chart: one entry
+// per day for the last `days` days (1–31), today included, oldest first, zero when nothing
+// happened. Response shape: [{ date: 'YYYY-MM-DD' (UTC), payin, payout, count }].
+export function getDailyTotals(balanceId, days = 8) {
+  return request(`/api/merchant/dashboard/daily?balance=${encodeURIComponent(balanceId)}&days=${days}`, { auth: true });
+}
+
 // --- "Recharger mon compte" (pages/Reload.jsx).
 
 // Mobile money wallets an account (balance id) can be topped up from: the active payment types
@@ -322,6 +340,62 @@ export function getReloadBankAccounts(balanceId) {
 //   balance: { id, accountNumber }, dateCreation }. 422 { errors: { <body field>: message } }.
 export function submitReload(reload) {
   return request('/api/merchant/reload', { method: 'POST', body: reload, auth: true });
+}
+
+// An account's (balance id) top-ups, newest first, one page at a time. `q` searches the payment
+// id, phone number, wallet name, RIB, label and bank name. Response shape: { items: [{ paymentId,
+//   type: 'reload', method: 'mobile_money' | 'bank_transfer', status: 'pending' | 'success' |
+//   'failed' | 'cancelled', amount, currency, phoneNumber, paymentType: { id, name },
+//   balance: { id, accountNumber, accountNumberFormatted }, dateCreation, dateUpdate,
+//   bankTransfer: null | { bankName, accountNumber, zone, rib, transferDate, label, reviewedAt,
+//   cancellationReason } }], total, page, limit }.
+export function getReloadHistory(balanceId, { q = '', page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ balance: balanceId, page, limit });
+  if (q) params.set('q', q);
+  return request(`/api/merchant/reload/history?${params}`, { auth: true });
+}
+
+// --- "Retirer de l'argent" (pages/Withdraw.jsx): the merchant's own mobile money wallets and
+// bank accounts that withdrawals from an account are paid to. The wallets to choose from are
+// those of getReloadWallets(balanceId) (the mobile money payment types of the account's country).
+
+// An account's (balance id) withdrawal accounts, the default first, then newest first.
+// Response shape: [{ id, method: 'mobile_money' | 'bank_account', isDefault, paymentType:
+//   { id, name } | null, phoneNumber (with dial code) | null, bankName, accountName, rib (bank
+//   only, else null), balance: { id }, dateCreation }] — possibly empty.
+export function getWithdrawalAccounts(balanceId) {
+  return request(`/api/merchant/withdrawal-accounts?balance=${encodeURIComponent(balanceId)}`, { auth: true });
+}
+
+// Body: { method: 'mobile_money', balance, paymentType, phone (national number), isDefault? } or
+// { method: 'bank_account', balance, bankName, accountName, rib, ribConfirmation, isDefault? }.
+// The account's first one becomes its default anyway. Response shape (201): a withdrawal
+// account. 422 { errors: { <body field>: message } }.
+export function createWithdrawalAccount(account) {
+  return request('/api/merchant/withdrawal-accounts', { method: 'POST', body: account, auth: true });
+}
+
+// Response shape: the withdrawal account, now the default of its account.
+export function setDefaultWithdrawalAccount(id) {
+  return request(`/api/merchant/withdrawal-accounts/${id}/default`, { method: 'POST', auth: true });
+}
+
+// 204, no body. If it was the default, the newest remaining one becomes the default.
+export function deleteWithdrawalAccount(id) {
+  return request(`/api/merchant/withdrawal-accounts/${id}`, { method: 'DELETE', auth: true });
+}
+
+// An account's (balance id) withdrawals, newest first, one page at a time. `q` searches the
+// payment id, phone number, wallet name and the withdrawal account's bank, holder and RIB.
+// Response shape: { items: [{ paymentId, status: 'pending' | 'success' | 'failed' | 'cancelled',
+//   amount, currency, phoneNumber, paymentType: { id, name } | null, withdrawalAccount: { id,
+//   method: 'mobile_money' | 'bank_account', walletName, phoneNumber, bankName, accountName, rib,
+//   removed } | null, dateCreation, dateUpdate }], total, page, limit }. withdrawalAccount is as
+//   it was when the withdrawal was made; `removed` once the merchant has deleted it.
+export function getWithdrawals(balanceId, { q = '', page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ balance: balanceId, page, limit });
+  if (q) params.set('q', q);
+  return request(`/api/merchant/withdrawals?${params}`, { auth: true });
 }
 
 // Countries the platform operates in. Also used by the public registration form.

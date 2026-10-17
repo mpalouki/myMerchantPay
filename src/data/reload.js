@@ -37,3 +37,20 @@ export function formatAmount(amount) {
 export function currencyLabel(currency) {
   return !currency || currency === 'XOF' || currency === 'XAF' ? 'FCFA' : currency;
 }
+
+// ISO date-time -> "17/10/2026 14:32" (local time); ISO date -> "17/10/2026".
+export function formatDateTime(iso) {
+  return iso ? new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+}
+
+export function formatDate(isoDate) {
+  return isoDate ? new Date(`${isoDate}T00:00:00`).toLocaleDateString('fr-FR') : '';
+}
+
+// Status of a top-up (myPay PaymentStatus): label and badge tone.
+export const RELOAD_STATUSES = {
+  pending: { label: 'En attente', tone: 'warning' },
+  success: { label: 'Validé', tone: 'success' },
+  failed: { label: 'Échoué', tone: 'danger' },
+  cancelled: { label: 'Annulé', tone: 'danger' },
+};

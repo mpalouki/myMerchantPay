@@ -216,3 +216,130 @@
     gap: 2px;
   }
 }
+
+// "Mes recharges" (pages/ReloadHistory.jsx).
+.reload-history {
+  &__account {
+    margin-left: 10px;
+    font-weight: 400;
+    font-size: 13px;
+    color: $color-text-muted;
+  }
+
+  &__table {
+    min-width: 900px;
+  }
+
+  &__amount {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  // A new page is loading: the previous one stays visible, dimmed.
+  &--loading {
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+
+  &__new {
+    margin: 16px 0 0;
+    font-size: 13.5px;
+  }
+}
+
+// "Retirer de l'argent" › add a withdrawal account (pages/Withdraw.jsx). The form reuses .reload.
+.withdraw {
+  &__country select:disabled {
+    background: #f1f3f6;
+    color: $color-text-muted;
+  }
+
+  &__actions {
+    @include flex(center, space-between, 16px, wrap);
+    margin-top: 8px;
+  }
+
+  &__back {
+    @include flex(center, flex-start, 6px);
+    font-size: 13.5px;
+    color: $color-text;
+  }
+
+  &__back-icon {
+    transform: rotate(180deg);
+  }
+
+  &__submit {
+    flex: 0 1 240px;
+  }
+
+  &__saved-header {
+    @include flex(center, space-between, 12px, wrap);
+
+    .btn {
+      @include flex(center, center, 6px);
+    }
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 720px;
+  }
+
+  &__item {
+    @include flex(center, flex-start, 14px);
+    padding: 12px 4px;
+    border-bottom: 1px solid $color-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__item-icon {
+    flex-shrink: 0;
+    color: $color-text-muted;
+  }
+
+  &__item-text {
+    @include flex(flex-start, center, 2px);
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+
+    span {
+      font-size: 13px;
+      color: $color-text-muted;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .withdraw__submit {
+    flex-basis: 100%;
+  }
+}
+
+// "Historique des retraits" (components/WithdrawalHistory.jsx).
+.withdraw__history {
+  margin-top: 24px;
+}
+
+.withdraw__history-table {
+  min-width: 760px;
+}
+
+.withdraw__history-destination {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  span {
+    font-size: 12.5px;
+    color: $color-text-muted;
+  }
+}

@@ -51,6 +51,7 @@
   &__value {
     font-weight: 700;
     font-size: 15px;
+    color: $color-text;
 
     &--danger {
       color: $color-danger;
@@ -68,5 +69,101 @@
 }
 
 .dashboard__chart {
+  position: relative;
   padding: 12px 12px 24px;
+}
+
+// Loading / empty / error, over the (empty) chart.
+.dashboard__chart-message {
+  position: absolute;
+  inset: 40% 0 auto;
+  margin: 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: $color-text-muted;
+  pointer-events: none;
+  z-index: 1;
+}
+
+// An amount (Dashboard <Money>): the integer part stands out; sign, decimals and unit are smaller.
+.money {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+
+  &__sign {
+    font-size: 18px;
+    margin-right: 3px;
+  }
+
+  &__integer {
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+
+  &__fraction {
+    font-size: 14px;
+    opacity: 0.75;
+  }
+
+  &__currency {
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-text-muted;
+    letter-spacing: 0.04em;
+  }
+
+  // In table cells.
+  &--compact {
+    .money__sign,
+    .money__integer {
+      font-size: 14px;
+    }
+
+    .money__fraction {
+      font-size: 12px;
+    }
+
+    .money__currency {
+      font-size: 11px;
+    }
+  }
+}
+
+// Dashboard › "Transactions récentes".
+.recent-transactions {
+  &__table {
+    min-width: 640px;
+  }
+
+  // Amounts are right-aligned so their digits line up (beats .data-table's left alignment).
+  &__table &__number {
+    text-align: right;
+  }
+
+  &__amount--success .money {
+    color: $color-success;
+    font-weight: 600;
+  }
+
+  &__amount--danger .money {
+    color: $color-danger;
+    font-weight: 600;
+  }
+
+  &__reference {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+  }
+
+  &__footer {
+    margin: 0;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: $color-text-muted;
+  }
 }
