@@ -13,14 +13,6 @@ export const RECENT_TRANSACTIONS = [];
 
 export const PENDING_PAYMENTS = [];
 
-export const BANK_ACCOUNTS = [
-  { id: 'eco-ci', label: 'Ecobank (CI059 01056 122506607001 55)' },
-  { id: 'uba-ci', label: 'UBA (CI142 01234 987654321001 12)' },
-  { id: 'sgb-ci', label: "Société Générale (CI010 01102 555001234001 88)" },
-];
-
-export const ZONES = ['UEMOA', 'CEMAC', 'International'];
-
 export const RECHARGE_HISTORY = [
   {
     id: 1,
