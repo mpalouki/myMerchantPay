@@ -13,15 +13,7 @@ export const RECENT_TRANSACTIONS = [];
 
 export const PENDING_PAYMENTS = [];
 
-export const BANK_ACCOUNTS = [
-  { id: 'eco-ci', label: 'Ecobank (CI059 01056 122506607001 55)' },
-  { id: 'uba-ci', label: 'UBA (CI142 01234 987654321001 12)' },
-  { id: 'sgb-ci', label: "Société Générale (CI010 01102 555001234001 88)" },
-];
-
-export const ZONES = ['UEMOA', 'CEMAC', 'International'];
-
-export const RECHARGE_HISTORY = [
+export const RELOAD_HISTORY = [
   {
     id: 1,
     date: '2026-08-14 10:32',
@@ -60,9 +52,9 @@ export const SIDEBAR_ITEMS = [
   { key: 'roles', label: 'Gestion des rôles', icon: 'roles', path: '/dashboard/roles' },
 ];
 
-export const RECHARGE_SUBMENU = [
-  { key: 'recharge', label: 'Recharger mon compte', path: '/dashboard/recharge' },
-  { key: 'recharge-history', label: 'Mes recharges', path: '/dashboard/recharge/history' },
+export const RELOAD_SUBMENU = [
+  { key: 'reload', label: 'Recharger mon compte', path: '/dashboard/reload' },
+  { key: 'reload-history', label: 'Mes recharges', path: '/dashboard/reload/history' },
 ];
 
 export const WITHDRAW_ITEM = {
