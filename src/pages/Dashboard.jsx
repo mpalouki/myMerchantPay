@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -7,11 +7,14 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
 } from 'recharts';
 import Tabs from '../components/Tabs.jsx';
 import Flag from '../components/Flag.jsx';
+import { getDailyTotals, getTransactions } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
-import { TRANSACTION_SERIES, RECENT_TRANSACTIONS, PENDING_PAYMENTS } from '../data/mockData.js';
+import { formatDateTime } from '../data/reload.js';
+import { PENDING_PAYMENTS } from '../data/mockData.js';
 
 const TABS = [
   { key: 'state', label: 'Etat actuel du compte' },
@@ -19,12 +22,61 @@ const TABS = [
   { key: 'pending', label: `Paiements dus/en attente (${PENDING_PAYMENTS.length})` },
 ];
 
-const moneyFormat = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// "Transactions récentes": how many of the selected account's latest transactions are shown.
+const RECENT_LIMIT = 10;
 
-// API amounts are decimal strings, e.g. '18466534.98' -> '18 466 534,98 FCFA(XOF)'.
-function formatMoney(amount, currency) {
-  const value = moneyFormat.format(Number(amount));
-  return currency === 'XOF' ? `${value} FCFA(XOF)` : `${value} ${currency}`;
+// Chart: the last 7 days and today.
+const CHART_DAYS = 8;
+const CHART_COLORS = { payin: '#2e7d32', payout: '#e74c3c' };
+const weekdayFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', timeZone: 'UTC' });
+const fullDateFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+
+const TRANSACTION_TYPES = {
+  payin: { label: 'Encaissement', tone: 'success', sign: '+' },
+  payout: { label: 'Décaissement', tone: 'danger', sign: '−' },
+};
+
+const moneyFormat = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const compactFormat = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+const integerFormat = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+
+// fr-FR separates thousands with a narrow space (U+202F) that is barely visible; use a full
+// no-break space instead: 18466534 -> '18 466 534'.
+function groupDigits(formatted) {
+  return formatted.replace(/[\u00a0\u202f]/g, '\u00a0');
+}
+
+// XOF / XAF are shown as FCFA, the name merchants use; the ISO code stays in the tooltip.
+function currencyUnit(currency) {
+  return currency === 'XOF' || currency === 'XAF' ? 'FCFA' : currency;
+}
+
+// API amounts are decimal strings, e.g. '18466534.98' -> { integer: '18 466 534', fraction: '98' }.
+// The fraction is dropped when it is zero (FCFA amounts are whole in practice).
+function splitMoney(amount) {
+  let integer = '';
+  let fraction = '';
+  for (const part of moneyFormat.formatToParts(Math.abs(Number(amount)))) {
+    if (part.type === 'fraction') fraction = part.value;
+    else if (part.type !== 'decimal') integer += part.value;
+  }
+  return { integer: groupDigits(integer), fraction: /^0+$/.test(fraction) ? '' : fraction };
+}
+
+// '18466534.98' -> 18 466 534,98 FCFA with the integer part large, the decimals and unit smaller.
+// `sign` ('+' / '−') prefixes positive amounts, for credits and debits; a negative one shows '−'.
+function Money({ amount, currency, sign = '', compact = false }) {
+  const { integer, fraction } = splitMoney(amount);
+  const value = Number(amount);
+  const shownSign = value < 0 ? '−' : value === 0 ? '' : sign;
+  return (
+    <span className={`money${compact ? ' money--compact' : ''}`} title={`${shownSign}${groupDigits(moneyFormat.format(Math.abs(value)))} ${currency}`}>
+      {shownSign && <span className="money__sign">{shownSign}</span>}
+      <span className="money__integer">{integer}</span>
+      {fraction && <span className="money__fraction">,{fraction}</span>}
+      <span className="money__currency">{currencyUnit(currency)}</span>
+    </span>
+  );
 }
 
 export default function Dashboard() {
@@ -91,18 +143,18 @@ export default function Dashboard() {
                 <div className="balance-grid">
                   <BalanceCell
                     label="Solde Principal"
-                    value={activeBalance ? formatMoney(activeBalance.accountBalance, activeBalance.currency) : '—'}
+                    value={activeBalance ? <Money amount={activeBalance.accountBalance} currency={activeBalance.currency} /> : '—'}
                   />
                   {/* No backend concept for this yet. */}
                   <BalanceCell label="Solde Opération" value="—" />
                   <BalanceCell
                     label="Débits (7 derniers jours)"
-                    value={activeBalance ? formatMoney(activeBalance.last7Days.debits, activeBalance.currency) : '—'}
+                    value={activeBalance ? <Money amount={activeBalance.last7Days.debits} currency={activeBalance.currency} sign="−" /> : '—'}
                     tone="danger"
                   />
                   <BalanceCell
                     label="Crédits (7 derniers jours)"
-                    value={activeBalance ? formatMoney(activeBalance.last7Days.credits, activeBalance.currency) : '—'}
+                    value={activeBalance ? <Money amount={activeBalance.last7Days.credits} currency={activeBalance.currency} sign="+" /> : '—'}
                     tone="success"
                   />
                 </div>
@@ -111,32 +163,12 @@ export default function Dashboard() {
               <div className="balance-grid balance-grid--hidden">Détails du compte masqués.</div>
             )}
 
-            <h3 className="dashboard__chart-title">Vos récentes transactions</h3>
-            <div className="dashboard__chart">
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={TRANSACTION_SERIES} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="#eee" vertical={false} />
-                  <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={{ stroke: '#ddd' }} tickLine={false} />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                    label={{ value: 'Montant Total (XOF)', angle: -90, position: 'insideLeft', fontSize: 12 }}
-                  />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="total" stroke="#c0392b" strokeWidth={2} dot={{ r: 4, fill: '#c0392b' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {/* Its amounts are account details too. */}
+            {!hideDetails && <TransactionsChart balance={activeBalance} />}
           </>
         )}
 
-        {tab === 'transactions' && (
-          <EmptyTable
-            columns={['Date', 'Référence', 'Type', 'Montant', 'Statut']}
-            rows={RECENT_TRANSACTIONS}
-          />
-        )}
+        {tab === 'transactions' && <RecentTransactions balance={activeBalance} />}
 
         {tab === 'pending' && (
           <EmptyTable columns={['Date', 'Bénéficiaire', 'Montant', 'Statut']} rows={PENDING_PAYMENTS} />
@@ -151,6 +183,181 @@ function BalanceCell({ label, value, tone }) {
     <div className="balance-cell">
       <div className="balance-cell__label">{label}</div>
       <div className={`balance-cell__value ${tone ? `balance-cell__value--${tone}` : ''}`}>{value}</div>
+    </div>
+  );
+}
+
+// Credits (payins) and debits (payouts) of the selected account per day, over the last
+// CHART_DAYS days (GET /api/merchant/dashboard/daily). Days are UTC, like the API's.
+function TransactionsChart({ balance }) {
+  const balanceId = balance?.id;
+  const [response, setResponse] = useState({ balanceId: null, days: null, error: '' });
+  const loading = Boolean(balanceId) && response.balanceId !== balanceId;
+
+  useEffect(() => {
+    if (!balanceId) return undefined;
+    let cancelled = false;
+    getDailyTotals(balanceId, CHART_DAYS)
+      .then((days) => !cancelled && setResponse({ balanceId, days, error: '' }))
+      .catch(
+        (err) =>
+          !cancelled &&
+          setResponse({ balanceId, days: null, error: err?.message || 'Une erreur est survenue. Veuillez réessayer.' }),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [balanceId]);
+
+  const days = loading ? [] : (response.days ?? []);
+  const today = new Date().toISOString().slice(0, 10);
+  const data = days.map((d) => {
+    const date = new Date(`${d.date}T00:00:00Z`);
+    const weekday = weekdayFormat.format(date).replace('.', '');
+    return {
+      day: d.date === today ? 'Auj.' : weekday.charAt(0).toUpperCase() + weekday.slice(1),
+      fullDate: fullDateFormat.format(date),
+      payin: Number(d.payin),
+      payout: Number(d.payout),
+      count: d.count,
+    };
+  });
+  const empty = data.every((d) => d.count === 0);
+  const unit = balance ? currencyUnit(balance.currency) : 'FCFA';
+
+  let message = '';
+  if (!balance) message = 'Aucun compte';
+  else if (loading) message = 'Chargement…';
+  else if (response.error) message = `Impossible de charger le graphique : ${response.error}`;
+  else if (empty) message = 'Aucune transaction ces 7 derniers jours';
+
+  return (
+    <>
+      <h3 className="dashboard__chart-title">Vos récentes transactions</h3>
+      <div className="dashboard__chart">
+        {message && <p className="dashboard__chart-message">{message}</p>}
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <CartesianGrid stroke="#eee" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={{ stroke: '#ddd' }} tickLine={false} />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+              width={70}
+              allowDecimals={false}
+              tickFormatter={(v) => groupDigits(compactFormat.format(v))}
+              label={{ value: `Montant (${unit})`, angle: -90, position: 'insideLeft', fontSize: 12 }}
+            />
+            <Tooltip
+              labelFormatter={(_, payload) => {
+                const point = payload?.[0]?.payload;
+                return point ? `${point.fullDate} — ${point.count} transaction${point.count > 1 ? 's' : ''}` : '';
+              }}
+              formatter={(v, name) => [`${groupDigits(integerFormat.format(v))} ${unit}`, name]}
+            />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
+            <Line
+              type="monotone"
+              dataKey="payin"
+              name="Crédits"
+              stroke={CHART_COLORS.payin}
+              strokeWidth={2}
+              dot={{ r: 4, fill: CHART_COLORS.payin }}
+            />
+            <Line
+              type="monotone"
+              dataKey="payout"
+              name="Débits"
+              stroke={CHART_COLORS.payout}
+              strokeWidth={2}
+              dot={{ r: 4, fill: CHART_COLORS.payout }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </>
+  );
+}
+
+// The selected account's latest transactions (GET /api/merchant/transactions?balance=…), fetched
+// each time the tab is opened or the account changes.
+function RecentTransactions({ balance }) {
+  const balanceId = balance?.id;
+  // The answer and the account it belongs to: loading until it is the selected one.
+  const [response, setResponse] = useState({ balanceId: null, data: null, error: '' });
+  const loading = Boolean(balanceId) && response.balanceId !== balanceId;
+
+  useEffect(() => {
+    if (!balanceId) return undefined;
+    let cancelled = false;
+    getTransactions({ balance: balanceId, limit: RECENT_LIMIT })
+      .then((data) => !cancelled && setResponse({ balanceId, data, error: '' }))
+      .catch(
+        (err) =>
+          !cancelled &&
+          setResponse({ balanceId, data: null, error: err?.message || 'Une erreur est survenue. Veuillez réessayer.' }),
+      );
+    return () => {
+      cancelled = true;
+    };
+  }, [balanceId]);
+
+  const rows = loading ? [] : (response.data?.items ?? []);
+  const total = loading ? 0 : (response.data?.total ?? 0);
+  let emptyMessage = 'Aucune transaction sur ce compte';
+  if (!balance) emptyMessage = 'Aucun compte';
+  else if (loading) emptyMessage = 'Chargement…';
+  else if (response.error) emptyMessage = `Impossible de charger les transactions : ${response.error}`;
+
+  return (
+    <div className="recent-transactions">
+      <div className="table-scroll">
+        <table className="data-table recent-transactions__table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Référence</th>
+              <th>Type</th>
+              <th className="recent-transactions__number">Montant</th>
+              <th className="recent-transactions__number">Commission</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="data-table__empty">
+                  {emptyMessage}
+                </td>
+              </tr>
+            ) : (
+              rows.map((t) => {
+                const type = TRANSACTION_TYPES[t.type] ?? { label: t.type, tone: 'info', sign: '' };
+                return (
+                  <tr key={t.id}>
+                    <td>{formatDateTime(t.createdAt)}</td>
+                    <td className="recent-transactions__reference">{t.reference ?? `#${t.id}`}</td>
+                    <td>
+                      <span className={`badge badge--${type.tone}`}>{type.label}</span>
+                    </td>
+                    <td className={`recent-transactions__number recent-transactions__amount--${type.tone}`}>
+                      <Money amount={t.amount} currency={balance.currency} sign={type.sign} compact />
+                    </td>
+                    <td className="recent-transactions__number">
+                      <Money amount={t.commission} currency={balance.currency} compact />
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+      {total > 0 && (
+        <p className="recent-transactions__footer">
+          {total > rows.length ? `Les ${rows.length} dernières transactions sur ${total}` : `${total} transaction${total > 1 ? 's' : ''}`}
+        </p>
+      )}
     </div>
   );
 }
