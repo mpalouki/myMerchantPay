@@ -38,8 +38,8 @@ export const PRICING = [
 
 // Illustrative merchant API (the payment API isn't public yet): base URLs used in the docs.
 export const API_BASE_URL = {
-  sandbox: 'https://sandbox.api.mymerchantpay.com/v1', // TODO: confirm
-  live: 'https://api.mymerchantpay.com/v1', // TODO: confirm
+  sandbox: 'https://sandbox.api.tecko.com/v1', // TODO: confirm the sandbox host
+  live: 'https://api.tecko.com/v1',
 };
 
 export const OPERATORS = ['Orange Money', 'MTN MoMo', 'Moov Money', 'Wave', 'T-Money', 'Free Money', 'Visa', 'Mastercard'];

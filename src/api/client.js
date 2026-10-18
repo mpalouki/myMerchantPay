@@ -262,8 +262,8 @@ export function acceptTeamInvitation({ token, password, confirmPassword }) {
 // services: ['PAYIN' | 'PAYOUT'], invoiceEnabled, cashOnDeliveryEnabled (PAL),
 // disbursementEnabled (PER), paymentMethods: [paymentMethod], ipn: { endpoint, enabled },
 // keys: { master, test: { public, private, token }, live: { public, private, token } },
-// keysGeneratedAt. A paymentMethod is { id, name, country: { codeAlpha2, name } | null }
-// (null = every country). Validation failures are 422 with { errors: { <body field>: message } }
+// keysGeneratedAt. A paymentMethod is { id, name, code (the `method` of the payments API,
+// e.g. WAVE_SN), country: { codeAlpha2, name } | null } (null = every country). Validation failures are 422 with { errors: { <body field>: message } }
 // (`ipn.endpoint` for the IPN).
 
 // Response shape: { services: ['PAYIN', 'PAYOUT'], paymentMethods: [paymentMethod] }

@@ -166,8 +166,9 @@ function ApplicationPanel({ app, revealed, onToggleReveal, onDelete }) {
             <div className="pm-group__label">{group}</div>
             <div className="pm-group__badges">
               {methods.map((m) => (
-                <span key={m.id} className="badge badge--info">
+                <span key={m.id} className="badge badge--info" title="Code à utiliser dans le champ method de l'API">
                   {m.name}
+                  {m.code && <code className="pm-group__code">{m.code}</code>}
                 </span>
               ))}
             </div>
