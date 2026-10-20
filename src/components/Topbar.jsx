@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from './Icon.jsx';
-import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
-export default function Topbar() {
+// Above the page content: the menu button (drawer, under 900px), notifications and the user menu.
+export default function Topbar({ onOpenNav }) {
   const { user, merchant, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,17 +37,23 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
-      <div className="topbar__brand">
-        <Logo />
-      </div>
+      <button type="button" className="topbar__menu-btn" onClick={onOpenNav} aria-label="Ouvrir le menu">
+        <Icon name="menu" size={20} />
+      </button>
       <div className="topbar__right">
         <button type="button" className="topbar__bell" aria-label="Notifications">
           <Icon name="bell" size={20} />
         </button>
         <div className="topbar__user" ref={menuRef}>
-          <button type="button" className="topbar__user-btn" onClick={() => setMenuOpen((v) => !v)}>
+          <button
+            type="button"
+            className="topbar__user-btn"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+          >
             <span className="avatar">{initials}</span>
-            <span className="topbar__user-name">{displayName.toUpperCase()}</span>
+            <span className="topbar__user-name">{displayName}</span>
             <Icon name="chevronDown" size={14} />
           </button>
           {menuOpen && (

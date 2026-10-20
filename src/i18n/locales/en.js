@@ -40,7 +40,7 @@ export default {
   },
 
   register: {
-    title: 'Information and contact form',
+    title: 'Apply for a merchant account',
     steps: {
       company: 'Company',
       representative: 'Legal representative',

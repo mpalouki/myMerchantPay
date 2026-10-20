@@ -18,8 +18,8 @@ export default {
     tooManyAttempts: 'Trop de tentatives de connexion échouées. Réessayez dans 15 minutes.',
     serverError: 'Impossible de se connecter au serveur. Veuillez réessayer.',
     submitting: 'Connexion en cours…',
-    submit: 'Connexion',
-    forgotPassword: 'Mot de passe oublié?',
+    submit: 'Se connecter',
+    forgotPassword: 'Mot de passe oublié ?',
     noAccount: 'Pas encore de compte ? Créer un compte marchand',
     otp: {
       title: 'Vérification de connexion',
@@ -40,7 +40,7 @@ export default {
   },
 
   register: {
-    title: 'Formulaire de renseignement et contact ',
+    title: 'Demande d’ouverture de compte marchand',
     steps: {
       company: 'Entreprise',
       representative: 'Représentant légal',

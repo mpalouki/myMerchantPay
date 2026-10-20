@@ -3,10 +3,11 @@
 
 // Applications list (pages/ApiIntegration.jsx).
 .api-intro {
-  margin: 0 0 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid $color-border;
-  font-size: 14.5px;
+  max-width: 72ch;
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: $desk-muted;
 }
 
 .api-apps {
@@ -47,7 +48,7 @@
 
 .key-row span {
   font-weight: 400;
-  color: $color-text-muted;
+  color: $desk-muted;
   font-size: 13px;
 }
 
@@ -58,18 +59,18 @@
   input {
     flex: 1;
     padding: 10px 12px;
-    border: 1px solid $color-border;
-    border-radius: $radius;
+    border: 1px solid $desk-line;
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 13px;
-    color: $color-danger;
-    letter-spacing: 1px;
-    background: #fafbfc;
+    color: $desk-text;
+    background: $desk-paper;
   }
 }
 
 .pm-group {
   padding: 10px 0;
-  border-bottom: 1px dashed $color-border;
+  border-bottom: 1px solid $desk-line;
 
   &__label {
     font-size: 13px;
@@ -98,7 +99,7 @@
   }
 
   &__value {
-    color: $color-text-muted;
+    color: $desk-muted;
     overflow-wrap: anywhere;
     text-align: right;
   }
@@ -116,7 +117,7 @@
 }
 
 .empty-panel {
-  color: $color-text-muted;
+  color: $desk-muted;
   padding: 40px 0;
   text-align: center;
 }
@@ -184,7 +185,7 @@
   &__hint {
     margin: 0 0 18px;
     font-size: 12.5px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__group {
@@ -198,15 +199,15 @@
       padding: 0;
       font-size: 13px;
       font-weight: 600;
-      color: $color-text-muted;
+      color: $desk-muted;
     }
   }
 
   &__group-box {
     @include flex(center, center, 8px 18px, wrap);
     padding: 14px 16px;
-    border: 1px solid $color-border;
-    border-radius: 4px;
+    border: 1px solid $desk-line;
+    border-radius: 10px;
   }
 
   &__ipn {
@@ -219,7 +220,7 @@
   &__actions {
     @include flex(center, center, 8px, wrap);
     margin: 28px 0 8px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 }
 
@@ -240,6 +241,6 @@
     max-width: 720px;
     margin: 8px auto 4px;
     font-size: 13.5px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 }

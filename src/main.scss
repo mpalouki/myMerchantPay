@@ -9,12 +9,14 @@
 @use 'styles/layout';
 @use 'styles/sidebar';
 @use 'styles/cards';
-@use 'styles/dashboard';
 @use 'styles/tables';
 @use 'styles/forms';
-@use 'styles/api';
 @use 'styles/stepper';
 @use 'styles/modal';
+// The logged-in space's look for the shared components above; page partials come after it.
+@use 'styles/desk';
+@use 'styles/dashboard';
+@use 'styles/api';
 @use 'styles/roles';
 @use 'styles/reload';
 @use 'styles/home';

@@ -32,3 +32,23 @@ $sidebar-width-collapsed: 76px;
 $topbar-height: 64px;
 
 $font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+
+// Merchant portal ("desk": the logged-in space, DashboardLayout). Scoped to .app-shell and to
+// body.desk (modals are portalled to <body>), so the showcase site and login keep their look.
+$desk-ink: #16173f; // sidebar
+$desk-ink-raised: #23255c; // sidebar hover / active
+$desk-ink-text: #b9bcdb;
+$desk-paper: #f2f3f7; // page background
+$desk-surface: #ffffff;
+$desk-line: #dde0ea;
+$desk-text: #1a1c33;
+$desk-muted: #646a82;
+$desk-accent: #4b50e6; // actions, focus, selected account
+$desk-accent-soft: #e8e9fd;
+$desk-credit: #0e7c55; // money in
+$desk-credit-soft: #e3f3ec;
+$desk-debit: #b3245a; // money out
+$desk-debit-soft: #f8e6ed;
+
+$font-text: 'Schibsted Grotesk', $font-family;
+$font-figures: 'Big Shoulders Display', 'Arial Narrow', $font-family;

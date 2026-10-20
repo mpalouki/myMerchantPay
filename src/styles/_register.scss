@@ -2,7 +2,7 @@
 @use 'mixins' as *;
 
 .register-card {
-  max-width: 720px;
+  max-width: 760px;
 
   &__fields {
     border: none;
@@ -13,82 +13,86 @@
 
   &__hint {
     margin: 0;
-    font-size: 13px;
-    color: $color-text-muted;
+    font-size: 13.5px;
+    color: $desk-muted;
   }
 
   &--done {
     max-width: 480px;
-    text-align: center;
 
     p {
       margin: 0;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.6;
-      color: $color-text-muted;
+      color: $desk-muted;
     }
 
     .btn {
       text-decoration: none;
     }
   }
-
-  .field select {
-    @include field-input;
-  }
 }
 
+// The registration steps: a real sequence, so numbered; done steps are joined by an ink line.
 .register-steps {
   list-style: none;
-  margin: 0;
+  margin: 4px 0 8px;
   padding: 0;
   @include flex(flex-start, space-between, 8px);
-  counter-reset: none;
 
   &__item {
     flex: 1;
     @include flex(center, flex-start, 8px);
     flex-direction: column;
     text-align: center;
-    font-size: 12.5px;
-    color: $color-text-muted;
+    font-size: 13px;
+    color: $desk-muted;
     position: relative;
 
     &:not(:last-child)::after {
       content: '';
       position: absolute;
-      top: 14px;
-      left: calc(50% + 18px);
-      right: calc(-50% + 18px);
+      top: 15px;
+      left: calc(50% + 20px);
+      right: calc(-50% + 20px);
       height: 2px;
-      background: $color-border;
+      border-radius: 1px;
+      background: $desk-line;
     }
 
     &--active {
-      color: $color-text;
+      color: $desk-text;
       font-weight: 600;
     }
 
     &--done::after {
-      background: $color-primary !important;
+      background: $desk-ink !important;
     }
   }
 
   &__index {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     @include flex(center, center);
-    border: 2px solid $color-border;
-    background: $color-surface;
+    border: 2px solid $desk-line;
+    background: $desk-surface;
+    font-family: $font-figures;
+    font-size: 17px;
     font-weight: 700;
   }
 
-  &__item--active &__index,
   &__item--done &__index {
-    border-color: $color-primary;
-    background: $color-primary;
+    border-color: $desk-ink;
+    background: $desk-ink;
     color: #fff;
+  }
+
+  &__item--active &__index {
+    border-color: $desk-accent;
+    background: $desk-accent;
+    color: #fff;
+    box-shadow: 0 0 0 4px $desk-accent-soft;
   }
 }
 
@@ -113,7 +117,7 @@
 
   &__item input[type='file'] {
     padding: 8px 10px;
-    background: #f7f9fb;
+    background: $desk-paper;
     cursor: pointer;
   }
 }
@@ -123,7 +127,6 @@
     display: none;
   }
 }
-
 
 // Language picker (components/LanguageSwitcher.jsx). Default: on dark backgrounds (auth pages);
 // --light: on light ones (site header).

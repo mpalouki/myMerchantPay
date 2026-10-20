@@ -14,7 +14,7 @@ export default function ApiIntegrationCard({ title, children }) {
         <Icon name="settings" size={16} className="card__header-icon" /> {title}
       </div>
       <div className="card__body">
-        <p className="api-intro">Intégrer notre API au sein de vos applications en générant vos clés API ici.</p>
+        <p className="api-intro">Intégrez notre API à vos applications : créez une application ici pour obtenir ses clés API.</p>
         <Tabs
           tabs={API_INTEGRATION_TABS}
           active="apps"
