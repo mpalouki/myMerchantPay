@@ -6,31 +6,30 @@
 .reload {
   &__tabs {
     display: flex;
-    border-bottom: 3px solid $color-border;
+    border-bottom: 1px solid $desk-line;
     margin: 0 auto 28px;
     max-width: 1040px;
   }
 
   &__tab {
     flex: 1;
-    margin-bottom: -3px;
+    margin-bottom: -1px;
     padding: 14px 8px;
     border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     background: none;
-    font-size: 14px;
-    color: $color-text-muted;
+    font-size: 15px;
+    color: $desk-muted;
     cursor: pointer;
 
     &:hover {
-      color: $color-text;
+      color: $desk-text;
     }
 
     &--active {
-      border-bottom-color: $color-text;
-      color: $color-text;
-      font-size: 15px;
-      font-weight: 700;
+      border-bottom-color: $desk-ink;
+      color: $desk-text;
+      font-weight: 600;
     }
   }
 
@@ -54,7 +53,7 @@
 
   &__step {
     text-align: center;
-    color: $color-text-muted;
+    color: $desk-muted;
     font-size: 13px;
   }
 
@@ -70,12 +69,12 @@
     margin: 0;
     text-align: center;
     font-weight: 700;
-    color: $color-text;
+    color: $desk-text;
 
     svg {
       flex-shrink: 0;
       margin-top: 2px;
-      color: $color-danger;
+      color: $desk-debit;
     }
   }
 
@@ -83,7 +82,7 @@
     margin: 0;
     text-align: center;
     font-size: 13.5px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__banks {
@@ -94,7 +93,7 @@
   &__bank {
     margin: 0;
     padding: 10px 0;
-    border-bottom: 2px solid $color-border;
+    border-bottom: 1px solid $desk-line;
 
     div {
       @include flex(center, space-between, 12px);
@@ -103,7 +102,7 @@
     }
 
     dt {
-      color: $color-text;
+      color: $desk-text;
     }
 
     dd {
@@ -129,7 +128,7 @@
 
   &__empty {
     text-align: center;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 }
 
@@ -143,24 +142,25 @@
   width: 100%;
   max-width: 440px;
   padding: 32px 28px 26px;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+  box-shadow: 0 24px 60px rgba($desk-ink, 0.28);
 
   &__icon {
     @include flex(center, center);
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     margin: 0 auto 18px;
-    border: 4px solid currentColor;
+    border: 3px solid currentColor;
     border-radius: 50%;
   }
 
   &--error &__icon {
-    color: #f27474;
+    color: $desk-debit;
   }
 
   &--success &__icon {
-    color: #a5dc86;
+    color: $desk-credit;
   }
 
   &__title {
@@ -171,12 +171,13 @@
 
   &--error &__title,
   &--success &__title {
-    font-size: 26px;
+    font-size: 22px;
+    font-weight: 700;
   }
 
   &__message {
     margin: 0 0 8px;
-    color: $color-text-muted;
+    color: $desk-muted;
     font-size: 15px;
   }
 
@@ -191,17 +192,23 @@
     margin-top: 20px;
 
     .btn {
-      min-width: 86px;
-      font-size: 16px;
+      min-width: 120px;
+      font-size: 15px;
     }
   }
 
   &__cancel {
-    @include button-variant(#c1c1c1, #fff, #aaa);
+    background: $desk-surface;
+    color: $desk-text;
+    border: 1px solid $desk-line;
+
+    &:hover {
+      background: $desk-paper;
+    }
   }
 
   &__ok {
-    @include button-variant(#7cd1f9, #fff, #5ec4f5);
+    @include button-variant($desk-accent, #fff, #3a3ec4);
   }
 }
 
@@ -223,7 +230,7 @@
     margin-left: 10px;
     font-weight: 400;
     font-size: 13px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__table {
@@ -250,8 +257,8 @@
 // "Retirer de l'argent" › add a withdrawal account (pages/Withdraw.jsx). The form reuses .reload.
 .withdraw {
   &__country select:disabled {
-    background: #f1f3f6;
-    color: $color-text-muted;
+    background: $desk-paper;
+    color: $desk-muted;
   }
 
   &__actions {
@@ -262,7 +269,7 @@
   &__back {
     @include flex(center, flex-start, 6px);
     font-size: 13.5px;
-    color: $color-text;
+    color: $desk-text;
   }
 
   &__back-icon {
@@ -291,7 +298,7 @@
   &__item {
     @include flex(center, flex-start, 14px);
     padding: 12px 4px;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid $desk-line;
 
     &:last-child {
       border-bottom: none;
@@ -300,7 +307,7 @@
 
   &__item-icon {
     flex-shrink: 0;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__item-text {
@@ -312,7 +319,7 @@
 
     span {
       font-size: 13px;
-      color: $color-text-muted;
+      color: $desk-muted;
       overflow-wrap: anywhere;
     }
   }
@@ -340,6 +347,6 @@
 
   span {
     font-size: 12.5px;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 }

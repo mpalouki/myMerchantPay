@@ -4,13 +4,16 @@ import LanguageSwitcher from './LanguageSwitcher.jsx';
 import SiteNav, { MenuBurger } from './site/SiteNav.jsx';
 import { useMobileMenu } from './site/useMobileMenu.js';
 import { useTranslation } from '../i18n/I18nContext.jsx';
+import { useDeskBody } from '../hooks/useDeskBody.js';
 
-// Top menu for the login/register pages, on their dark background: the showcase site's menu
+// Top menu for the login/register pages (which it gives the portal's look, see useDeskBody), on
+// their dark background: the showcase site's menu
 // (Product ▾, Pricing, API documentation, Help ▾), shown as a panel under 980px.
 // `page` is the current auth page, so the call-to-action points to the other one.
 export default function AuthHeader({ page }) {
   const { t } = useTranslation();
   const menu = useMobileMenu();
+  useDeskBody();
 
   return (
     <header className={`auth-header${menu.open ? ' is-menu-open' : ''}`}>

@@ -1,88 +1,248 @@
 @use 'variables' as *;
+@use 'mixins' as *;
 
-.dashboard__panel {
-  box-shadow: none;
-  border: 1px solid $color-border;
-  border-radius: 0 0 8px 8px;
+// Dashboard (pages/Dashboard.jsx): account switch, the balance block (balance, week totals,
+// daily flows), then recent movements. The balance is the one loud element; the rest stays quiet.
+
+.dashboard {
+  max-width: 1120px;
 }
 
-.dashboard__account {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 20px 24px 0;
+.dashboard__notice {
+  @include flex(flex-start, flex-start, 10px);
+  margin: 0 0 24px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: $desk-accent-soft;
+  color: $desk-text;
   font-size: 14px;
-  color: $color-text-muted;
+  line-height: 1.5;
 
-  strong {
-    color: $color-text;
-    letter-spacing: 0.5px;
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: $desk-accent;
+  }
+
+  a {
+    color: $desk-accent;
+    font-weight: 600;
   }
 }
 
-.balance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  border: 1px solid $color-border;
-  margin: 20px 24px 0;
+.dashboard__head {
+  @include flex(center, space-between, 12px, wrap);
+  margin-bottom: 16px;
 
-  &--hidden {
-    padding: 20px;
-    color: $color-text-muted;
-    text-align: center;
-  }
-}
-
-.balance-cell {
-  padding: 16px 18px;
-  border-right: 1px solid $color-border;
-  border-bottom: 1px solid $color-border;
-
-  &:last-child {
-    border-right: none;
-  }
-
-  &__label {
-    font-size: 13px;
-    color: $color-text-muted;
-    margin-bottom: 6px;
-  }
-
-  &__value {
+  h1 {
+    margin: 0;
+    font-size: 26px;
     font-weight: 700;
-    font-size: 15px;
-    color: $color-text;
+    letter-spacing: -0.01em;
+  }
+}
 
-    &--danger {
-      color: $color-danger;
+.dashboard__privacy {
+  @include flex(center, flex-start, 8px);
+  padding: 8px 12px;
+  border: 1px solid $desk-line;
+  border-radius: 8px;
+  background: $desk-surface;
+  color: $desk-muted;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    color: $desk-text;
+    border-color: color-mix(in srgb, $desk-line, $desk-text 25%);
+  }
+}
+
+// One button per country account; the selected one joins the balance block below it.
+.account-switch {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    align-items: center;
+    padding: 10px 16px 12px;
+    border: none;
+    border-radius: 12px 12px 0 0;
+    background: transparent;
+    color: $desk-muted;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba($desk-surface, 0.6);
+      color: $desk-text;
     }
 
-    &--success {
-      color: $color-success;
+    &--active,
+    &--active:hover {
+      background: $desk-surface;
+      color: $desk-text;
+    }
+  }
+
+  // flag-icons sizes flags in em.
+  &__flag {
+    grid-row: span 2;
+    font-size: 17px;
+    border-radius: 2px;
+  }
+
+  &__country {
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+
+  &__number {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.03em;
+    opacity: 0.8;
+  }
+}
+
+.balance-desk {
+  background: $desk-surface;
+  border-radius: 16px;
+  padding: 32px 36px 24px;
+  margin-bottom: 32px;
+
+  // Square corner under the first account when it is the selected one, so the tab joins the block.
+  .account-switch:has(.account-switch__item--active:first-child) + & {
+    border-top-left-radius: 0;
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px 48px;
+    align-items: end;
+  }
+
+  &__caption {
+    @include flex(center, flex-start, 10px, wrap);
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: $desk-muted;
+  }
+
+  &__blocked {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: $desk-debit-soft;
+    color: $desk-debit;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  // The week's totals, each with a rule in its flow colour on its left.
+  &__week {
+    display: flex;
+    gap: 32px;
+    margin: 0 0 10px;
+  }
+
+  &__flow {
+    padding-left: 14px;
+    border-left: 3px solid;
+
+    dt {
+      font-size: 13px;
+      color: $desk-muted;
+      margin-bottom: 2px;
+    }
+
+    dd {
+      margin: 0;
+    }
+
+    &--in {
+      border-color: $desk-credit;
+
+      .money__integer,
+      .money__sign {
+        color: $desk-credit;
+      }
+    }
+
+    &--out {
+      border-color: $desk-debit;
+
+      .money__integer,
+      .money__sign {
+        color: $desk-debit;
+      }
     }
   }
 }
 
-.dashboard__chart-title {
-  padding: 24px 24px 0;
-  font-size: 16px;
-}
+.flow-chart {
+  margin: 28px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid $desk-line;
 
-.dashboard__chart {
-  position: relative;
-  padding: 12px 12px 24px;
-}
+  &__caption {
+    @include flex(center, space-between, 12px, wrap);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
 
-// Loading / empty / error, over the (empty) chart.
-.dashboard__chart-message {
-  position: absolute;
-  inset: 40% 0 auto;
-  margin: 0;
-  text-align: center;
-  font-size: 13.5px;
-  color: $color-text-muted;
-  pointer-events: none;
-  z-index: 1;
+  &__legend {
+    @include flex(center, flex-start, 16px);
+    font-weight: 400;
+    font-size: 13px;
+    color: $desk-muted;
+  }
+
+  &__key {
+    @include flex(center, flex-start, 6px);
+
+    &::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    &--in::before {
+      background: $desk-credit;
+    }
+
+    &--out::before {
+      background: $desk-debit;
+    }
+  }
+
+  &__plot {
+    position: relative;
+    margin-left: -8px;
+  }
+
+  // Loading / empty / error, over the (empty) chart.
+  &__message {
+    position: absolute;
+    inset: 42% 0 auto;
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    color: $desk-muted;
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 // An amount (Dashboard <Money>): the integer part stands out; sign, decimals and unit are smaller.
@@ -92,37 +252,66 @@
   gap: 1px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+  line-height: 1.1;
 
   &__sign {
-    font-size: 18px;
-    margin-right: 3px;
-  }
-
-  &__integer {
-    font-size: 22px;
-    letter-spacing: -0.01em;
+    margin-right: 2px;
   }
 
   &__fraction {
-    font-size: 14px;
-    opacity: 0.75;
+    opacity: 0.7;
   }
 
   &__currency {
     margin-left: 6px;
+    font-family: $font-text;
     font-size: 12px;
     font-weight: 600;
-    color: $color-text-muted;
-    letter-spacing: 0.04em;
+    color: $desk-muted;
+    letter-spacing: 0.02em;
+  }
+
+  // The balance, in the condensed figures face.
+  &--hero {
+    font-family: $font-figures;
+    font-weight: 700;
+    line-height: 0.95;
+    color: $desk-ink;
+
+    .money__integer,
+    .money__sign {
+      font-size: clamp(56px, 8vw, 96px);
+      letter-spacing: -0.005em;
+    }
+
+    .money__fraction {
+      font-size: clamp(28px, 3.6vw, 42px);
+    }
+
+    .money__currency {
+      margin-left: 12px;
+      font-size: 18px;
+    }
+  }
+
+  // The week's totals.
+  &--figure {
+    font-family: $font-figures;
+    font-weight: 700;
+
+    .money__integer,
+    .money__sign {
+      font-size: 34px;
+    }
+
+    .money__fraction {
+      font-size: 20px;
+    }
   }
 
   // In table cells.
   &--compact {
-    .money__sign,
-    .money__integer {
-      font-size: 14px;
-    }
+    font-size: 14px;
 
     .money__fraction {
       font-size: 12px;
@@ -131,6 +320,47 @@
     .money__currency {
       font-size: 11px;
     }
+  }
+
+  &--masked .money__integer {
+    letter-spacing: 0.08em;
+    color: rgba($desk-ink, 0.28);
+  }
+}
+
+// Recent transactions and pending payments (tabs and table from _desk.scss).
+.movements {
+  &__panel {
+    margin-top: 16px;
+    background: $desk-surface;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .data-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+// Kind of transaction: a coloured dot and a plain label.
+.flow-tag {
+  @include flex(center, flex-start, 8px);
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $desk-muted;
+  }
+
+  &--in::before {
+    background: $desk-credit;
+  }
+
+  &--out::before {
+    background: $desk-debit;
   }
 }
 
@@ -145,25 +375,50 @@
     text-align: right;
   }
 
-  &__amount--success .money {
-    color: $color-success;
+  &__amount--in .money {
+    color: $desk-credit;
     font-weight: 600;
   }
 
-  &__amount--danger .money {
-    color: $color-danger;
+  &__amount--out .money {
+    color: $desk-debit;
     font-weight: 600;
   }
 
   &__reference {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: $desk-muted;
   }
 
   &__footer {
     margin: 0;
-    padding: 12px 14px;
+    padding: 12px 18px;
+    border-top: 1px solid $desk-line;
     font-size: 13px;
-    color: $color-text-muted;
+    color: $desk-muted;
+  }
+}
+
+@media (max-width: 760px) {
+  .balance-desk {
+    padding: 24px 20px 16px;
+    border-radius: 12px;
+
+    &__summary {
+      grid-template-columns: 1fr;
+    }
+
+    &__week {
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .money--figure {
+    .money__integer,
+    .money__sign {
+      font-size: 28px;
+    }
   }
 }

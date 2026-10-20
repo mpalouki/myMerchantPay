@@ -177,11 +177,10 @@ export default function Login() {
       <form className="login-card" onSubmit={handlePasswordSubmit}>
         <h1>{t('login.title')}</h1>
 
-        <label className="field">
-          <span className="field__label sr-only">{t('login.email')}</span>
+        <label className="field field--stacked">
+          <span className="field__label">{t('login.email')}</span>
           <input
             type="email"
-            placeholder={t('login.email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -189,11 +188,10 @@ export default function Login() {
           />
         </label>
 
-        <label className="field">
-          <span className="field__label sr-only">{t('login.password')}</span>
+        <label className="field field--stacked">
+          <span className="field__label">{t('login.password')}</span>
           <input
             type="password"
-            placeholder={t('login.password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"

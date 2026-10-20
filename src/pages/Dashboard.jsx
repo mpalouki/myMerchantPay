@@ -1,44 +1,42 @@
 import { useEffect, useState } from 'react';
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts';
 import Tabs from '../components/Tabs.jsx';
 import Flag from '../components/Flag.jsx';
+import Icon from '../components/Icon.jsx';
 import { getDailyTotals, getTransactions } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
 import { formatDateTime } from '../data/reload.js';
 import { PENDING_PAYMENTS } from '../data/mockData.js';
 
+// The dashboard answers one question: how much is on this country's account, and what moved
+// this week. The balance and the week's daily flows (money in above the line, money out below)
+// form one block; recent movements follow.
+
 const TABS = [
-  { key: 'state', label: 'Etat actuel du compte' },
   { key: 'transactions', label: 'Transactions récentes' },
-  { key: 'pending', label: `Paiements dus/en attente (${PENDING_PAYMENTS.length})` },
+  { key: 'pending', label: `Paiements en attente (${PENDING_PAYMENTS.length})` },
 ];
 
 // "Transactions récentes": how many of the selected account's latest transactions are shown.
 const RECENT_LIMIT = 10;
 
-// Chart: the last 7 days and today.
+// Chart: the last 7 days and today. Colours match $desk-credit / $desk-debit.
 const CHART_DAYS = 8;
-const CHART_COLORS = { payin: '#2e7d32', payout: '#e74c3c' };
+const CHART_COLORS = { payin: '#0e7c55', payout: '#b3245a', grid: '#e6e8ef', axis: '#646a82', zero: '#16173f' };
 const weekdayFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', timeZone: 'UTC' });
 const fullDateFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 const TRANSACTION_TYPES = {
-  payin: { label: 'Encaissement', tone: 'success', sign: '+' },
-  payout: { label: 'Décaissement', tone: 'danger', sign: '−' },
+  payin: { label: 'Encaissement', tone: 'in', sign: '+' },
+  payout: { label: 'Décaissement', tone: 'out', sign: '−' },
 };
 
 const moneyFormat = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const compactFormat = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const integerFormat = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+
+// The bars grow from the zero line on load; not for visitors who asked for less motion.
+const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 // fr-FR separates thousands with a narrow space (U+202F) that is barely visible; use a full
 // no-break space instead: 18466534 -> '18 466 534'.
@@ -65,12 +63,13 @@ function splitMoney(amount) {
 
 // '18466534.98' -> 18 466 534,98 FCFA with the integer part large, the decimals and unit smaller.
 // `sign` ('+' / '−') prefixes positive amounts, for credits and debits; a negative one shows '−'.
-function Money({ amount, currency, sign = '', compact = false }) {
+// `size`: 'hero' (the balance), 'figure' (the week's totals) or 'compact' (table cells).
+function Money({ amount, currency, sign = '', size }) {
   const { integer, fraction } = splitMoney(amount);
   const value = Number(amount);
   const shownSign = value < 0 ? '−' : value === 0 ? '' : sign;
   return (
-    <span className={`money${compact ? ' money--compact' : ''}`} title={`${shownSign}${groupDigits(moneyFormat.format(Math.abs(value)))} ${currency}`}>
+    <span className={`money${size ? ` money--${size}` : ''}`} title={`${shownSign}${groupDigits(moneyFormat.format(Math.abs(value)))} ${currency}`}>
       {shownSign && <span className="money__sign">{shownSign}</span>}
       <span className="money__integer">{integer}</span>
       {fraction && <span className="money__fraction">,{fraction}</span>}
@@ -89,29 +88,40 @@ export default function Dashboard() {
     selectedBalance: activeBalance,
     selectCountry,
   } = useAccount();
-  const [tab, setTab] = useState('state');
-  const [hideDetails, setHideDetails] = useState(false);
+  const [tab, setTab] = useState('transactions');
+  // Hides every amount on the page (balance, week totals, chart), e.g. when sharing a screen.
+  const [hideAmounts, setHideAmounts] = useState(false);
+  const currency = activeBalance?.currency;
 
   return (
     <div className="dashboard">
       {activeBalance && (
-        <div className="alert alert--warning">
-          Pour profiter pleinement de nos services, merci de renseigner les informations de votre
-          entreprise pour ce pays <strong>({activeBalance.country.name})</strong>{' '}
-          <a href="#company-info">en cliquer ici</a>.
-        </div>
+        <p className="dashboard__notice">
+          <Icon name="info" size={16} />
+          <span>
+            Pour utiliser tous nos services dans ce pays ({activeBalance.country.name}), renseignez les
+            informations de votre entreprise. <a href="#company-info">Renseigner les informations</a>
+          </span>
+        </p>
       )}
 
-      <div className="page-header">
+      <div className="dashboard__head">
         <h1>Tableau de bord</h1>
-        <button type="button" className="btn btn--outline-danger" onClick={() => setHideDetails((v) => !v)}>
-          {hideDetails ? 'Afficher les détails du compte' : 'Cacher les détails du compte'} &#128065;
+        <button
+          type="button"
+          className="dashboard__privacy"
+          onClick={() => setHideAmounts((v) => !v)}
+          aria-pressed={hideAmounts}
+        >
+          <Icon name={hideAmounts ? 'eye' : 'eyeOff'} size={16} />
+          {hideAmounts ? 'Afficher les montants' : 'Masquer les montants'}
         </button>
       </div>
 
-      <div className="country-pills">
+      {/* One account per country: picking one changes every logged-in page. */}
+      <div className="account-switch" role="group" aria-label="Compte affiché">
         {balancesLoading && <span className="muted">Chargement de vos comptes…</span>}
-        {balancesError && <span className="muted">Impossible de charger vos comptes.</span>}
+        {balancesError && <span className="muted">Impossible de charger vos comptes. Rechargez la page.</span>}
         {!balancesLoading && !balancesError && balances.length === 0 && (
           <span className="muted">Aucun compte n&apos;est encore ouvert.</span>
         )}
@@ -119,77 +129,93 @@ export default function Dashboard() {
           <button
             key={b.id}
             type="button"
-            className={`country-pill ${activeBalance?.id === b.id ? 'country-pill--active' : ''}`}
+            className={`account-switch__item${activeBalance?.id === b.id ? ' account-switch__item--active' : ''}`}
             onClick={() => selectCountry(b.country.codeAlpha2)}
+            aria-pressed={activeBalance?.id === b.id}
           >
-            <Flag code={b.country.codeAlpha2} className="country-pill__flag" /> {b.country.name}
+            <Flag code={b.country.codeAlpha2} className="account-switch__flag" />
+            <span className="account-switch__country">{b.country.name}</span>
+            <span className="account-switch__number">{b.accountNumberFormatted}</span>
           </button>
         ))}
       </div>
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      {activeBalance && (
+        <section className="balance-desk" aria-label={`Compte ${activeBalance.country.name}`}>
+          <div className="balance-desk__summary">
+            <div className="balance-desk__balance">
+              <p className="balance-desk__caption">
+                Solde du compte {activeBalance.country.name}
+                {!activeBalance.status && <span className="balance-desk__blocked">Compte bloqué</span>}
+              </p>
+              {hideAmounts ? (
+                <Masked size="hero" currency={currency} />
+              ) : (
+                <Money amount={activeBalance.accountBalance} currency={currency} size="hero" />
+              )}
+            </div>
 
-      <div className="card dashboard__panel">
-        {tab === 'state' && (
-          <>
-            {!hideDetails ? (
-              <>
-                {activeBalance && (
-                  <div className="dashboard__account">
-                    Compte n° <strong>{activeBalance.accountNumberFormatted}</strong>
-                    {!activeBalance.status && <span className="badge badge--danger">Bloqué</span>}
-                  </div>
-                )}
-                <div className="balance-grid">
-                  <BalanceCell
-                    label="Solde Principal"
-                    value={activeBalance ? <Money amount={activeBalance.accountBalance} currency={activeBalance.currency} /> : '—'}
-                  />
-                  {/* No backend concept for this yet. */}
-                  <BalanceCell label="Solde Opération" value="—" />
-                  <BalanceCell
-                    label="Débits (7 derniers jours)"
-                    value={activeBalance ? <Money amount={activeBalance.last7Days.debits} currency={activeBalance.currency} sign="−" /> : '—'}
-                    tone="danger"
-                  />
-                  <BalanceCell
-                    label="Crédits (7 derniers jours)"
-                    value={activeBalance ? <Money amount={activeBalance.last7Days.credits} currency={activeBalance.currency} sign="+" /> : '—'}
-                    tone="success"
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="balance-grid balance-grid--hidden">Détails du compte masqués.</div>
-            )}
+            <dl className="balance-desk__week">
+              <div className="balance-desk__flow balance-desk__flow--in">
+                <dt>Entrées sur 7 jours</dt>
+                <dd>
+                  {hideAmounts ? (
+                    <Masked size="figure" currency={currency} />
+                  ) : (
+                    <Money amount={activeBalance.last7Days.credits} currency={currency} sign="+" size="figure" />
+                  )}
+                </dd>
+              </div>
+              <div className="balance-desk__flow balance-desk__flow--out">
+                <dt>Sorties sur 7 jours</dt>
+                <dd>
+                  {hideAmounts ? (
+                    <Masked size="figure" currency={currency} />
+                  ) : (
+                    <Money amount={activeBalance.last7Days.debits} currency={currency} sign="−" size="figure" />
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </div>
 
-            {/* Its amounts are account details too. */}
-            {!hideDetails && <TransactionsChart balance={activeBalance} />}
-          </>
-        )}
+          {/* Its amounts are account details too. */}
+          {!hideAmounts && <FlowChart balance={activeBalance} />}
+        </section>
+      )}
 
-        {tab === 'transactions' && <RecentTransactions balance={activeBalance} />}
-
-        {tab === 'pending' && (
-          <EmptyTable columns={['Date', 'Bénéficiaire', 'Montant', 'Statut']} rows={PENDING_PAYMENTS} />
-        )}
-      </div>
+      <section className="movements">
+        <Tabs tabs={TABS} active={tab} onChange={setTab} />
+        <div className="movements__panel">
+          {tab === 'transactions' && <RecentTransactions balance={activeBalance} />}
+          {tab === 'pending' && (
+            <EmptyTable
+              columns={['Date', 'Bénéficiaire', 'Montant', 'Statut']}
+              rows={PENDING_PAYMENTS}
+              emptyMessage="Aucun paiement en attente."
+            />
+          )}
+        </div>
+      </section>
     </div>
   );
 }
 
-function BalanceCell({ label, value, tone }) {
+// An amount hidden by "Masquer les montants", the same size as the one it replaces.
+function Masked({ size, currency }) {
   return (
-    <div className="balance-cell">
-      <div className="balance-cell__label">{label}</div>
-      <div className={`balance-cell__value ${tone ? `balance-cell__value--${tone}` : ''}`}>{value}</div>
-    </div>
+    <span className={`money money--${size} money--masked`} aria-label="Montant masqué">
+      <span className="money__integer">••••••</span>
+      <span className="money__currency">{currencyUnit(currency)}</span>
+    </span>
   );
 }
 
 // Credits (payins) and debits (payouts) of the selected account per day, over the last
-// CHART_DAYS days (GET /api/merchant/dashboard/daily). Days are UTC, like the API's.
-function TransactionsChart({ balance }) {
+// CHART_DAYS days (GET /api/merchant/dashboard/daily). Days are UTC, like the API's. Money in
+// rises above the zero line and money out drops below it, so a day's balance of flows reads at
+// a glance.
+function FlowChart({ balance }) {
   const balanceId = balance?.id;
   const [response, setResponse] = useState({ balanceId: null, days: null, error: '' });
   const loading = Boolean(balanceId) && response.balanceId !== balanceId;
@@ -218,65 +244,80 @@ function TransactionsChart({ balance }) {
       day: d.date === today ? 'Auj.' : weekday.charAt(0).toUpperCase() + weekday.slice(1),
       fullDate: fullDateFormat.format(date),
       payin: Number(d.payin),
-      payout: Number(d.payout),
+      // Drawn below the line.
+      payout: -Number(d.payout),
       count: d.count,
     };
   });
   const empty = data.every((d) => d.count === 0);
-  const unit = balance ? currencyUnit(balance.currency) : 'FCFA';
+  const unit = currencyUnit(balance.currency);
 
   let message = '';
-  if (!balance) message = 'Aucun compte';
-  else if (loading) message = 'Chargement…';
+  if (loading) message = 'Chargement…';
   else if (response.error) message = `Impossible de charger le graphique : ${response.error}`;
-  else if (empty) message = 'Aucune transaction ces 7 derniers jours';
+  else if (empty) message = 'Aucune entrée ni sortie ces 7 derniers jours.';
 
   return (
-    <>
-      <h3 className="dashboard__chart-title">Vos récentes transactions</h3>
-      <div className="dashboard__chart">
-        {message && <p className="dashboard__chart-message">{message}</p>}
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-            <CartesianGrid stroke="#eee" vertical={false} />
-            <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={{ stroke: '#ddd' }} tickLine={false} />
-            <YAxis
-              tick={{ fontSize: 12 }}
+    <figure className="flow-chart">
+      <figcaption className="flow-chart__caption">
+        <span>Entrées et sorties par jour</span>
+        <span className="flow-chart__legend">
+          <span className="flow-chart__key flow-chart__key--in">Entrées</span>
+          <span className="flow-chart__key flow-chart__key--out">Sorties</span>
+        </span>
+      </figcaption>
+      <div className="flow-chart__plot">
+        {message && <p className="flow-chart__message">{message}</p>}
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={data} stackOffset="sign" margin={{ top: 8, right: 4, left: 0, bottom: 0 }} barCategoryGap="28%">
+            <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
+            <XAxis
+              dataKey="day"
+              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
               axisLine={false}
               tickLine={false}
-              width={70}
-              allowDecimals={false}
-              tickFormatter={(v) => groupDigits(compactFormat.format(v))}
-              label={{ value: `Montant (${unit})`, angle: -90, position: 'insideLeft', fontSize: 12 }}
             />
+            <YAxis
+              tick={{ fontSize: 12, fill: CHART_COLORS.axis }}
+              axisLine={false}
+              tickLine={false}
+              width={56}
+              allowDecimals={false}
+              tickFormatter={(v) => groupDigits(compactFormat.format(Math.abs(v)))}
+            />
+            <ReferenceLine y={0} stroke={CHART_COLORS.zero} strokeWidth={1.5} />
             <Tooltip
+              cursor={{ fill: 'rgba(22, 23, 63, 0.05)' }}
               labelFormatter={(_, payload) => {
                 const point = payload?.[0]?.payload;
-                return point ? `${point.fullDate} — ${point.count} transaction${point.count > 1 ? 's' : ''}` : '';
+                return point ? `${point.fullDate}, ${point.count} transaction${point.count > 1 ? 's' : ''}` : '';
               }}
-              formatter={(v, name) => [`${groupDigits(integerFormat.format(v))} ${unit}`, name]}
+              formatter={(v, name) => [`${groupDigits(integerFormat.format(Math.abs(v)))} ${unit}`, name]}
             />
-            <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
-            <Line
-              type="monotone"
+            <Bar
               dataKey="payin"
-              name="Crédits"
-              stroke={CHART_COLORS.payin}
-              strokeWidth={2}
-              dot={{ r: 4, fill: CHART_COLORS.payin }}
+              name="Entrées"
+              stackId="flow"
+              fill={CHART_COLORS.payin}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={40}
+              isAnimationActive={!reduceMotion}
+              animationDuration={600}
             />
-            <Line
-              type="monotone"
+            <Bar
               dataKey="payout"
-              name="Débits"
-              stroke={CHART_COLORS.payout}
-              strokeWidth={2}
-              dot={{ r: 4, fill: CHART_COLORS.payout }}
+              name="Sorties"
+              stackId="flow"
+              fill={CHART_COLORS.payout}
+              radius={[0, 0, 3, 3]}
+              maxBarSize={40}
+              isAnimationActive={!reduceMotion}
+              animationDuration={600}
             />
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
-    </>
+    </figure>
   );
 }
 
@@ -305,7 +346,7 @@ function RecentTransactions({ balance }) {
 
   const rows = loading ? [] : (response.data?.items ?? []);
   const total = loading ? 0 : (response.data?.total ?? 0);
-  let emptyMessage = 'Aucune transaction sur ce compte';
+  let emptyMessage = 'Aucune transaction sur ce compte pour le moment.';
   if (!balance) emptyMessage = 'Aucun compte';
   else if (loading) emptyMessage = 'Chargement…';
   else if (response.error) emptyMessage = `Impossible de charger les transactions : ${response.error}`;
@@ -332,19 +373,19 @@ function RecentTransactions({ balance }) {
               </tr>
             ) : (
               rows.map((t) => {
-                const type = TRANSACTION_TYPES[t.type] ?? { label: t.type, tone: 'info', sign: '' };
+                const type = TRANSACTION_TYPES[t.type] ?? { label: t.type, tone: 'other', sign: '' };
                 return (
                   <tr key={t.id}>
                     <td>{formatDateTime(t.createdAt)}</td>
                     <td className="recent-transactions__reference">{t.reference ?? `#${t.id}`}</td>
                     <td>
-                      <span className={`badge badge--${type.tone}`}>{type.label}</span>
+                      <span className={`flow-tag flow-tag--${type.tone}`}>{type.label}</span>
                     </td>
                     <td className={`recent-transactions__number recent-transactions__amount--${type.tone}`}>
-                      <Money amount={t.amount} currency={balance.currency} sign={type.sign} compact />
+                      <Money amount={t.amount} currency={balance.currency} sign={type.sign} size="compact" />
                     </td>
                     <td className="recent-transactions__number">
-                      <Money amount={t.commission} currency={balance.currency} compact />
+                      <Money amount={t.commission} currency={balance.currency} size="compact" />
                     </td>
                   </tr>
                 );
@@ -362,7 +403,7 @@ function RecentTransactions({ balance }) {
   );
 }
 
-function EmptyTable({ columns, rows }) {
+function EmptyTable({ columns, rows, emptyMessage }) {
   return (
     <table className="data-table">
       <thead>
@@ -376,7 +417,7 @@ function EmptyTable({ columns, rows }) {
         {rows.length === 0 ? (
           <tr>
             <td colSpan={columns.length} className="data-table__empty">
-              Aucune donnée disponible
+              {emptyMessage}
             </td>
           </tr>
         ) : (

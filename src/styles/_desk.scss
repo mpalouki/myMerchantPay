@@ -1,0 +1,542 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// The logged-in space's look for the shared components (cards, buttons, fields, tabs, tables,
+// badges, dialogs). Those components are also used by the showcase site and login, so the rules
+// are scoped to body.desk (set by DashboardLayout, and covering the modals portalled to <body>).
+// :where() keeps each rule's specificity equal to the one it restyles: this partial is loaded
+// after the shared partials and before the page partials, so pages can still adjust it.
+
+:where(body.desk) {
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  a {
+    color: $desk-accent;
+  }
+}
+
+// ---- Pages: a .card is a heading over a white surface ----
+
+:where(body.desk) .card {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+
+  & + .card {
+    margin-top: 36px;
+  }
+
+  &__header {
+    @include flex(center, flex-start, 10px, wrap);
+    padding: 0 0 14px;
+    border-bottom: none;
+    font-size: 19px;
+    font-weight: 700;
+    color: $desk-text;
+
+    // Decorative gear before some titles: the title is enough.
+    &-icon {
+      display: none;
+    }
+  }
+
+  &__subheader {
+    flex-basis: 100%;
+    margin-top: 0;
+    font-size: 14px;
+    color: $desk-muted;
+  }
+
+  &__body {
+    background: $desk-surface;
+    border-radius: 16px;
+    padding: 28px 32px 32px;
+  }
+}
+
+// The page's own title: the header of the page's first card (placed directly in the page, or
+// in a page wrapper such as .roles-page).
+:where(body.desk) .app-content > .card > .card__header,
+:where(body.desk) .app-content > div:not(.card) > .card:first-child > .card__header {
+  padding-bottom: 18px;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+// A card without a body (status screens, loading) is a surface itself.
+:where(body.desk) .card:not(:has(> .card__body)) {
+  background: $desk-surface;
+  border-radius: 16px;
+}
+
+:where(body.desk) .placeholder__icon {
+  background: $desk-accent-soft;
+  color: $desk-accent;
+}
+
+:where(body.desk) .page-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+:where(body.desk) .section-title {
+  margin: 36px 0 12px;
+  padding-bottom: 0;
+  border-bottom: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: $desk-text;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// ---- Messages ----
+
+:where(body.desk) .alert {
+  border-radius: 10px;
+  line-height: 1.5;
+
+  &--warning {
+    background: $desk-debit-soft;
+    color: $desk-debit;
+  }
+}
+
+:where(body.desk) .kyc-banner {
+  border-radius: 10px;
+  background: #fbf1dc;
+  color: #7a5200;
+}
+
+:where(body.desk) .toast-inline {
+  border-radius: 8px;
+  background: $desk-credit-soft;
+  color: $desk-credit;
+
+  &--error {
+    background: $desk-debit-soft;
+    color: $desk-debit;
+  }
+}
+
+// ---- Buttons ----
+
+:where(body.desk) .btn {
+  border-radius: 8px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  &--primary {
+    @include button-variant($desk-accent, #fff, #3a3ec4);
+  }
+
+  // Secondary actions that still matter (e.g. "Voir", "Enregistrer" next to a primary).
+  &--teal {
+    @include button-variant($desk-ink, #fff, $desk-ink-raised);
+  }
+
+  &--danger {
+    @include button-variant($desk-debit, #fff, #951c4a);
+  }
+
+  &--outline {
+    background: $desk-surface;
+    color: $desk-text;
+    border: 1px solid $desk-line;
+
+    &:hover {
+      border-color: $desk-muted;
+    }
+  }
+
+  &--outline-danger {
+    background: $desk-surface;
+    color: $desk-debit;
+    border: 1px solid color-mix(in srgb, $desk-debit 45%, $desk-surface);
+
+    &:hover {
+      background: $desk-debit-soft;
+    }
+  }
+
+  &--ghost {
+    background: $desk-paper;
+    color: $desk-text;
+
+    &:hover {
+      background: $desk-line;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+:where(body.desk) .link-btn {
+  color: $desk-accent;
+  font-weight: 500;
+}
+
+:where(body.desk) .icon-btn {
+  border-radius: 8px;
+  color: $desk-text;
+
+  &:hover {
+    background: $desk-paper;
+  }
+
+  &--info {
+    color: $desk-accent;
+  }
+
+  &--danger {
+    color: $desk-debit;
+
+    &:hover {
+      background: $desk-debit-soft;
+    }
+  }
+}
+
+// ---- Fields ----
+
+@mixin desk-input {
+  border-color: $desk-line;
+  border-radius: 8px;
+  background: $desk-surface;
+  color: $desk-text;
+  font-size: 14.5px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+
+  &:focus {
+    border-color: $desk-accent;
+    box-shadow: 0 0 0 3px $desk-accent-soft;
+  }
+
+  &:disabled,
+  &[readonly] {
+    background: $desk-paper;
+    color: $desk-muted;
+  }
+}
+
+:where(body.desk) .field {
+  color: $desk-text;
+
+  input,
+  select {
+    @include desk-input;
+  }
+
+  small {
+    color: $desk-muted;
+  }
+
+  small.field__error {
+    color: $desk-debit;
+  }
+
+  input[aria-invalid='true'] {
+    border-color: $desk-debit;
+  }
+}
+
+:where(body.desk) .app-form {
+  input:not([type='checkbox']),
+  select,
+  textarea {
+    @include desk-input;
+  }
+}
+
+:where(body.desk) .phone-input,
+:where(body.desk) .amount-input {
+  border-color: $desk-line;
+  border-radius: 8px;
+  background: $desk-surface;
+
+  &:focus-within {
+    border-color: $desk-accent;
+    box-shadow: 0 0 0 3px $desk-accent-soft;
+  }
+
+  input,
+  input:focus {
+    box-shadow: none;
+  }
+}
+
+:where(body.desk) .phone-input__flag {
+  background: $desk-paper;
+  border-right-color: $desk-line;
+}
+
+:where(body.desk) .email-tags {
+  border-color: $desk-line;
+  border-radius: 8px;
+
+  &:focus-within {
+    border-color: $desk-accent;
+    box-shadow: 0 0 0 3px $desk-accent-soft;
+  }
+
+  &--invalid {
+    border-color: $desk-debit;
+  }
+
+  &--disabled {
+    background: $desk-paper;
+  }
+
+  &__tag {
+    border-radius: 6px;
+    background: $desk-accent-soft;
+    color: $desk-accent;
+  }
+}
+
+:where(body.desk) input[type='checkbox'],
+:where(body.desk) input[type='radio'] {
+  accent-color: $desk-accent;
+}
+
+:where(body.desk) .required {
+  color: $desk-debit;
+}
+
+:where(body.desk) .settings-row {
+  padding: 14px 0;
+  border-bottom-color: $desk-line;
+
+  &__label {
+    font-weight: 600;
+  }
+
+  &__value,
+  &__hint {
+    color: $desk-muted;
+  }
+}
+
+// ---- Tabs: underlined labels, the active one in ink ----
+
+:where(body.desk) .tabs {
+  gap: 4px 24px;
+  background: none;
+  border-radius: 0;
+  border-bottom: 1px solid $desk-line;
+  overflow: visible;
+
+  &__item {
+    padding: 10px 0 12px;
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    font-size: 15px;
+    color: $desk-muted;
+
+    &:hover {
+      color: $desk-text;
+    }
+
+    &--active {
+      background: none;
+      color: $desk-text;
+      font-weight: 600;
+      border-bottom-color: $desk-ink;
+    }
+  }
+}
+
+:where(body.desk) .stepper-tabs {
+  border-bottom-color: $desk-line;
+
+  &__item {
+    font-size: 15px;
+    color: $desk-muted;
+
+    &--active {
+      color: $desk-text;
+
+      &::after {
+        background: $desk-ink;
+      }
+    }
+  }
+}
+
+:where(body.desk) .stepper-progress {
+  background: $desk-line;
+}
+
+:where(body.desk) .stepper-step-label {
+  color: $desk-muted;
+}
+
+// ---- Tables ----
+
+:where(body.desk) .data-table {
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 13px 16px;
+    border-bottom-color: $desk-line;
+  }
+
+  th {
+    background: none;
+    color: $desk-muted;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  tbody tr:hover td {
+    background: rgba($desk-paper, 0.6);
+  }
+
+  &__empty {
+    color: $desk-muted;
+    padding: 36px 16px;
+  }
+}
+
+:where(body.desk) .data-table--bordered {
+  th,
+  td {
+    border-color: $desk-line;
+  }
+
+  th {
+    background: $desk-paper;
+  }
+}
+
+:where(body.desk) .kv-table {
+  th,
+  td {
+    border-color: $desk-line;
+  }
+
+  th {
+    background: $desk-paper;
+    font-weight: 500;
+    color: $desk-muted;
+  }
+}
+
+:where(body.desk) .table-toolbar {
+  color: $desk-muted;
+
+  select,
+  input {
+    border-color: $desk-line;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: $desk-accent;
+    box-shadow: 0 0 0 3px $desk-accent-soft;
+  }
+}
+
+:where(body.desk) .table-footer {
+  color: $desk-muted;
+}
+
+:where(body.desk) .table-pagination button {
+  min-width: 34px;
+  border-color: $desk-line;
+  border-radius: 8px;
+  color: $desk-text;
+
+  &:hover:not(:disabled) {
+    border-color: $desk-muted;
+  }
+
+  &.is-active {
+    border-color: $desk-accent;
+    background: $desk-accent-soft;
+    color: $desk-accent;
+  }
+}
+
+// ---- Badges: sentence case, soft tones ----
+
+:where(body.desk) .badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+
+  &--success {
+    @include badge-tone($desk-credit, $desk-credit-soft);
+  }
+
+  &--danger {
+    @include badge-tone($desk-debit, $desk-debit-soft);
+  }
+
+  &--warning {
+    @include badge-tone(#7a5200, #fbf1dc);
+  }
+
+  &--info {
+    @include badge-tone($desk-accent, $desk-accent-soft);
+  }
+
+  &--new {
+    @include badge-tone($desk-ink, #a9acff);
+  }
+}
+
+// ---- Dialogs ----
+
+:where(body.desk) .modal-backdrop {
+  background: rgba($desk-ink, 0.5);
+}
+
+:where(body.desk) .modal {
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba($desk-ink, 0.28);
+
+  &__header {
+    padding: 18px 22px 0;
+    background: none;
+    border-bottom: none;
+
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+  }
+
+  &__close {
+    border-radius: 8px;
+    color: $desk-muted;
+
+    &:hover {
+      background: $desk-paper;
+      color: $desk-text;
+    }
+  }
+
+  &__body {
+    padding: 18px 22px 22px;
+  }
+}

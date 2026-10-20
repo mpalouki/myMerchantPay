@@ -18,17 +18,13 @@
   &__loading {
     padding: 40px 24px;
     text-align: center;
-    color: $color-text-muted;
-  }
-
-  .field select {
-    @include field-input;
+    color: $desk-muted;
   }
 
   .field input[readonly],
   .field select:disabled {
-    background: $color-bg;
-    color: $color-text-muted;
+    background: $desk-paper;
+    color: $desk-muted;
     cursor: not-allowed;
   }
 }
@@ -44,8 +40,8 @@
 
   &__list {
     margin: 0;
-    border: 1px solid $color-border;
-    border-radius: $radius;
+    border: 1px solid $desk-line;
+    border-radius: 12px;
   }
 
   &__row {
@@ -56,11 +52,11 @@
     font-size: 14px;
 
     &:not(:last-child) {
-      border-bottom: 1px solid $color-border;
+      border-bottom: 1px solid $desk-line;
     }
 
     dt {
-      color: $color-text-muted;
+      color: $desk-muted;
     }
 
     dd {
@@ -95,7 +91,7 @@
 
   p {
     margin: 0 0 8px;
-    color: $color-text-muted;
+    color: $desk-muted;
     line-height: 1.6;
   }
 
@@ -112,13 +108,13 @@
     font-weight: 700;
 
     &--success {
-      background: $color-success-bg;
-      color: $color-success;
+      background: $desk-credit-soft;
+      color: $desk-credit;
     }
 
     &--warning {
-      background: $color-warning-bg;
-      color: $color-warning;
+      background: #fbf1dc;
+      color: #7a5200;
     }
   }
 }

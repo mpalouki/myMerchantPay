@@ -1,58 +1,107 @@
 @use 'variables' as *;
 @use 'mixins' as *;
 
+// Logged-in space (DashboardLayout): full-height sidebar on the left, topbar + page on the right.
 .app-shell {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
+  background: $desk-paper;
+  color: $desk-text;
+  font-family: $font-text;
+
+  :focus-visible {
+    outline: 2px solid $desk-accent;
+    outline-offset: 2px;
+  }
+
+  // Under 900px the sidebar becomes a drawer over the page.
+  &__scrim {
+    display: none;
+  }
 }
 
-.app-body {
-  display: flex;
+// Modals are portalled to <body>; DashboardLayout adds .desk while the portal is open.
+body.desk {
+  font-family: $font-text;
+  background: $desk-paper;
+}
+
+.app-main {
   flex: 1;
-  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-content {
   flex: 1;
-  padding: 24px 28px 60px;
+  width: 100%;
+  max-width: 1280px;
+  padding: 28px 40px 64px;
   min-width: 0;
   overflow-x: auto;
 }
 
 .topbar {
   height: $topbar-height;
-  background: #fff;
-  border-bottom: 1px solid $color-border;
+  background: rgba($desk-paper, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid $desk-line;
   @include flex(center, space-between);
-  padding: 0 24px;
+  padding: 0 40px;
   position: sticky;
   top: 0;
   z-index: 20;
 
+  // Only shown when the sidebar is a drawer.
+  &__menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-left: -8px;
+    border-radius: 8px;
+    color: $desk-text;
+    cursor: pointer;
+  }
+
   &__right {
-    @include flex(center, flex-start, 20px);
+    @include flex(center, flex-start, 12px);
+    margin-left: auto;
   }
 
   &__bell {
     background: none;
     border: none;
     cursor: pointer;
-    color: $color-text-muted;
-    padding: 6px;
+    color: $desk-muted;
+    padding: 8px;
+    border-radius: 8px;
+
+    &:hover {
+      color: $desk-text;
+      background: $desk-surface;
+    }
   }
 
   &__user {
     position: relative;
 
     &-btn {
-      @include flex(center, flex-start, 8px);
+      @include flex(center, flex-start, 10px);
       background: none;
       border: none;
+      padding: 4px 8px 4px 4px;
+      border-radius: 999px;
       cursor: pointer;
+      font: inherit;
       font-size: 14px;
       font-weight: 600;
-      color: $color-text;
+      color: $desk-text;
+
+      &:hover {
+        background: $desk-surface;
+      }
     }
   }
 
@@ -60,11 +109,11 @@
     position: absolute;
     right: 0;
     top: calc(100% + 8px);
-    background: #fff;
-    border: 1px solid $color-border;
-    border-radius: $radius;
-    box-shadow: $shadow-card;
-    width: 200px;
+    background: $desk-surface;
+    border: 1px solid $desk-line;
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba($desk-ink, 0.14);
+    width: 220px;
     padding: 6px;
     display: flex;
     flex-direction: column;
@@ -75,24 +124,25 @@
       background: none;
       border: none;
       padding: 10px 12px;
+      font: inherit;
       font-size: 14px;
       border-radius: 6px;
       cursor: pointer;
-      color: $color-text;
+      color: $desk-text;
       text-decoration: none;
 
       &:hover {
-        background: #f1f3f6;
+        background: $desk-paper;
       }
 
       &--danger {
-        color: $color-danger;
+        color: $desk-debit;
       }
     }
 
     &-divider {
       height: 1px;
-      background: $color-border;
+      background: $desk-line;
       margin: 6px 0;
     }
   }
@@ -102,15 +152,36 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: $color-primary;
+  background: $desk-ink;
   color: #fff;
   @include flex(center, center);
   font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 900px) {
   .app-content {
-    padding: 18px;
+    padding: 20px 16px 48px;
+  }
+
+  .topbar {
+    padding: 0 16px;
+
+    &__menu-btn {
+      display: inline-flex;
+    }
+
+    &__user-name {
+      display: none;
+    }
+  }
+
+  .app-shell__scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba($desk-ink, 0.45);
+    z-index: 40;
   }
 }

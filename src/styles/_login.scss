@@ -7,8 +7,10 @@
   flex-direction: column;
   align-items: center;
   gap: 32px;
-  padding: 0 24px 40px;
-  background: radial-gradient(circle at 20% 20%, #123a66 0%, #0b1e3d 45%, #0a1730 100%);
+  padding: 0 24px 48px;
+  background: $desk-ink;
+  color: $desk-text;
+  font-family: $font-text;
 
   // Auto margins centre the card in the space left under the header.
   > .login-card {
@@ -35,7 +37,7 @@
 
     > a,
     .site-dropdown__toggle {
-      color: rgba(255, 255, 255, 0.8);
+      color: $desk-ink-text;
       text-decoration: none;
       font-size: 14.5px;
       font-weight: 600;
@@ -48,13 +50,13 @@
 
     // Dropdown panels stay white, with dark links.
     .site-dropdown__menu a {
-      color: $color-text;
+      color: $desk-text;
       text-decoration: none;
       font-size: 14.5px;
       font-weight: 600;
 
       &.active {
-        color: $color-primary;
+        color: $desk-accent;
       }
     }
   }
@@ -99,7 +101,7 @@
     gap: 0;
     padding: 8px 20px 16px;
     border-radius: 0 0 16px 16px;
-    background: #0b1e3d;
+    background: $desk-ink;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
 
     > a {
@@ -118,10 +120,8 @@
     .site-dropdown__toggle {
       width: 100%;
       padding: 12px 0 4px;
-      font-size: 12.5px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 13px;
+      color: rgba($desk-ink-text, 0.7);
       pointer-events: none;
     }
 
@@ -169,52 +169,63 @@
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: $color-surface;
-  border-radius: 12px;
-  padding: 40px 36px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  background: $desk-surface;
+  border-radius: 18px;
+  padding: 36px 36px 32px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 
   h1 {
-    font-size: 20px;
-    text-align: center;
-    margin: 0 0 4px;
-  }
-
-  .field input {
-    @include field-input;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
   }
 
   &__error {
-    color: $color-danger;
-    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: $desk-debit-soft;
+    color: $desk-debit;
+    font-size: 14px;
   }
 
   &__intro {
-    margin: 0;
-    font-size: 14px;
+    margin: -6px 0 0;
+    font-size: 15px;
     line-height: 1.6;
-    text-align: center;
-    color: $color-text-muted;
-  }
-
-  .field input[readonly] {
-    background: $color-bg;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__notice {
-    color: $color-success;
-    font-size: 13px;
+    color: $desk-credit;
+    font-size: 14px;
   }
 
+  // The emailed code: large condensed digits, like the amounts in the portal.
   .field input.login-card__code {
+    padding: 14px 12px 10px;
     text-align: center;
-    font-size: 24px;
+    font-family: $font-figures;
+    font-size: 44px;
     font-weight: 700;
-    letter-spacing: 0.5em;
+    line-height: 1;
+    letter-spacing: 0.35em;
+    text-indent: 0.35em;
+    background: $desk-paper;
+    border-color: transparent;
+
+    &::placeholder {
+      color: rgba($desk-ink, 0.2);
+    }
+
+    &:focus {
+      background: $desk-surface;
+      border-color: $desk-accent;
+    }
   }
 
   // Text-style buttons of the code step (resend, back).
@@ -225,7 +236,7 @@
     padding: 0;
     font: inherit;
     font-size: 14px;
-    color: $color-primary;
+    color: $desk-accent;
     cursor: pointer;
 
     &:hover:not(:disabled) {
@@ -233,19 +244,35 @@
     }
 
     &:disabled {
-      color: $color-text-muted;
+      color: $desk-muted;
       cursor: default;
     }
   }
 
+  // Secondary links under the form (forgotten password, create an account).
   &__forgot {
-    text-align: left;
+    align-self: flex-start;
     font-size: 14px;
-    color: $color-text-muted;
+    color: $desk-accent;
     text-decoration: none;
 
     &:hover {
       text-decoration: underline;
     }
+  }
+
+  .btn--block {
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 0 16px 32px;
+  }
+
+  .login-card {
+    padding: 28px 22px 24px;
   }
 }

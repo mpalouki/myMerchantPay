@@ -4,81 +4,121 @@
 .sidebar {
   width: $sidebar-width;
   flex-shrink: 0;
-  background: $sidebar-bg;
-  color: $sidebar-text;
+  background: $desk-ink;
+  color: $desk-ink-text;
   display: flex;
   flex-direction: column;
-  padding: 20px 0;
-  position: relative;
+  padding: 0 0 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+
+  :focus-visible {
+    outline-color: #fff;
+  }
 
   &--collapsed {
     width: $sidebar-width-collapsed;
   }
 
   &__brand {
-    padding: 0 20px 16px;
-    display: none;
+    height: $topbar-height;
+    @include flex(center, space-between);
+    padding: 0 22px;
+    flex-shrink: 0;
   }
 
+  &--collapsed &__brand {
+    justify-content: center;
+    padding: 0;
+  }
+
+  &__monogram {
+    font-family: $font-figures;
+    font-weight: 800;
+    font-size: 30px;
+    color: #fff;
+  }
+
+  // Drawer only.
+  &__close {
+    display: none;
+    background: none;
+    border: none;
+    color: $desk-ink-text;
+    padding: 6px;
+    cursor: pointer;
+  }
+
+  // Who is signed in, and which account the pages show.
   &__account {
-    padding: 0 20px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    margin-bottom: 12px;
+    margin: 4px 14px 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+  }
 
-    &-type {
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      color: #8a94a3;
-      margin-bottom: 8px;
-    }
+  &__merchant {
+    color: #fff;
+    font-weight: 600;
+    font-size: 14.5px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
 
-    &-label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 12px;
-      color: #8a94a3;
-    }
+  &__account-line {
+    @include flex(center, flex-start, 8px);
+    margin-top: 6px;
+    font-size: 13px;
+  }
 
-    &-country {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: #c8d0da;
-    }
+  &__flag {
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 
-    &-number {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #fff;
-      white-space: nowrap;
-    }
+  &__account-number {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
   &__nav {
     display: flex;
     flex-direction: column;
-    padding: 0 10px;
+    padding: 0 12px;
     gap: 2px;
   }
 
-  &__link,
-  &__link--button {
+  &__group-label {
+    margin: 22px 24px 8px;
+    min-height: 1px;
+    font-size: 12.5px;
+    color: rgba($desk-ink-text, 0.65);
+  }
+
+  &--collapsed &__group-label {
+    margin: 14px 18px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &__link {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
-    border-radius: 6px;
-    color: $sidebar-text;
+    border-radius: 8px;
+    color: $desk-ink-text;
     text-decoration: none;
-    font-size: 14px;
+    font: inherit;
+    font-size: 14.5px;
     background: none;
     border: none;
     width: 100%;
     text-align: left;
     cursor: pointer;
+    position: relative;
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
@@ -86,12 +126,29 @@
     }
   }
 
+  &--collapsed &__link {
+    justify-content: center;
+  }
+
+  // The page you are on: a raised row with a light bar on its left edge.
   &__link--active {
-    background: $sidebar-accent;
+    background: $desk-ink-raised;
     color: #fff;
+    font-weight: 600;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: #a9acff;
+    }
 
     &:hover {
-      background: $sidebar-accent;
+      background: $desk-ink-raised;
     }
   }
 
@@ -102,20 +159,18 @@
   &__submenu {
     display: flex;
     flex-direction: column;
-    padding-left: 30px;
-    margin: 2px 0 6px;
+    margin: 2px 0 6px 21px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
     gap: 2px;
   }
 
   &__sublink {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     padding: 8px 10px;
     border-radius: 6px;
-    color: $sidebar-text;
+    color: $desk-ink-text;
     text-decoration: none;
-    font-size: 13.5px;
+    font-size: 14px;
 
     &:hover {
       background: rgba(255, 255, 255, 0.06);
@@ -128,35 +183,59 @@
     }
   }
 
-  &__dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    flex-shrink: 0;
-  }
-
-  &__divider {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.08);
-    margin: 14px 10px;
-  }
-
   &__collapse-btn {
-    margin: 16px auto 0;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    margin: auto 12px 0;
+    padding: 10px 12px;
+    @include flex(center, flex-start, 10px);
+    background: none;
     border: none;
-    color: #fff;
-    @include flex(center, center);
+    border-radius: 8px;
+    color: rgba($desk-ink-text, 0.75);
+    font: inherit;
+    font-size: 13.5px;
     cursor: pointer;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  &--collapsed &__collapse-btn {
+    justify-content: center;
   }
 }
 
 @media (max-width: 900px) {
-  .sidebar {
+  .sidebar,
+  .sidebar--collapsed {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    width: min(300px, 86vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0.22s;
+  }
+
+  .app-shell--nav-open .sidebar {
+    transform: none;
+    visibility: visible;
+  }
+
+  .sidebar__close {
+    display: inline-flex;
+  }
+
+  // The drawer is always full width.
+  .sidebar__collapse-btn {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none !important;
   }
 }

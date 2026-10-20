@@ -11,16 +11,15 @@
 
   &__intro {
     p {
-      margin: 0 0 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid $color-border;
-      font-size: 14.5px;
+      max-width: 72ch;
+      margin: 0 0 24px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: $desk-muted;
     }
 
     .btn {
-      padding: 12px 18px;
-      font-weight: 400;
-      font-size: 15px;
+      padding: 11px 18px;
     }
   }
 
@@ -43,7 +42,7 @@
 .data-table--bordered {
   th,
   td {
-    border: 1px solid $color-border;
+    border: 1px solid $desk-line;
     text-align: center;
   }
 }
@@ -69,9 +68,9 @@
 }
 
 .table-pagination button.is-active {
-  border-color: $color-primary;
-  background: $color-info-bg;
-  color: $color-primary-dark;
+  border-color: $desk-accent;
+  background: $desk-accent-soft;
+  color: $desk-accent;
   font-weight: 600;
 }
 
@@ -112,7 +111,7 @@
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: $color-text-muted;
+    color: $desk-muted;
   }
 
   &__accesses {
