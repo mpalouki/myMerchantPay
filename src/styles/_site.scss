@@ -884,6 +884,41 @@ $site-navy: #0b1e3d;
   }
 }
 
+// Docs: language tabs above a code block (ApiDocs CodeTabs).
+.site-code-tabs {
+  margin-top: 16px;
+
+  &__list {
+    @include flex(flex-end, flex-start, 4px, wrap);
+  }
+
+  &__tab {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    background: #e8edf3;
+    color: $color-text-muted;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      color: $color-text;
+    }
+
+    &.is-active {
+      background: #16263d;
+      color: #fff;
+    }
+  }
+
+  // The tabs sit on the code block.
+  .home-code {
+    margin-top: 0;
+    border-top-left-radius: 0;
+  }
+}
+
 // ---- Responsive ----
 @media (max-width: 1000px) {
   .site-pricing,
