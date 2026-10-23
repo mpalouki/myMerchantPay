@@ -10,7 +10,7 @@ export const API_INTEGRATION_TABS = [
 ];
 
 // API service codes => labels.
-export const SERVICE_LABELS = { PAYIN: 'Payin', PAYOUT: 'Payout' };
+export const SERVICE_LABELS = { PAYIN: 'Payin', PAYOUT: 'Payout', TRANSFER: 'Transfert' };
 
 // Values of a new application: what the creation form starts from.
 export const NEW_APPLICATION = {

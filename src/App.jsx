@@ -25,6 +25,7 @@ import ApiApplicationNew from './pages/ApiApplicationNew.jsx';
 import Reload from './pages/Reload.jsx';
 import ReloadHistory from './pages/ReloadHistory.jsx';
 import Withdraw from './pages/Withdraw.jsx';
+import Transfer from './pages/Transfer.jsx';
 import Roles from './pages/Roles.jsx';
 import KycValidation from './pages/KycValidation.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="reload" element={<Reload />} />
         <Route path="reload/history" element={<ReloadHistory />} />
         <Route path="withdraw" element={<Withdraw />} />
+        <Route path="transfer" element={<Transfer />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
       </Route>

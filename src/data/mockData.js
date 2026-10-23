@@ -17,3 +17,10 @@ export const WITHDRAW_ITEM = {
   icon: 'withdraw',
   path: '/dashboard/withdraw',
 };
+
+export const TRANSFER_ITEM = {
+  key: 'transfer',
+  label: 'Transférer entre mes comptes',
+  icon: 'disburse',
+  path: '/dashboard/transfer',
+};

@@ -301,7 +301,8 @@ export function deleteApplication(id) {
 // The merchant's transactions, newest first, one page at a time; `balance` (id) limits them to one
 // account, `type` to 'payin' or 'payout'. Response shape: { items: [{ id, type: 'payin' |
 //   'payout', amount, commission, createdAt, reference (payment id of the top-up it comes from,
-//   or null), balance: { id, accountNumberFormatted } | null }], total, page, limit }.
+//   or null), operation (that payment's type: 'reload' | 'withdrawal' | 'transfer' | 'payin' |
+//   'payout', or null), balance: { id, accountNumberFormatted } | null }], total, page, limit }.
 export function getTransactions({ balance, type, page = 1, limit = 10 } = {}) {
   const params = new URLSearchParams({ page, limit });
   if (balance) params.set('balance', balance);
@@ -402,4 +403,38 @@ export function getWithdrawals(balanceId, { q = '', page = 1, limit = 10 } = {})
 // Response shape: [{ id, name, codeAlpha2, callingCode, currency }]
 export function getCountries() {
   return request('/api/merchant/countries', { method: 'GET' });
+}
+
+// --- Transfers between the merchant's own accounts ("Transférer entre mes comptes",
+// pages/Transfer.jsx), possibly across currencies. Quote first: the rate is held until
+// expiresAt (60 s); then execute that quote. An account in these shapes is
+// { id, accountNumberFormatted, country: { codeAlpha2, name } }. Amounts are decimal strings.
+// Errors: 422 { errors: { <field>: message }, code } for a request field, 409 { error, code } when
+// the accounts refuse it (quote_expired, insufficient_balance, account_blocked…).
+
+// { from, to (balance ids), amount (string, in the source currency) }.
+// Response shape: { quoteId, from: { balance, currency, amount, fee, total }, to: { balance,
+//   currency, amount }, rate (1 source unit = rate destination units), crossCurrency, expiresAt }.
+// 422 codes: unknown_account, account_blocked, same_account, rate_unavailable, invalid_amount,
+//   amount_too_small, amount_too_large, insufficient_balance.
+export function quoteTransfer({ from, to, amount }) {
+  return request('/api/merchant/transfers/quote', { method: 'POST', body: { from, to, amount }, auth: true });
+}
+
+// { quoteId, idempotencyKey (one per transfer, kept when retrying), description? }.
+// Response shape (201, or 200 when that key already made it): transfer = { paymentId, status,
+//   direction ('out' | 'in' seen from the listed account, else null), from: { balance, currency,
+//   amount, fee, total }, to: { balance, currency, amount }, rate, crossCurrency, description,
+//   createdAt }.
+export function createTransfer({ quoteId, idempotencyKey, description }) {
+  return request('/api/merchant/transfers', { method: 'POST', body: { quoteId, idempotencyKey, description }, auth: true });
+}
+
+// Transfers into or out of an account (balance id), newest first. `q` searches the payment id,
+// the description and the other account's number.
+// Response shape: { items: [transfer], total, page, limit }.
+export function getTransfers(balanceId, { q = '', page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ balance: String(balanceId), page: String(page), limit: String(limit) });
+  if (q) params.set('q', q);
+  return request(`/api/merchant/transfers?${params}`, { auth: true });
 }

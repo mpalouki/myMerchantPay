@@ -1,0 +1,316 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// "Transférer entre mes comptes" (pages/Transfer.jsx). The form is a slip: the account debited
+// above, the account credited below, joined by a rule that carries the swap button and the rate.
+// The two amounts are the page's figures, in $font-figures like the dashboard balance.
+
+.transfer {
+  &__slip {
+    display: flex;
+    flex-direction: column;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  &__leg {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 22px 18px;
+    border-radius: 14px;
+    background: $desk-paper;
+
+    &--to {
+      background: $desk-surface;
+      border: 1px solid $desk-line;
+    }
+  }
+
+  &__caption {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: $desk-muted;
+  }
+
+  &__account {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__select select {
+    padding: 9px 10px;
+    border: 1px solid $desk-line;
+    border-radius: 8px;
+    background: $desk-surface;
+    color: $desk-text;
+    font: inherit;
+    font-size: 14.5px;
+
+    &:focus {
+      outline: none;
+      border-color: $desk-accent;
+      box-shadow: 0 0 0 3px $desk-accent-soft;
+    }
+
+    &:disabled {
+      background: $desk-paper;
+      color: $desk-muted;
+    }
+  }
+
+  &__amount {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__figure {
+    @include flex(baseline, flex-start, 10px);
+    min-height: 58px;
+    font-family: $font-figures;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: $desk-text;
+    font-variant-numeric: tabular-nums;
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      border: none;
+      border-bottom: 2px solid $desk-line;
+      background: none;
+      font: inherit;
+      color: inherit;
+
+      &::placeholder {
+        color: rgba($desk-ink, 0.2);
+      }
+
+      &:focus {
+        outline: none;
+        border-bottom-color: $desk-accent;
+      }
+
+      &[aria-invalid='true'] {
+        border-bottom-color: $desk-debit;
+      }
+    }
+
+    &--result {
+      color: $desk-credit;
+    }
+
+    // No quote yet, or the rate has expired: the figure is only indicative.
+    &--pending {
+      color: rgba($desk-ink, 0.3);
+    }
+  }
+
+  &__currency {
+    font-size: 26px;
+    color: $desk-muted;
+  }
+
+  &__balance {
+    margin: 0;
+    font-size: 13.5px;
+    color: $desk-muted;
+  }
+
+  // The rule between the two accounts.
+  &__bridge {
+    @include flex(center, flex-start, 14px);
+    position: relative;
+    min-height: 64px;
+    padding-left: 22px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 39px;
+      border-left: 2px dashed $desk-line;
+    }
+  }
+
+  &__swap {
+    @include flex(center, center);
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid $desk-line;
+    border-radius: 50%;
+    background: $desk-surface;
+    color: $desk-text;
+    cursor: pointer;
+    transform: rotate(90deg);
+    transition: border-color 0.12s, color 0.12s;
+
+    &:hover:not(:disabled) {
+      border-color: $desk-accent;
+      color: $desk-accent;
+    }
+
+    &:focus-visible {
+      outline: 3px solid $desk-accent-soft;
+      outline-offset: 1px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__rate {
+    @include flex(center, flex-start, 6px 12px, wrap);
+    margin: 0;
+    font-size: 14px;
+    color: $desk-text;
+  }
+
+  &__hold {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: $desk-accent-soft;
+    color: $desk-accent;
+    font-size: 12.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+
+    &--expired {
+      background: $desk-debit-soft;
+
+      .link-btn {
+        color: $desk-debit;
+        font-size: inherit;
+        font-weight: inherit;
+      }
+    }
+  }
+
+  &__problem {
+    min-height: 20px;
+    margin: 10px 0 4px;
+    font-size: 14px;
+    color: $desk-debit;
+  }
+
+  &__description {
+    margin-top: 6px;
+  }
+
+  &__fee {
+    margin: 12px 0 0;
+    font-size: 13.5px;
+    color: $desk-muted;
+  }
+
+  &__submit {
+    align-self: center;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 22px;
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+
+  // Confirmation dialog: what leaves, what arrives.
+  &__recap {
+    margin: 4px 0 0;
+    text-align: left;
+
+    div {
+      @include flex(baseline, space-between, 16px);
+      padding: 10px 0;
+      border-bottom: 1px solid $desk-line;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    dt {
+      color: $desk-muted;
+      font-size: 14px;
+    }
+
+    dd {
+      margin: 0;
+      font-family: $font-figures;
+      font-size: 22px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+  }
+}
+
+// components/TransferHistory.jsx
+.transfer-history {
+  &__table {
+    min-width: 760px;
+  }
+
+  &__table &__number {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  &__amount--in {
+    color: $desk-credit;
+    font-weight: 600;
+  }
+
+  &__amount--out {
+    color: $desk-debit;
+    font-weight: 600;
+  }
+
+  &__other {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 14px;
+
+    span,
+    em {
+      font-size: 12.5px;
+      color: $desk-muted;
+    }
+
+    em {
+      font-style: normal;
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      @include flex(center, flex-start, 6px);
+      font-weight: 600;
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .transfer__leg {
+    padding: 16px 16px 14px;
+  }
+
+  .transfer__figure {
+    font-size: 38px;
+  }
+
+  .transfer__bridge {
+    padding-left: 16px;
+
+    &::before {
+      left: 33px;
+    }
+  }
+}

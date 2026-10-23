@@ -94,6 +94,13 @@ export const REQUESTS = {
     beneficiary: { phone: '+22990000000', name: 'Koffi A.' },
     reference: 'PAYOUT-2210',
   }),
+  createTransfer: request('POST', '/transfer', {
+    amount: 150000,
+    currency: 'XOF',
+    destination: 'BJ12 4500 8318 0637',
+    reference: 'TRF-0318',
+    description: 'Stock Cotonou',
+  }),
 };
 
 export const CODE_SAMPLES = {
@@ -146,6 +153,22 @@ export const CODE_SAMPLES = {
   "beneficiary": { "phone": "+22990000000", "name": "Koffi A." },
   "created_at": "2026-10-04T10:02:11Z",
   "updated_at": "2026-10-04T10:02:11Z"
+}`,
+
+  transferResponse: `{
+  "id": "PAY261004E5B83D17A260",
+  "object": "transfer",
+  "livemode": false,
+  "status": "succeeded",
+  "amount": 150000,
+  "fee": 0,
+  "currency": "XOF",
+  "source": { "account_number": "SN47450083180112" },
+  "destination": { "account_number": "BJ12450083180637", "amount": 150000, "currency": "XOF" },
+  "exchange_rate": null,
+  "reference": "TRF-0318",
+  "description": "Stock Cotonou",
+  "created_at": "2026-10-04T11:30:05Z"
 }`,
 
   ipnPayload: `POST https://example.com/webhooks/payments
