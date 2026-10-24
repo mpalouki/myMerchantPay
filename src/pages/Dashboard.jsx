@@ -31,6 +31,14 @@ const TRANSACTION_TYPES = {
   payout: { label: 'Décaissement', tone: 'out', sign: '−' },
 };
 
+// A transfer between the merchant's accounts books a payout on one and a payin on the other.
+const TRANSFER_LABELS = { payin: 'Transfert reçu', payout: 'Transfert envoyé' };
+
+function transactionType(t) {
+  const type = TRANSACTION_TYPES[t.type] ?? { label: t.type, tone: 'other', sign: '' };
+  return t.operation === 'transfer' && TRANSFER_LABELS[t.type] ? { ...type, label: TRANSFER_LABELS[t.type] } : type;
+}
+
 const moneyFormat = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const compactFormat = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
 const integerFormat = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
@@ -373,7 +381,7 @@ function RecentTransactions({ balance }) {
               </tr>
             ) : (
               rows.map((t) => {
-                const type = TRANSACTION_TYPES[t.type] ?? { label: t.type, tone: 'other', sign: '' };
+                const type = transactionType(t);
                 return (
                   <tr key={t.id}>
                     <td>{formatDateTime(t.createdAt)}</td>

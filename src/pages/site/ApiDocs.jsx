@@ -20,6 +20,7 @@ const SECTIONS = [
   'payments',
   'status',
   'payouts',
+  'transfers',
   'ipn',
   'methods',
   'errors',
@@ -33,6 +34,8 @@ const ENDPOINTS = [
   ['GET', '/payin/{id}', 'getPayment'],
   ['POST', '/payout', 'createPayout'],
   ['GET', '/payout/{id}', 'getPayout'],
+  ['POST', '/transfer', 'createTransfer'],
+  ['GET', '/transfer/{id}', 'getTransfer'],
 ];
 
 const EVENTS = ['payment.succeeded', 'payment.failed', 'payment.cancelled', 'payout.succeeded', 'payout.failed'];
@@ -191,6 +194,17 @@ export default function ApiDocs() {
               <Table head={list('payments', 'head')} rows={fieldRows('payouts')} />
               <Code code={CODE_SAMPLES.payoutResponse} label={t('site.docs.response')} />
               <p>{text('payouts', 'follow')}</p>
+            </section>
+
+            <section id="transfers">
+              <h2>{text('transfers', 'title')}</h2>
+              <p>{text('transfers', 'text')}</p>
+              <Endpoint method="POST" path="/transfer" />
+              <CodeTabs samples={REQUESTS.createTransfer} label={t('site.docs.request')} {...tabs} />
+              <Table head={list('payments', 'head')} rows={fieldRows('transfers')} />
+              <Code code={CODE_SAMPLES.transferResponse} label={t('site.docs.response')} />
+              <p>{text('transfers', 'follow')}</p>
+              <Endpoint method="GET" path="/transfer/{id}" />
             </section>
 
             <section id="ipn">

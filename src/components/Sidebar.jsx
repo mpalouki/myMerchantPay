@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import Logo from './Logo.jsx';
-import { SIDEBAR_ITEMS, RELOAD_SUBMENU, WITHDRAW_ITEM } from '../data/mockData.js';
+import { SIDEBAR_ITEMS, RELOAD_SUBMENU, TRANSFER_ITEM, WITHDRAW_ITEM } from '../data/mockData.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useAccount } from '../context/AccountContext.jsx';
 import Flag from './Flag.jsx';
@@ -89,10 +89,12 @@ export default function Sidebar({ collapsed, onToggle, onClose }) {
           </div>
         )}
 
-        <NavLink to={WITHDRAW_ITEM.path} className={linkClass} title={collapsed ? WITHDRAW_ITEM.label : undefined}>
-          <Icon name={WITHDRAW_ITEM.icon} />
-          {!collapsed && <span>{WITHDRAW_ITEM.label}</span>}
-        </NavLink>
+        {[WITHDRAW_ITEM, TRANSFER_ITEM].map((item) => (
+          <NavLink key={item.key} to={item.path} className={linkClass} title={collapsed ? item.label : undefined}>
+            <Icon name={item.icon} />
+            {!collapsed && <span>{item.label}</span>}
+          </NavLink>
+        ))}
       </nav>
 
       <button
