@@ -770,7 +770,7 @@ export default {
       },
       payments: {
         title: 'Collecter un paiement',
-        text: 'Créez un paiement en indiquant le montant, le pays, le moyen de paiement et le client. Le pays et la devise sont ceux du compte de l’application, et le moyen de paiement doit être activé sur l’application. Le paiement est créé au statut pending ; le client le valide sur son téléphone. Les frais (fee) sont déduits du montant crédité.',
+        text: 'Créez un paiement en indiquant le montant, le pays, le moyen de paiement et le client. Le pays et la devise sont ceux du compte de l’application, et le moyen de paiement doit être activé sur l’application. Le paiement est créé au statut pending ; le client le valide sur son téléphone ou, si la réponse contient un next_action, sur la page de paiement next_action.url, vers laquelle vous le redirigez (Wave, QR code Orange Money…). Certains moyens de paiement (Orange Money Côte d’Ivoire et Burkina Faso) demandent le code de paiement que le client génère au préalable sur son téléphone : envoyez-le dans customer.otp. Les frais (fee) sont déduits du montant crédité.',
         head: ['Champ', 'Type', 'Obligatoire', 'Description'],
         fields: [
           { name: 'amount', type: 'integer', required: true, description: 'Montant en unité de la devise, de 100 à 100 000 000 (le franc CFA n’a pas de centimes).' },
@@ -778,6 +778,7 @@ export default {
           { name: 'country', type: 'string', required: true, description: 'Pays du compte de l’application (ISO 3166-1 alpha-2), par exemple SN.' },
           { name: 'method', type: 'string', required: true, description: 'Code du moyen de paiement (voir Moyens de paiement).' },
           { name: 'customer.phone', type: 'string', required: true, description: 'Numéro du payeur au format international, avec l’indicatif du pays.' },
+          { name: 'customer.otp', type: 'string', required: false, description: 'Code de paiement à usage unique généré par le client sur son téléphone, pour les moyens de paiement qui l’exigent (sinon erreur otp_required, dont le message explique comment l’obtenir). Jamais conservé.' },
           { name: 'reference', type: 'string', required: true, description: 'Votre référence, unique par application et environnement : 1 à 100 caractères, sans espace.' },
           { name: 'ipn_url', type: 'string', required: false, description: 'URL de notification (http/https), à défaut celle de l’application.' },
         ],
@@ -873,6 +874,7 @@ export default {
           { code: 'method_not_allowed', http: '405', meaning: 'Méthode HTTP non acceptée par ce point d’accès.' },
           { code: 'duplicate_reference', http: '409', meaning: 'Référence déjà utilisée par un paiement de l’application.' },
           { code: 'invalid_field', http: '422', meaning: 'Champ invalide : voir error.field.' },
+          { code: 'otp_required', http: '422', meaning: 'Ce moyen de paiement exige le code de paiement du client (customer.otp) ; le message indique comment l’obtenir.' },
           { code: 'insufficient_balance', http: '422', meaning: 'Solde insuffisant pour l’envoi ou le transfert (montant + frais).' },
           { code: 'invalid_amount', http: '422', meaning: 'Transfert : plus de décimales que la devise n’en a (aucune en XOF).' },
           { code: 'amount_too_small', http: '422', meaning: 'Transfert : montant nul, ou trop faible pour être converti.' },

@@ -767,7 +767,7 @@ export default {
       },
       payments: {
         title: 'Collect a payment',
-        text: 'Create a payment with the amount, country, payment method and customer. The country and currency are those of the application’s account, and the payment method must be enabled on the application. The payment is created as pending; the customer approves it on their phone. The fee is deducted from the amount credited.',
+        text: 'Create a payment with the amount, country, payment method and customer. The country and currency are those of the application’s account, and the payment method must be enabled on the application. The payment is created as pending; the customer approves it on their phone or, when the response has a next_action, on the payment page at next_action.url, where you redirect them (Wave, Orange Money QR code…). Some payment methods (Orange Money Côte d’Ivoire and Burkina Faso) need the payment code the customer generates on their phone first: send it in customer.otp. The fee is deducted from the amount credited.',
         head: ['Field', 'Type', 'Required', 'Description'],
         fields: [
           { name: 'amount', type: 'integer', required: true, description: 'Amount in currency units, from 100 to 100,000,000 (the CFA franc has no cents).' },
@@ -775,6 +775,7 @@ export default {
           { name: 'country', type: 'string', required: true, description: 'Country of the application’s account (ISO 3166-1 alpha-2), for example SN.' },
           { name: 'method', type: 'string', required: true, description: 'Payment method code (see Payment methods).' },
           { name: 'customer.phone', type: 'string', required: true, description: 'Payer’s number in international format, with the country code.' },
+          { name: 'customer.otp', type: 'string', required: false, description: 'One-time payment code the customer generated on their phone, for the payment methods that need one (otherwise an otp_required error, whose message says how to get it). Never stored.' },
           { name: 'reference', type: 'string', required: true, description: 'Your reference, unique per application and environment: 1 to 100 characters, no spaces.' },
           { name: 'ipn_url', type: 'string', required: false, description: 'Notification URL (http/https); defaults to the application’s.' },
         ],
@@ -870,6 +871,7 @@ export default {
           { code: 'method_not_allowed', http: '405', meaning: 'HTTP method not accepted by this endpoint.' },
           { code: 'duplicate_reference', http: '409', meaning: 'Reference already used by a payment of the application.' },
           { code: 'invalid_field', http: '422', meaning: 'Invalid field: see error.field.' },
+          { code: 'otp_required', http: '422', meaning: 'This payment method needs the customer’s payment code (customer.otp); the message says how to get it.' },
           { code: 'insufficient_balance', http: '422', meaning: 'Balance too low for the payout or transfer (amount + fee).' },
           { code: 'invalid_amount', http: '422', meaning: 'Transfer: more decimals than the currency has (none for XOF).' },
           { code: 'amount_too_small', http: '422', meaning: 'Transfer: amount of 0, or too small to convert.' },

@@ -119,6 +119,7 @@ export const CODE_SAMPLES = {
   "method": "WAVE_SN",
   "reference": "CMD-10482",
   "customer": { "phone": "+221770000000" },
+  "next_action": { "type": "redirect", "url": "https://pay.wave.com/c/cos-1x2y3z" },
   "created_at": "2026-10-04T09:12:44Z",
   "updated_at": "2026-10-04T09:12:44Z"
 }`,
@@ -135,6 +136,7 @@ export const CODE_SAMPLES = {
   "method": "WAVE_SN",
   "reference": "CMD-10482",
   "customer": { "phone": "+221770000000" },
+  "next_action": null,
   "created_at": "2026-10-04T09:12:44Z",
   "updated_at": "2026-10-04T09:13:20Z"
 }`,
@@ -188,6 +190,7 @@ X-MMP-Signature: t=1759569164,v1=5f1c0b…
     "method": "WAVE_SN",
     "reference": "CMD-10482",
     "customer": { "phone": "+221770000000" },
+    "next_action": null,
     "created_at": "2026-10-04T09:12:44Z",
     "updated_at": "2026-10-04T09:13:20Z"
   }

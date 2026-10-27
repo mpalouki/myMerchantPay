@@ -321,7 +321,8 @@ export function getDailyTotals(balanceId, days = 8) {
 
 // Mobile money wallets an account (balance id) can be topped up from: the active payment types
 // of its country, by name. Response shape: [{ id, name, country: { codeAlpha2, name,
-//   callingCode } }] — possibly empty.
+//   callingCode }, otpRequired, otpHint }] — possibly empty. otpRequired: a top-up needs the
+//   one-time code the payer generates on their phone (send it as otp), otpHint says how.
 export function getReloadWallets(balanceId) {
   return request(`/api/merchant/reload/wallets?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
@@ -335,9 +336,11 @@ export function getReloadBankAccounts(balanceId) {
 
 // Records a top-up, as pending, for the payer to validate (mobile money) or once the transfer
 // arrives (bank). Body: { method: 'mobile_money', balance, paymentType, phone (national number),
-//   amount } or { method: 'bank_transfer', balance, bankAccount, zone, rib, amount,
-//   transferDate (YYYY-MM-DD), label? }. Response shape (201): { paymentId, type: 'reload',
-//   method, status: 'pending', amount, currency, phoneNumber, paymentType: { id, name },
+//   amount, otp? (required when the wallet has otpRequired) } or { method: 'bank_transfer',
+//   balance, bankAccount, zone, rib, amount, transferDate (YYYY-MM-DD), label? }. Response shape
+//   (201): { paymentId, type: 'reload', method, status: 'pending' (or 'failed' when no payment
+//   provider could take a mobile money top-up), amount, currency, phoneNumber, paymentUrl (mobile
+//   money: a page the payer must open to pay, else null), paymentType: { id, name },
 //   balance: { id, accountNumber }, dateCreation }. 422 { errors: { <body field>: message } }.
 export function submitReload(reload) {
   return request('/api/merchant/reload', { method: 'POST', body: reload, auth: true });

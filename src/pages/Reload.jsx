@@ -25,10 +25,11 @@ const HISTORY_PATH = '/dashboard/reload/history';
 
 // "Recharger mon compte": tops one of the merchant's accounts (one per country) up, either from
 // a mobile money wallet of that account's country (GET /api/merchant/reload/wallets; wallet,
-// number, amount -> confirmation -> the payer validates on their phone) or by bank transfer
-// (step 1: MyPay's bank accounts in that country, GET /api/merchant/reload/bank-accounts;
-// step 2: the merchant declares the transfer they made). The account is the dashboard's selected one (useAccount), switchable here in both tabs.
-// Submissions still go to mocks in data/mockData.js.
+// number, amount, plus the payment code generated on the phone for wallets with otpRequired ->
+// confirmation -> the payer validates on their phone, or on the payment page (paymentUrl) some
+// wallets give) or by bank transfer (step 1: MyPay's bank accounts in that country, GET
+// /api/merchant/reload/bank-accounts; step 2: the merchant declares the transfer they made). The
+// account is the dashboard's selected one (useAccount), switchable here in both tabs.
 export default function Reload() {
   const [method, setMethod] = useState('mobile');
   const { balances, selectedBalance, selectCountry, loading, error } = useAccount();
@@ -121,12 +122,16 @@ const RELOAD_ERRORS = {
   amount: `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RELOAD_AMOUNT)}`,
   paymentType: 'Veuillez choisir un wallet de ce pays',
   phone: 'Veuillez entrer un numéro de téléphone correct',
+  otp: 'Veuillez entrer le code de paiement généré sur votre téléphone (4 à 12 chiffres ou lettres)',
   bankAccount: "Ce compte bancaire n'est pas disponible pour les recharges. Choisissez-en un autre ou contactez le support.",
   zone: 'Veuillez choisir la zone du virement',
   rib: 'Veuillez entrer votre RIB (50 caractères maximum)',
   transferDate: "La date du virement est invalide (elle ne peut pas être dans le futur)",
   label: 'Le libellé fait 140 caractères maximum',
 };
+
+// The payment code some wallets generate on the phone (Orange Money Côte d'Ivoire…).
+const OTP_PATTERN = /^[0-9A-Za-z]{4,12}$/;
 
 function reloadErrorMessage(err, fallback) {
   const field = Object.keys(err?.data?.errors ?? {})[0];
@@ -149,7 +154,8 @@ function MobileMoneyReload({ account, accountSelect }) {
   const [walletId, setWalletId] = useState(null);
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
-  // null | { type: 'error', message } | { type: 'confirm' } | { type: 'done', paymentId }
+  const [otp, setOtp] = useState('');
+  // null | { type: 'error', message } | { type: 'confirm' } | { type: 'done', paymentId, paymentUrl }
   const [dialog, setDialog] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -186,6 +192,8 @@ function MobileMoneyReload({ account, accountSelect }) {
       message = 'Veuillez choisir un wallet';
     } else if (!isValidPhone(countryCode, phone)) {
       message = 'Veuillez entrer un numéro de téléphone correct';
+    } else if (wallet.otpRequired && !OTP_PATTERN.test(otp.trim())) {
+      message = RELOAD_ERRORS.otp;
     } else if (!(Number(amount) >= MIN_RELOAD_AMOUNT) || !Number.isInteger(Number(amount))) {
       message = `Veuillez entrer un montant entier d'au moins ${formatAmount(MIN_RELOAD_AMOUNT)} ${unit}`;
     } else if (account.status === false) {
@@ -203,8 +211,17 @@ function MobileMoneyReload({ account, accountSelect }) {
         paymentType: wallet.id,
         phone: normalizePhone(phone),
         amount: Number(amount),
+        ...(wallet.otpRequired ? { otp: otp.trim() } : {}),
       });
-      setDialog({ type: 'done', paymentId: payment.paymentId });
+      // Sent to the payment provider straight away: it may already have turned it down.
+      if (payment.status === 'failed') {
+        setDialog({
+          type: 'error',
+          message: `La recharge ${payment.paymentId} n'a pas pu être initiée avec ${wallet.name}. Réessayez plus tard, ou rechargez avec un autre wallet ou par compte bancaire.`,
+        });
+      } else {
+        setDialog({ type: 'done', paymentId: payment.paymentId, paymentUrl: payment.paymentUrl });
+      }
     } catch (err) {
       setDialog({ type: 'error', message: reloadErrorMessage(err, 'La recharge a échoué. Réessayez.') });
     } finally {
@@ -216,6 +233,7 @@ function MobileMoneyReload({ account, accountSelect }) {
     setDialog(null);
     setPhone('');
     setAmount('');
+    setOtp('');
   };
 
   return (
@@ -276,6 +294,24 @@ function MobileMoneyReload({ account, accountSelect }) {
           </div>
         </label>
 
+        {wallet?.otpRequired && (
+          <label className="field field--stacked">
+            <span>
+              Code de paiement <em className="required">*</em>
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={12}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+            />
+            {wallet.otpHint && <small>{wallet.otpHint}</small>}
+          </label>
+        )}
+
         <label className="field field--stacked">
           <span>
             Montant {unit} <em className="required">*</em>
@@ -317,9 +353,20 @@ function MobileMoneyReload({ account, accountSelect }) {
         <AlertDialog
           variant="success"
           title="Recharge initiée"
-          message={`Validez le paiement de ${formatAmount(amount)} ${unit} sur le téléphone ${dialCode} ${normalizePhone(phone)} pour créditer votre compte.`}
+          message={
+            dialog.paymentUrl
+              ? `Ouvrez la page de paiement ${wallet.name} pour valider le paiement de ${formatAmount(amount)} ${unit} et créditer votre compte.`
+              : `Validez le paiement de ${formatAmount(amount)} ${unit} sur le téléphone ${dialCode} ${normalizePhone(phone)} pour créditer votre compte.`
+          }
           onClose={closeDone}
         >
+          {dialog.paymentUrl && (
+            <p className="alert-dialog__message">
+              <a className="btn btn--teal" href={dialog.paymentUrl} target="_blank" rel="noopener noreferrer">
+                Ouvrir la page de paiement
+              </a>
+            </p>
+          )}
           <p className="alert-dialog__detail">Référence : {dialog.paymentId}</p>
           <DoneLink />
         </AlertDialog>
