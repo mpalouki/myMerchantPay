@@ -321,7 +321,8 @@ export function getDailyTotals(balanceId, days = 8) {
 
 // Mobile money wallets an account (balance id) can be topped up from: the active payment types
 // of its country, by name. Response shape: [{ id, name, country: { codeAlpha2, name,
-//   callingCode } }] — possibly empty.
+//   callingCode }, otpRequired, otpHint }] — possibly empty. otpRequired: a top-up needs the
+//   one-time code the payer generates on their phone (send it as otp), otpHint says how.
 export function getReloadWallets(balanceId) {
   return request(`/api/merchant/reload/wallets?balance=${encodeURIComponent(balanceId)}`, { auth: true });
 }
@@ -335,9 +336,11 @@ export function getReloadBankAccounts(balanceId) {
 
 // Records a top-up, as pending, for the payer to validate (mobile money) or once the transfer
 // arrives (bank). Body: { method: 'mobile_money', balance, paymentType, phone (national number),
-//   amount } or { method: 'bank_transfer', balance, bankAccount, zone, rib, amount,
-//   transferDate (YYYY-MM-DD), label? }. Response shape (201): { paymentId, type: 'reload',
-//   method, status: 'pending', amount, currency, phoneNumber, paymentType: { id, name },
+//   amount, otp? (required when the wallet has otpRequired) } or { method: 'bank_transfer',
+//   balance, bankAccount, zone, rib, amount, transferDate (YYYY-MM-DD), label? }. Response shape
+//   (201): { paymentId, type: 'reload', method, status: 'pending' (or 'failed' when no payment
+//   provider could take a mobile money top-up), amount, currency, phoneNumber, paymentUrl (mobile
+//   money: a page the payer must open to pay, else null), paymentType: { id, name },
 //   balance: { id, accountNumber }, dateCreation }. 422 { errors: { <body field>: message } }.
 export function submitReload(reload) {
   return request('/api/merchant/reload', { method: 'POST', body: reload, auth: true });
@@ -437,4 +440,52 @@ export function getTransfers(balanceId, { q = '', page = 1, limit = 10 } = {}) {
   const params = new URLSearchParams({ balance: String(balanceId), page: String(page), limit: String(limit) });
   if (q) params.set('q', q);
   return request(`/api/merchant/transfers?${params}`, { auth: true });
+}
+
+// --- Payment links ("Liens de paiement", pages/PaymentLinks.jsx): a lasting URL the merchant
+// shares (message, social networks, QR code); each visit pays on GamaPay's hosted checkout page.
+// A link is { id, publicId, code, url (to share), active, livemode, type ('fixed' |
+// 'customer_chooses'), name, currency, amount (fixed price, else null), lineItems: [{ name,
+// description, imageUrl, unitAmount, quantity }], customAmount: { name, description, preset,
+// minimum, maximum } | null, submitType ('pay' | 'book' | 'donate'), afterCompletion: { type
+// ('message' | 'redirect'), message, url }, maxPayments, paymentsCount, amountCollected,
+// application: { id, name, productionMode }, balance: { id }, createdAt, updatedAt }.
+// Errors: 422 { errors: { <field>: message } } with the body's field names (lineItems.0.unitAmount,
+// customAmount.minimum, afterCompletion.url…), already in French.
+
+// An account's links, newest first. `status`: 'active' | 'inactive' | ''.
+// Response shape: { items: [link], total, page, limit }.
+export function getPaymentLinks(balanceId, { q = '', status = '', page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ balance: String(balanceId), page: String(page), limit: String(limit) });
+  if (q) params.set('q', q);
+  if (status) params.set('status', status);
+  return request(`/api/merchant/payment-links?${params}`, { auth: true });
+}
+
+export function getPaymentLink(id) {
+  return request(`/api/merchant/payment-links/${id}`, { auth: true });
+}
+
+// Payments received through a link, last paid first.
+// Response shape: { items: [{ session, paymentId, amount, currency, method, phone,
+//   clientReferenceId, utm: { utm_source… } | null, completedAt }], total, page, limit }.
+export function getPaymentLinkPayments(id, { page = 1, limit = 10 } = {}) {
+  return request(`/api/merchant/payment-links/${id}/payments?page=${page}&limit=${limit}`, { auth: true });
+}
+
+// { application, livemode, type, lineItems | customAmount, submitType, afterCompletion, maxPayments }.
+// Response shape (201): link.
+export function createPaymentLink(link) {
+  return request('/api/merchant/payment-links', { method: 'POST', body: link, auth: true });
+}
+
+// Same body without application and livemode (they never change). Response shape: link.
+export function updatePaymentLink(id, link) {
+  return request(`/api/merchant/payment-links/${id}`, { method: 'PUT', body: link, auth: true });
+}
+
+// Response shape: link. 409 { error, code: 'limit_reached' } when reactivating a link that
+// reached its payment limit.
+export function setPaymentLinkActive(id, active) {
+  return request(`/api/merchant/payment-links/${id}/active`, { method: 'POST', body: { active }, auth: true });
 }

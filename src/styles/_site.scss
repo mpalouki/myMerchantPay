@@ -807,6 +807,10 @@ $site-navy: #0b1e3d;
   }
 }
 
+.site-nowrap {
+  white-space: nowrap;
+}
+
 .site-pill {
   display: inline-block;
   padding: 3px 10px;
@@ -858,6 +862,10 @@ $site-navy: #0b1e3d;
 
     &--post {
       background: $color-primary;
+    }
+
+    &--delete {
+      background: $color-danger;
     }
   }
 }

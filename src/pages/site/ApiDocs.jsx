@@ -4,7 +4,7 @@ import Icon from '../../components/Icon.jsx';
 import { PageHero } from '../../components/site/SiteBlocks.jsx';
 import { useTranslation } from '../../i18n/I18nContext.jsx';
 import { API_BASE_URL } from '../../data/site.js';
-import { CODE_LANGUAGES, CODE_SAMPLES, REQUESTS, SIGNATURE_SAMPLES } from './apiDocsSamples.js';
+import { CODE_LANGUAGES, CODE_SAMPLES, REQUESTS, SIGNATURE_SAMPLES, WEBHOOK_SIGNATURE_SAMPLES } from './apiDocsSamples.js';
 
 // Documentation API: a single page with a sticky table of contents. Text in site.docs.*, code in
 // apiDocsSamples.js. The merchant payment API isn't public yet, so the page opens with a notice
@@ -16,11 +16,18 @@ const SECTIONS = [
   'quickstart',
   'authentication',
   'environments',
+  'conventions',
   'overview',
+  'hosted',
+  'checkout',
+  'intents',
+  'paymentMethods',
   'payments',
   'status',
   'payouts',
   'transfers',
+  'lists',
+  'webhooks',
   'ipn',
   'methods',
   'errors',
@@ -29,25 +36,72 @@ const SECTIONS = [
 
 const STATUSES = ['pending', 'succeeded', 'failed', 'cancelled'];
 
+const INTENT_STATUSES = ['requires_payment_method', 'requires_action', 'processing', 'succeeded', 'canceled'];
+
+// [method, path, description key, keys accepted]: `pk` means the publishable key works too.
 const ENDPOINTS = [
-  ['POST', '/payin', 'createPayment'],
-  ['GET', '/payin/{id}', 'getPayment'],
-  ['POST', '/payout', 'createPayout'],
-  ['GET', '/payout/{id}', 'getPayout'],
-  ['POST', '/transfer', 'createTransfer'],
-  ['GET', '/transfer/{id}', 'getTransfer'],
+  ['POST', '/checkout/sessions', 'createSession', 'sk'],
+  ['GET', '/checkout/sessions', 'listSessions', 'sk'],
+  ['GET', '/checkout/sessions/{id}', 'getSession', 'sk'],
+  ['GET', '/checkout/sessions/{id}/line_items', 'sessionLineItems', 'sk'],
+  ['POST', '/checkout/sessions/{id}/expire', 'expireSession', 'sk'],
+  ['POST', '/payment_intents', 'createIntent', 'sk'],
+  ['GET', '/payment_intents', 'listIntents', 'sk'],
+  ['GET', '/payment_intents/{id}', 'getIntent', 'pk'],
+  ['POST', '/payment_intents/{id}', 'updateIntent', 'sk'],
+  ['POST', '/payment_intents/{id}/confirm', 'confirmIntent', 'pk'],
+  ['POST', '/payment_intents/{id}/cancel', 'cancelIntent', 'sk'],
+  ['GET', '/payment_methods', 'listMethods', 'pk'],
+  ['POST', '/payin', 'createPayment', 'sk'],
+  ['GET', '/payin/{id}', 'getPayment', 'sk'],
+  ['GET', '/payins', 'listPayments', 'sk'],
+  ['POST', '/payout', 'createPayout', 'sk'],
+  ['GET', '/payout/{id}', 'getPayout', 'sk'],
+  ['GET', '/payouts', 'listPayouts', 'sk'],
+  ['POST', '/transfer', 'createTransfer', 'sk'],
+  ['GET', '/transfer/{id}', 'getTransfer', 'sk'],
+  ['GET', '/transfers', 'listTransfers', 'sk'],
+  ['GET', '/events', 'listEvents', 'sk'],
+  ['GET', '/events/{id}', 'getEvent', 'sk'],
+  ['POST', '/webhook_endpoints', 'createWebhook', 'sk'],
+  ['GET', '/webhook_endpoints', 'listWebhooks', 'sk'],
+  ['GET', '/webhook_endpoints/{id}', 'getWebhook', 'sk'],
+  ['POST', '/webhook_endpoints/{id}', 'updateWebhook', 'sk'],
+  ['POST', '/webhook_endpoints/{id}/rotate_secret', 'rotateWebhook', 'sk'],
+  ['DELETE', '/webhook_endpoints/{id}', 'deleteWebhook', 'sk'],
 ];
 
 const EVENTS = ['payment.succeeded', 'payment.failed', 'payment.cancelled', 'payout.succeeded', 'payout.failed'];
 
+// The event types of webhook endpoints (myPay ApiEvents::TYPES, less transfer.created, not sent yet).
+const EVENT_TYPES = [
+  'checkout.session.created',
+  'checkout.session.completed',
+  'checkout.session.expired',
+  'payment_intent.created',
+  'payment_intent.requires_action',
+  'payment_intent.processing',
+  'payment_intent.succeeded',
+  'payment_intent.payment_failed',
+  'payment_intent.canceled',
+  'payin.succeeded',
+  'payin.failed',
+  'payin.cancelled',
+  'payout.succeeded',
+  'payout.failed',
+  'payout.cancelled',
+];
+
 // Signature samples: the languages notifications are usually received in.
 const SIGNATURE_LANGUAGES = CODE_LANGUAGES.filter((l) => l.key in SIGNATURE_SAMPLES);
+const WEBHOOK_SIGNATURE_LANGUAGES = CODE_LANGUAGES.filter((l) => l.key in WEBHOOK_SIGNATURE_SAMPLES);
 
 const HTTP_CODES = ['200', '201', '400', '401', '403', '404', '405', '409', '422', '429', '500'];
 
 // Examples only: a method's code is its payment type reference in capitals (myPay back office),
-// shown to merchants on their application's page.
+// shown to merchants on their application's page. Cards have no country.
 const METHODS = [
+  ['CARD', null],
   ['WAVE_SN', 'SN'],
   ['ORANGE_MONEY_SN', 'SN'],
   ['ORANGE_MONEY_CI', 'CI'],
@@ -65,8 +119,15 @@ export default function ApiDocs() {
   // The language of every code block with tabs.
   const [language, setLanguage] = useState(CODE_LANGUAGES[0].key);
   const tabs = { language, onLanguage: setLanguage };
-  const fieldRows = (section) =>
-    list(section, 'fields').map(({ name, type, required, description }) => [
+  const bullets = (section, key) => (
+    <ul>
+      {list(section, key).map((p) => (
+        <li key={p}>{p}</li>
+      ))}
+    </ul>
+  );
+  const fieldRows = (section, key = 'fields') =>
+    list(section, key).map(({ name, type, required, description }) => [
       <code key="n">{name}</code>,
       type,
       required ? t('site.docs.yes') : t('site.docs.no'),
@@ -131,6 +192,7 @@ export default function ApiDocs() {
                 <Icon name="lock" size={16} /> {text('authentication', 'warning')}
               </p>
               <Code code={'Authorization: Bearer sk_test_YOUR_PRIVATE_KEY'} />
+              <p>{text('authentication', 'publishable')}</p>
             </section>
 
             <section id="environments">
@@ -148,6 +210,20 @@ export default function ApiDocs() {
                 head={list('environments', 'testHead')}
                 rows={list('environments', 'testNumbers').map(({ suffix, result }) => [<code key="s">{suffix}</code>, result])}
               />
+              <p>{text('environments', 'testCard')}</p>
+            </section>
+
+            <section id="conventions">
+              <h2>{text('conventions', 'title')}</h2>
+              <p>{text('conventions', 'text')}</p>
+              <Table
+                head={list('conventions', 'head')}
+                rows={list('conventions', 'headers').map(({ name, description }) => [<code key="n">{name}</code>, description])}
+              />
+              <h3>{text('conventions', 'idempotencyTitle')}</h3>
+              <p>{text('conventions', 'idempotency')}</p>
+              <h3>{text('conventions', 'metadataTitle')}</h3>
+              <p>{text('conventions', 'metadata')}</p>
             </section>
 
             <section id="overview">
@@ -155,14 +231,101 @@ export default function ApiDocs() {
               <p>{text('overview', 'text')}</p>
               <Table
                 head={list('overview', 'head')}
-                rows={ENDPOINTS.map(([method, path, key]) => [
+                rows={ENDPOINTS.map(([method, path, key, keys]) => [
                   <span key="m" className={`site-endpoint__method site-endpoint__method--${method.toLowerCase()}`}>
                     {method}
                   </span>,
                   <code key="p">{path}</code>,
                   text('overview', `endpoints.${key}`),
+                  <code key="k" className="site-nowrap">
+                    {keys === 'pk' ? 'sk_ / pk_' : 'sk_'}
+                  </code>,
                 ])}
               />
+              <p>{text('overview', 'plural')}</p>
+            </section>
+
+            <section id="hosted">
+              <h2>{text('hosted', 'title')}</h2>
+              <p>{text('hosted', 'text')}</p>
+              <ol className="site-steps-list">
+                {list('hosted', 'steps').map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ol>
+              <Endpoint method="POST" path="/checkout/sessions" />
+              <CodeTabs samples={REQUESTS.createSession} label={t('site.docs.request')} {...tabs} />
+              <Table head={list('payments', 'head')} rows={fieldRows('hosted')} />
+              <Code code={CODE_SAMPLES.sessionResponse} label={t('site.docs.response')} />
+              <h3>{text('hosted', 'openTitle')}</h3>
+              <Table
+                head={list('hosted', 'modesHead')}
+                rows={list('hosted', 'modes').map(({ name, description }) => [<code key="n">{name}</code>, description])}
+              />
+              <Code code={CODE_SAMPLES.checkoutRedirect} label="Node.js" />
+              <Code code={CODE_SAMPLES.openCheckout} label="HTML" />
+              <h3>{text('hosted', 'afterTitle')}</h3>
+              {bullets('hosted', 'after')}
+              <p className="site-note site-note--warning">
+                <Icon name="info" size={16} /> {text('hosted', 'origins')}
+              </p>
+            </section>
+
+            <section id="checkout">
+              <h2>{text('checkout', 'title')}</h2>
+              <p>{text('checkout', 'text')}</p>
+              <ol className="site-steps-list">
+                {list('checkout', 'steps').map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ol>
+              <h3>{text('checkout', 'installTitle')}</h3>
+              <Code code={'npm install @gamapay/gamapay-js   # browser\nnpm install gamapay                # Node.js server'} />
+              <p>{text('checkout', 'cdn')}</p>
+              <Code code={'<script src="https://unpkg.com/@gamapay/gamapay-js@0.1.0/dist/gamapay.js"></script>'} />
+              <h3>{text('checkout', 'serverTitle')}</h3>
+              <Code code={CODE_SAMPLES.checkoutServer} label="Node.js" />
+              <h3>{text('checkout', 'pageTitle')}</h3>
+              <Code code={CODE_SAMPLES.checkoutPage} label="HTML" />
+              <h3>{text('checkout', 'elementTitle')}</h3>
+              {bullets('checkout', 'element')}
+              <h3>{text('checkout', 'optionsTitle')}</h3>
+              <Table
+                head={list('checkout', 'optionsHead')}
+                rows={list('checkout', 'options').map(({ name, description }) => [<code key="n">{name}</code>, description])}
+              />
+              <p className="site-note site-note--warning">
+                <Icon name="info" size={16} /> {text('checkout', 'fulfil')}
+              </p>
+            </section>
+
+            <section id="intents">
+              <h2>{text('intents', 'title')}</h2>
+              <p>{text('intents', 'text')}</p>
+              <Endpoint method="POST" path="/payment_intents" />
+              <CodeTabs samples={REQUESTS.createIntent} label={t('site.docs.request')} {...tabs} />
+              <Table head={list('payments', 'head')} rows={fieldRows('intents')} />
+              <Code code={CODE_SAMPLES.intentResponse} label={t('site.docs.response')} />
+              <p>{text('intents', 'statusText')}</p>
+              <Table
+                head={list('status', 'head')}
+                rows={INTENT_STATUSES.map((s) => [<code key="s">{s}</code>, text('intents', `statuses.${s}`)])}
+              />
+              <h3>{text('intents', 'confirmTitle')}</h3>
+              <Endpoint method="POST" path="/payment_intents/{id}/confirm" />
+              <p>{text('intents', 'confirm')}</p>
+              <Table head={list('payments', 'head')} rows={fieldRows('intents', 'confirmFields')} />
+              <p>{text('intents', 'payer')}</p>
+              <h3>{text('intents', 'manageTitle')}</h3>
+              {bullets('intents', 'manage')}
+            </section>
+
+            <section id="paymentMethods">
+              <h2>{text('paymentMethods', 'title')}</h2>
+              <p>{text('paymentMethods', 'text')}</p>
+              <Endpoint method="GET" path="/payment_methods" />
+              <Code code={CODE_SAMPLES.paymentMethodsResponse} label={t('site.docs.response')} />
+              {bullets('paymentMethods', 'points')}
             </section>
 
             <section id="payments">
@@ -207,6 +370,38 @@ export default function ApiDocs() {
               <Endpoint method="GET" path="/transfer/{id}" />
             </section>
 
+            <section id="lists">
+              <h2>{text('lists', 'title')}</h2>
+              <p>{text('lists', 'text')}</p>
+              <CodeTabs samples={REQUESTS.listPayins} label={t('site.docs.request')} {...tabs} />
+              <Code code={CODE_SAMPLES.listResponse} label={t('site.docs.response')} />
+              <Table
+                head={list('lists', 'head')}
+                rows={list('lists', 'params').map(({ name, description }) => [<code key="n">{name}</code>, description])}
+              />
+            </section>
+
+            <section id="webhooks">
+              <h2>{text('webhooks', 'title')}</h2>
+              <p>{text('webhooks', 'text')}</p>
+              <Endpoint method="POST" path="/webhook_endpoints" />
+              <CodeTabs samples={REQUESTS.createWebhook} label={t('site.docs.request')} {...tabs} />
+              <Table head={list('payments', 'head')} rows={fieldRows('webhooks')} />
+              <Code code={CODE_SAMPLES.webhookResponse} label={t('site.docs.response')} />
+              <p>{text('webhooks', 'secret')}</p>
+              <h3>{text('webhooks', 'eventsTitle')}</h3>
+              <p>{text('webhooks', 'eventsText')}</p>
+              <Code code={CODE_SAMPLES.eventPayload} label={t('site.docs.notification')} />
+              <Table
+                head={list('ipn', 'eventsHead')}
+                rows={EVENT_TYPES.map((event) => [<code key="e">{event}</code>, tRaw('site.docs.sections.webhooks.events')?.[event]])}
+              />
+              <h3>{text('webhooks', 'signatureTitle')}</h3>
+              <p>{text('webhooks', 'signature')}</p>
+              <CodeTabs samples={WEBHOOK_SIGNATURE_SAMPLES} languages={WEBHOOK_SIGNATURE_LANGUAGES} {...tabs} />
+              {bullets('webhooks', 'rules')}
+            </section>
+
             <section id="ipn">
               <h2>{text('ipn', 'title')}</h2>
               <p>{text('ipn', 'text')}</p>
@@ -230,7 +425,7 @@ export default function ApiDocs() {
               <p>{text('methods', 'text')}</p>
               <Table
                 head={list('methods', 'head')}
-                rows={METHODS.map(([code, country]) => [<code key="c">{code}</code>, country])}
+                rows={METHODS.map(([code, country]) => [<code key="c">{code}</code>, country ?? text('methods', 'anyCountry')])}
               />
             </section>
 
@@ -238,6 +433,7 @@ export default function ApiDocs() {
               <h2>{text('errors', 'title')}</h2>
               <p>{text('errors', 'text')}</p>
               <Code code={CODE_SAMPLES.error} label={t('site.docs.response')} />
+              <p>{text('errors', 'type')}</p>
               <Table
                 head={list('errors', 'head')}
                 rows={HTTP_CODES.map((c) => [<code key="c">{c}</code>, text('errors', `codes.${c}`)])}
