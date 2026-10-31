@@ -1,0 +1,803 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// "Liens de paiement" (pages/PaymentLinks.jsx, PaymentLinkNew/Edit/Details.jsx and
+// components/PaymentLinkForm.jsx): the list, the form with its live preview of the payer's page,
+// and the link's page with its share panel and QR code.
+
+// ---- List ----
+.plinks {
+  &__notice {
+    margin-bottom: 16px;
+  }
+
+  &__intro {
+    max-width: 460px;
+    margin: 24px auto;
+    text-align: center;
+
+    h2 {
+      font-size: 20px;
+      margin: 14px 0 8px;
+      color: $desk-text;
+    }
+
+    p {
+      color: $desk-muted;
+      margin: 0 0 20px;
+      line-height: 1.5;
+    }
+  }
+
+  &__intro-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    color: $desk-accent;
+    background: $desk-accent-soft;
+  }
+
+  &__toolbar {
+    @include flex(center, flex-start, 12px, wrap);
+    margin-bottom: 14px;
+  }
+
+  &__filters {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 10px;
+    background: $desk-paper;
+  }
+
+  &__filter {
+    border: 0;
+    background: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    color: $desk-muted;
+    cursor: pointer;
+
+    &.is-active {
+      background: $desk-surface;
+      color: $desk-text;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(22, 23, 63, 0.12);
+    }
+  }
+
+  &__search {
+    @include field-input;
+    flex: 1;
+    min-width: 180px;
+    max-width: 320px;
+    margin-left: auto;
+    padding: 8px 12px;
+  }
+
+  &__name {
+    display: block;
+    font-weight: 600;
+    color: $desk-text;
+    text-decoration: none;
+
+    &:hover {
+      color: $desk-accent;
+    }
+  }
+
+  &__url {
+    @include flex(center, flex-start, 4px);
+    max-width: 320px;
+    color: $desk-muted;
+    font-size: 12px;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__copy {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: $desk-muted;
+    cursor: pointer;
+
+    &:hover {
+      background: $desk-accent-soft;
+      color: $desk-accent;
+    }
+  }
+
+  &__price {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &__mode {
+    margin-left: 6px;
+  }
+
+  &__collected {
+    display: block;
+    color: $desk-muted;
+    font-size: 12px;
+  }
+
+  &__mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+  }
+
+  &__footer {
+    @include flex(center, space-between, 12px, wrap);
+    margin-top: 12px;
+
+    .table-footer {
+      flex: 1;
+    }
+  }
+}
+
+// ---- Pages (new, edit, details) ----
+.plink-page {
+  &__back {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+    border-radius: 50%;
+    color: $desk-muted;
+    text-decoration: none;
+    vertical-align: middle;
+
+    &:hover {
+      background: $desk-accent-soft;
+      color: $desk-accent;
+    }
+  }
+
+  &__header {
+    @include flex(center, flex-start, 10px, wrap);
+  }
+
+  &__title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    @include flex(center, flex-end, 8px);
+    margin-left: auto;
+  }
+
+  &__inactive {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: $desk-debit;
+    background: $desk-debit-soft;
+  }
+
+  &__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+
+  &__items {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    border-top: 1px solid $desk-line;
+
+    li {
+      @include flex(center, flex-start, 12px);
+      padding: 10px 0;
+      border-bottom: 1px solid $desk-line;
+    }
+
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+  }
+
+  &__item-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+
+    small {
+      display: block;
+      color: $desk-muted;
+      font-weight: 400;
+    }
+  }
+}
+
+.plink-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: $desk-paper;
+
+  &__label {
+    font-size: 12px;
+    color: $desk-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__value {
+    font-size: 17px;
+    color: $desk-text;
+  }
+
+  &__detail {
+    font-size: 13px;
+    color: $desk-muted;
+    overflow-wrap: anywhere;
+  }
+}
+
+// ---- Share panel ----
+.plink-share {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  padding: 20px;
+  border: 1px solid $desk-line;
+  border-radius: 14px;
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: $desk-text;
+  }
+
+  &__main {
+    min-width: 0;
+  }
+
+  &__url {
+    @include flex(stretch, flex-start, 8px);
+
+    input {
+      @include field-input;
+      flex: 1;
+      min-width: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      background: $desk-paper;
+    }
+  }
+
+  &__copy {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  &__targets {
+    @include flex(center, flex-start, 8px, wrap);
+    margin-top: 12px;
+  }
+
+  &__target {
+    @include flex(center, center, 6px);
+    padding: 7px 12px;
+    border: 1px solid $desk-line;
+    border-radius: 999px;
+    background: $desk-surface;
+    color: $desk-text;
+    font: inherit;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      border-color: $desk-accent;
+      color: $desk-accent;
+    }
+
+    &--whatsapp:hover {
+      border-color: #128c4b;
+      color: #128c4b;
+    }
+  }
+
+  &__toggle {
+    @include flex(center, flex-start, 4px);
+    margin-top: 16px;
+    text-align: left;
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  &__params {
+    margin-top: 12px;
+  }
+
+  &__hint {
+    margin: 0 0 12px;
+    color: $desk-muted;
+    font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
+
+.plink-qr {
+  @include flex(center, flex-start, 10px);
+  flex-direction: column;
+
+  &__image {
+    display: grid;
+    place-items: center;
+    width: 180px;
+    height: 180px;
+    border: 1px solid $desk-line;
+    border-radius: 12px;
+    overflow: hidden;
+    color: $desk-muted;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .is-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+// ---- Form + preview ----
+.plink-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__settings {
+    min-width: 0;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 0;
+    border-bottom: 1px solid $desk-line;
+
+    h3 {
+      margin: 0;
+      font-size: 15px;
+      color: $desk-text;
+    }
+
+    textarea {
+      @include field-input;
+      resize: vertical;
+      font: inherit;
+    }
+
+    > .field__error {
+      color: $color-danger;
+      font-size: 12px;
+    }
+  }
+
+  .tabs {
+    margin-top: 8px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  &__indent {
+    margin-left: 28px;
+  }
+
+  &__add {
+    @include flex(center, flex-start, 6px);
+    align-self: flex-start;
+  }
+
+  &__error {
+    margin-top: 16px;
+    color: $desk-debit;
+    background: $desk-debit-soft;
+  }
+
+  &__actions {
+    @include flex(center, flex-end, 10px);
+    padding-top: 20px;
+  }
+}
+
+.plink-mode,
+.plink-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plink-mode__option,
+.plink-choice__option,
+.plink-radio {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid $desk-line;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  input {
+    flex: none;
+    margin: 3px 0 0;
+    accent-color: $desk-accent;
+  }
+
+  strong {
+    display: block;
+    color: $desk-text;
+    font-size: 14px;
+  }
+
+  small {
+    display: block;
+    color: $desk-muted;
+    font-size: 12px;
+  }
+
+  &.is-checked {
+    border-color: $desk-accent;
+    box-shadow: 0 0 0 1px $desk-accent;
+  }
+
+  &.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.plink-mode__option {
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 38px;
+
+  input {
+    position: absolute;
+    left: 14px;
+    top: 13px;
+  }
+}
+
+.plink-choice__option {
+  align-items: flex-start;
+
+  svg {
+    flex: none;
+    color: $desk-accent;
+    margin-top: 1px;
+  }
+}
+
+.plink-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid $desk-line;
+  border-radius: 12px;
+  background: $desk-paper;
+
+  &__row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+
+    > .field {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__qty {
+    flex: 0 0 110px !important;
+  }
+
+  &__remove {
+    flex: none;
+    margin-top: 26px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid $desk-line;
+    border-radius: 8px;
+    background: $desk-surface;
+    color: $desk-muted;
+    cursor: pointer;
+
+    &:hover {
+      color: $desk-debit;
+      border-color: $desk-debit;
+    }
+  }
+
+  &__more {
+    summary {
+      cursor: pointer;
+      color: $desk-accent;
+      font-size: 13px;
+    }
+
+    .field {
+      margin-top: 10px;
+    }
+  }
+
+  input {
+    background: $desk-surface;
+  }
+}
+
+.plink-preview {
+  position: sticky;
+  top: 16px;
+  min-width: 0;
+
+  @media (max-width: 1100px) {
+    position: static;
+  }
+
+  &__title {
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: $desk-text;
+  }
+
+  &__frame {
+    overflow: hidden;
+    border: 1px solid $desk-line;
+    border-radius: 12px;
+    background: $desk-paper;
+    box-shadow: 0 8px 24px rgba(22, 23, 63, 0.08);
+  }
+
+  &__bar {
+    @include flex(center, flex-start, 5px);
+    padding: 8px 10px;
+    border-bottom: 1px solid $desk-line;
+    background: $desk-surface;
+
+    > span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: $desk-line;
+    }
+  }
+
+  &__url {
+    @include flex(center, center, 4px);
+    flex: 1;
+    min-width: 0;
+    margin: 0 8px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: $desk-paper;
+    color: $desk-muted;
+    font-size: 11px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 300px;
+    font-size: 12px;
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+    }
+
+    &--done {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 24px;
+      text-align: center;
+      background: $desk-surface;
+
+      strong {
+        font-size: 15px;
+        color: $desk-text;
+      }
+
+      p {
+        max-width: 280px;
+        margin: 0;
+        color: $desk-muted;
+        white-space: pre-line;
+      }
+    }
+  }
+
+  &__summary {
+    padding: 18px;
+    min-width: 0;
+  }
+
+  &__merchant {
+    @include flex(center, flex-start, 6px, wrap);
+    font-weight: 600;
+    color: $desk-text;
+  }
+
+  &__badge {
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #8a4b00;
+    background: #ffe9c7;
+  }
+
+  &__total {
+    margin: 10px 0 12px;
+    font-size: 22px;
+    font-weight: 700;
+    color: $desk-text;
+  }
+
+  &__name {
+    margin: 12px 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: $desk-text;
+    overflow-wrap: anywhere;
+  }
+
+  &__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      @include flex(center, flex-start, 8px);
+      padding: 5px 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      object-fit: cover;
+    }
+
+    small {
+      display: block;
+      color: $desk-muted;
+    }
+  }
+
+  &__thumb {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    font-weight: 700;
+    color: $desk-muted;
+    background: $desk-line;
+
+    .plink-page__items & {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+  }
+
+  &__muted {
+    margin: 0;
+    color: $desk-muted;
+  }
+
+  &__pay {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 18px;
+    background: $desk-surface;
+  }
+
+  &__field,
+  &__method {
+    padding: 8px 10px;
+    border: 1px solid $desk-line;
+    border-radius: 6px;
+    color: $desk-muted;
+  }
+
+  &__field--amount {
+    font-size: 15px;
+    font-weight: 600;
+    color: $desk-text;
+  }
+
+  &__method.is-checked {
+    border-color: $desk-accent;
+    color: $desk-text;
+  }
+
+  &__button {
+    margin-top: auto;
+    padding: 9px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+    color: #fff;
+    background: #0a66c2;
+  }
+
+  &__check {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 700;
+    color: #fff;
+    background: #1a9e5c;
+  }
+}

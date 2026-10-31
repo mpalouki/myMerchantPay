@@ -2,6 +2,7 @@ export const PENDING_PAYMENTS = [];
 
 export const SIDEBAR_ITEMS = [
   { key: 'dashboard', label: 'Tableau de bord', icon: 'dashboard', path: '/dashboard' },
+  { key: 'payment-links', label: 'Liens de paiement', icon: 'link', path: '/dashboard/payment-links' },
   { key: 'api', label: 'Intégrez notre API', icon: 'api', path: '/dashboard/api-integration' },
   { key: 'roles', label: 'Gestion des rôles', icon: 'roles', path: '/dashboard/roles' },
 ];

@@ -27,6 +27,10 @@ import ReloadHistory from './pages/ReloadHistory.jsx';
 import Withdraw from './pages/Withdraw.jsx';
 import Transfer from './pages/Transfer.jsx';
 import Roles from './pages/Roles.jsx';
+import PaymentLinks from './pages/PaymentLinks.jsx';
+import PaymentLinkNew from './pages/PaymentLinkNew.jsx';
+import PaymentLinkDetails from './pages/PaymentLinkDetails.jsx';
+import PaymentLinkEdit from './pages/PaymentLinkEdit.jsx';
 import KycValidation from './pages/KycValidation.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 import JoinTeam from './pages/JoinTeam.jsx';
@@ -82,6 +86,10 @@ export default function App() {
         <Route path="api-integration/new" element={<ApiApplicationNew />} />
         <Route path="api-integration/:appId" element={<ApiApplicationDetails />} />
         <Route path="api-integration/:appId/edit" element={<ApiApplicationEdit />} />
+        <Route path="payment-links" element={<PaymentLinks />} />
+        <Route path="payment-links/new" element={<PaymentLinkNew />} />
+        <Route path="payment-links/:linkId" element={<PaymentLinkDetails />} />
+        <Route path="payment-links/:linkId/edit" element={<PaymentLinkEdit />} />
         <Route path="roles" element={<Roles />} />
         <Route path="reload" element={<Reload />} />
         <Route path="reload/history" element={<ReloadHistory />} />
