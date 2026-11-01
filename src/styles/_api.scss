@@ -254,3 +254,11 @@
   font-size: 11px;
   font-weight: 600;
 }
+
+// Text of the delete-application dialog (DeleteApplicationDialog.jsx).
+.delete-app__hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: $desk-muted;
+}

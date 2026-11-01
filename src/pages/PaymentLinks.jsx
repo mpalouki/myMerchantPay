@@ -4,6 +4,7 @@ import Icon from '../components/Icon.jsx';
 import TablePagination from '../components/TablePagination.jsx';
 import { getPaymentLinks } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 import { formatDateTime } from '../data/reload.js';
 import { formatMoney } from '../data/transfer.js';
 import { linkPrice } from '../data/paymentLinks.js';
@@ -21,6 +22,7 @@ const STATUSES = [
 ];
 
 export default function PaymentLinks() {
+  const canManage = usePermissions().can('payment_links.manage');
   const navigate = useNavigate();
   const { state } = useLocation();
   const { selectedBalance: account, loading: accountsLoading, error: accountsError } = useAccount();
@@ -96,9 +98,11 @@ export default function PaymentLinks() {
             </span>
             <h2>Encaissez avec un simple lien</h2>
             <p>Un lien pour un produit, un service ou un don : vos clients paient par mobile money ou carte bancaire, sur une page sécurisée par GamaPay.</p>
-            <button type="button" className="btn btn--primary" onClick={() => navigate('/dashboard/payment-links/new')}>
-              <Icon name="plus" size={16} /> Créer un lien de paiement
-            </button>
+            {canManage && (
+              <button type="button" className="btn btn--primary" onClick={() => navigate('/dashboard/payment-links/new')}>
+                <Icon name="plus" size={16} /> Créer un lien de paiement
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -111,9 +115,11 @@ export default function PaymentLinks() {
                 ))}
               </div>
               <input type="search" className="plinks__search" placeholder="Rechercher un lien" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Rechercher un lien" />
-              <button type="button" className="btn btn--primary" onClick={() => navigate('/dashboard/payment-links/new')} disabled={!account}>
-                <Icon name="plus" size={16} /> Nouveau lien
-              </button>
+              {canManage && (
+                <button type="button" className="btn btn--primary" onClick={() => navigate('/dashboard/payment-links/new')} disabled={!account}>
+                  <Icon name="plus" size={16} /> Nouveau lien
+                </button>
+              )}
             </div>
 
             <div className="table-scroll">

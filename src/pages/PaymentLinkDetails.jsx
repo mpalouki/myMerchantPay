@@ -5,6 +5,7 @@ import Icon from '../components/Icon.jsx';
 import PaymentLinkQr from '../components/PaymentLinkQr.jsx';
 import TablePagination from '../components/TablePagination.jsx';
 import { getPaymentLink, getPaymentLinkPayments, setPaymentLinkActive } from '../api/client.js';
+import usePermissions from '../hooks/usePermissions.js';
 import { formatDateTime } from '../data/reload.js';
 import { formatMoney } from '../data/transfer.js';
 import { SUBMIT_TYPES, URL_PARAMETERS, linkPrice, shareTargets, urlWithParameters } from '../data/paymentLinks.js';
@@ -15,6 +16,7 @@ import { SUBMIT_TYPES, URL_PARAMETERS, linkPrice, shareTargets, urlWithParameter
 const PAGE_SIZE = 10;
 
 export default function PaymentLinkDetails() {
+  const { can } = usePermissions();
   const { linkId } = useParams();
   const navigate = useNavigate();
   const { state: navState } = useLocation();
@@ -77,6 +79,7 @@ export default function PaymentLinkDetails() {
           <span className="plink-page__title">{link.name}</span>
           <span className={`badge ${link.active ? 'badge--success' : 'badge--danger'}`}>{link.active ? 'Actif' : 'Désactivé'}</span>
           {!link.livemode && <span className="badge badge--warning">Mode test</span>}
+          {can('payment_links.manage') && (
           <span className="plink-page__actions">
             <button type="button" className="btn btn--outline btn--sm" onClick={() => navigate(`/dashboard/payment-links/${link.id}/edit`)}>
               <Icon name="edit" size={14} /> Modifier
@@ -85,6 +88,7 @@ export default function PaymentLinkDetails() {
               {link.active ? 'Désactiver' : 'Activer'}
             </button>
           </span>
+          )}
         </div>
         <div className="card__body">
           {navState?.created && (

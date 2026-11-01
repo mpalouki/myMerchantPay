@@ -26,7 +26,8 @@ import Reload from './pages/Reload.jsx';
 import ReloadHistory from './pages/ReloadHistory.jsx';
 import Withdraw from './pages/Withdraw.jsx';
 import Transfer from './pages/Transfer.jsx';
-import Roles from './pages/Roles.jsx';
+import Team from './pages/Team.jsx';
+import RequirePermission from './components/RequirePermission.jsx';
 import PaymentLinks from './pages/PaymentLinks.jsx';
 import PaymentLinkNew from './pages/PaymentLinkNew.jsx';
 import PaymentLinkDetails from './pages/PaymentLinkDetails.jsx';
@@ -34,6 +35,9 @@ import PaymentLinkEdit from './pages/PaymentLinkEdit.jsx';
 import KycValidation from './pages/KycValidation.jsx';
 import CreateAccount from './pages/CreateAccount.jsx';
 import JoinTeam from './pages/JoinTeam.jsx';
+
+// A dashboard page the login's roles must open (data/permissions.js), else a "no access" panel.
+const guard = (permission, page) => <RequirePermission permission={permission}>{page}</RequirePermission>;
 
 export default function App() {
   return (
@@ -67,8 +71,8 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
-        <Route path="kyc" element={<KycValidation />} />
+        <Route index element={guard('balances.view', <Dashboard />)} />
+        <Route path="kyc" element={guard('business.view', <KycValidation />)} />
         <Route path="send-money" element={<PlaceholderPage title="Envoyer de l'argent" icon="send" />} />
         <Route
           path="request-payment"
@@ -82,19 +86,20 @@ export default function App() {
           path="disburse-payments"
           element={<PlaceholderPage title="Débourser des paiements" icon="disburse" />}
         />
-        <Route path="api-integration" element={<ApiIntegration />} />
-        <Route path="api-integration/new" element={<ApiApplicationNew />} />
-        <Route path="api-integration/:appId" element={<ApiApplicationDetails />} />
-        <Route path="api-integration/:appId/edit" element={<ApiApplicationEdit />} />
-        <Route path="payment-links" element={<PaymentLinks />} />
-        <Route path="payment-links/new" element={<PaymentLinkNew />} />
-        <Route path="payment-links/:linkId" element={<PaymentLinkDetails />} />
-        <Route path="payment-links/:linkId/edit" element={<PaymentLinkEdit />} />
-        <Route path="roles" element={<Roles />} />
-        <Route path="reload" element={<Reload />} />
-        <Route path="reload/history" element={<ReloadHistory />} />
-        <Route path="withdraw" element={<Withdraw />} />
-        <Route path="transfer" element={<Transfer />} />
+        <Route path="api-integration" element={guard('applications.view', <ApiIntegration />)} />
+        <Route path="api-integration/new" element={guard('applications.manage', <ApiApplicationNew />)} />
+        <Route path="api-integration/:appId" element={guard('applications.view', <ApiApplicationDetails />)} />
+        <Route path="api-integration/:appId/edit" element={guard('applications.manage', <ApiApplicationEdit />)} />
+        <Route path="payment-links" element={guard('payment_links.view', <PaymentLinks />)} />
+        <Route path="payment-links/new" element={guard('payment_links.manage', <PaymentLinkNew />)} />
+        <Route path="payment-links/:linkId" element={guard('payment_links.view', <PaymentLinkDetails />)} />
+        <Route path="payment-links/:linkId/edit" element={guard('payment_links.manage', <PaymentLinkEdit />)} />
+        <Route path="team" element={guard('team.view', <Team />)} />
+        <Route path="roles" element={<Navigate to="/dashboard/team" replace />} />
+        <Route path="reload" element={guard('reloads.create', <Reload />)} />
+        <Route path="reload/history" element={guard('reloads.view', <ReloadHistory />)} />
+        <Route path="withdraw" element={guard('withdrawals.view', <Withdraw />)} />
+        <Route path="transfer" element={guard('transfers.view', <Transfer />)} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
       </Route>

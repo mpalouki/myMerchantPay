@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
 import Tabs from './Tabs.jsx';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 import { currencyLabel } from '../data/reload.js';
 import { formatMoney } from '../data/transfer.js';
 import { SUBMIT_TYPES, bodyFromForm, formTotal, newItem, toAmount } from '../data/paymentLinks.js';

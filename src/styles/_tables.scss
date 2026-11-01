@@ -90,3 +90,44 @@
     }
   }
 }
+
+// Shared by the tables of the API applications and payment links pages.
+.table-scroll {
+  overflow-x: auto;
+}
+
+// Bordered, centred variant of .data-table, as in the teams design.
+.data-table--bordered {
+  th,
+  td {
+    border: 1px solid $desk-line;
+    text-align: center;
+  }
+}
+
+.data-table__sort {
+  @include flex(center, center, 6px);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.data-table__sort-icon {
+  font-size: 9px;
+  opacity: 0.3;
+
+  &.is-active {
+    opacity: 0.9;
+  }
+}
+
+.table-pagination button.is-active {
+  border-color: $desk-accent;
+  background: $desk-accent-soft;
+  color: $desk-accent;
+  font-weight: 600;
+}

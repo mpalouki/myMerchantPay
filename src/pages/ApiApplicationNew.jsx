@@ -4,7 +4,7 @@ import ApplicationForm from '../components/ApplicationForm.jsx';
 import { createApplication } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
 import { NEW_APPLICATION } from '../data/apiApplications.js';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 import { useApplicationOptions } from '../hooks/useApplicationOptions.js';
 
 // Create an application of "Intégrez notre API" (/dashboard/api-integration/new, design:

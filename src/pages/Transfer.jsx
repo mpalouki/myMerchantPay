@@ -3,6 +3,7 @@ import AlertDialog from '../components/AlertDialog.jsx';
 import Flag from '../components/Flag.jsx';
 import Icon from '../components/Icon.jsx';
 import TransferHistory from '../components/TransferHistory.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 import { createTransfer, quoteTransfer } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
 import { currencyLabel } from '../data/reload.js';
@@ -31,6 +32,8 @@ function currentTime() {
 
 export default function Transfer() {
   const { balances, selectedBalance: source, selectCountry, loading, error, reload } = useAccount();
+  // Only the history without transfers.create on the source account.
+  const canTransfer = usePermissions().can('transfers.create');
   const [destinationId, setDestinationId] = useState(null);
   const [amountInput, setAmountInput] = useState('');
   const [description, setDescription] = useState('');
@@ -141,6 +144,20 @@ export default function Transfer() {
   else if (error) message = `Impossible de charger vos comptes : ${error.message}`;
   else if (!source) message = "Vous n'avez encore aucun compte.";
   else if (others.length === 0) message = 'Un transfert se fait entre deux de vos comptes, et vous n’en avez qu’un. Un compte est ouvert pour chaque pays où vous encaissez.';
+
+  if (!message && !canTransfer) {
+    return (
+      <>
+        <div className="card transfer">
+          <div className="card__header">Transférer entre mes comptes</div>
+          <div className="card__body">
+            <p className="reload__empty">Vos rôles vous permettent de consulter les transferts de ce compte, pas d’en faire.</p>
+          </div>
+        </div>
+        <TransferHistory key={source.id} account={source} refreshKey={0} />
+      </>
+    );
+  }
 
   if (message) {
     return (

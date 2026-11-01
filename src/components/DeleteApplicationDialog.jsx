@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Modal from './Modal.jsx';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 
 // Confirmation before deleting an "Intégrez notre API" application (list and details pages).
 // `onConfirm` is awaited (the API call); on failure the dialog stays open with the error.
@@ -21,7 +21,7 @@ export default function DeleteApplicationDialog({ app, onConfirm, onClose }) {
 
   return (
     <Modal title="Supprimer l'application" onClose={onClose} size="sm">
-      <p className="team-form__hint">
+      <p className="delete-app__hint">
         Supprimer l&apos;application <strong>{app.name}</strong> ? Ses clés API cesseront de fonctionner
         immédiatement. Cette action est irréversible.
       </p>

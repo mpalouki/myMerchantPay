@@ -2,7 +2,8 @@ import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 
-// Dialog rendered over the page (portal into <body>). Closes on Escape, on the × button and
+// Dialog rendered over the page (portal into <body>); size "drawer" is a full-height panel on
+// the right, like Stripe's side sheets. Closes on Escape, on the × button and
 // on a click on the backdrop; focus moves into the dialog on open and back where it was on
 // close (to the first form field, else the dialog itself). Mount it only while open:
 // `{open && <Modal …/>}`.
@@ -35,7 +36,7 @@ export default function Modal({ title, onClose, children, size = 'md' }) {
   }, []);
 
   return createPortal(
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={`modal-backdrop modal-backdrop--${size}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={dialogRef}
         className={`modal modal--${size}`}

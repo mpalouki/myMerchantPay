@@ -5,8 +5,9 @@ import Icon from '../components/Icon.jsx';
 import DeleteApplicationDialog from '../components/DeleteApplicationDialog.jsx';
 import { deleteApplication, getApplications } from '../api/client.js';
 import { useAccount } from '../context/AccountContext.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 import { API_INTEGRATION_TABS, formatCreatedAt } from '../data/apiApplications.js';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 
 // "Intégrez notre API" (design: "1- List of applications - API Keys.pdf"): the applications
 // of the account selected in the dashboard (GET /api/merchant/applications?balance=…), each
@@ -48,6 +49,7 @@ export default function ApiIntegration() {
 
 function ApplicationsList({ initialNotice }) {
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const { selectedBalance, loading: accountsLoading, error: accountsError } = useAccount();
   const balanceId = selectedBalance?.id;
   // null while loading.
@@ -123,10 +125,14 @@ function ApplicationsList({ initialNotice }) {
                     <Link to={`/dashboard/api-integration/${app.id}`} className="link-btn">
                       Détails
                     </Link>
-                    <span aria-hidden="true"> | </span>
-                    <button type="button" className="link-btn" onClick={() => setToDelete(app)}>
-                      Supprimer
-                    </button>
+                    {can('applications.manage') && (
+                      <>
+                        <span aria-hidden="true"> | </span>
+                        <button type="button" className="link-btn" onClick={() => setToDelete(app)}>
+                          Supprimer
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))
@@ -136,14 +142,16 @@ function ApplicationsList({ initialNotice }) {
       </div>
 
       <div className="api-apps__buttons">
-        <button
-          type="button"
-          className="btn btn--teal"
-          onClick={() => navigate('/dashboard/api-integration/new')}
-          disabled={noAccount}
-        >
-          Configurer une nouvelle application
-        </button>
+        {can('applications.manage') && (
+          <button
+            type="button"
+            className="btn btn--teal"
+            onClick={() => navigate('/dashboard/api-integration/new')}
+            disabled={noAccount}
+          >
+            Configurer une nouvelle application
+          </button>
+        )}
         <a href={DEVELOPER_GUIDE_URL} className="btn btn--danger" target="_blank" rel="noreferrer">
           <Icon name="book" size={16} /> Voir le Guide des développeurs
         </a>

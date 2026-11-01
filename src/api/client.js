@@ -86,7 +86,10 @@ export function logout() {
 }
 
 // Response shape: { email, merchant: { id, name, email, sector, country, countryCode, status,
-//   kycStatus ('not_submitted' | 'pending' | 'approved' | 'rejected'), underSurveillance, createdAt } }
+//   kycStatus ('not_submitted' | 'pending' | 'approved' | 'rejected'), underSurveillance, createdAt },
+//   member: { id, name, owner, roles: [{ key, name }] },
+//   permissions: { merchant: [permission], accounts: { <balance id>: [permission] } } }
+// (what this login may do; see data/permissions.js)
 export function getMerchantProfile() {
   return request('/api/merchant/me', { method: 'GET', auth: true });
 }
@@ -181,59 +184,120 @@ export function getBalances() {
   return request('/api/merchant/balances', { method: 'GET', auth: true });
 }
 
-// --- Role management ("Gestion des rôles", pages/Roles.jsx). Bodies are JSON. A team is:
-// { id, name, dateCreation, status (bool, true = active), habilitation: { id, name, accessType },
-//   access: ['DASHBOARD', …] (permission references), balance: { id, accountNumberFormatted,
-//   country: { codeAlpha2, name } }, activeMembers, members: [{ id, email,
-//   status: 'invited' | 'active' | 'inactive', habilitation: { id, name, accessType } }] }.
-// Validation failures are 422 with { errors: { <body field>: message } }.
+// --- Role management ("Équipe et sécurité", pages/Team.jsx). Bodies are JSON; validation
+// failures are 422 { errors: { <field>: message } } (e.g. emails.0, roles, accounts), refusals
+// 403/409 { error, code } (forbidden, owner_protected, role_in_use, not_invited).
+// A member is: { id, email, name, status: 'active' | 'invited' | 'inactive', owner, you,
+//   roles: [{ key, name, custom }], allAccounts, accounts: [account], teams: [{ id, name, account }],
+//   invitedBy, createdAt, joinedAt, lastLoginAt, editable, access? }
+// where account is { id, accountNumber, accountNumberFormatted, country, countryCode, currency }
+// and access (single member only) is { merchant: [permission], accounts: [{ account, permissions }] }.
+// A team is: { id, name, description, roles, account, members: [{ id, email, name, status }], createdAt }.
 
-// Choices for the team form. Response shape: { profiles: [{ id, name, accessType }],
-//   permissions: [{ reference, label }] }
+// What the screens are built from. Response shape: { permissions: [{ key, label, group,
+//   accountScoped, implies }], permissionGroups: { key: label }, roles: [{ key, name, description,
+//   group, custom, id, permissions }], roleGroups, accounts: [account], teams: [{ id, name, account }],
+//   eventCategories, eventTypes: [{ key, label, category }], me: { id, superAdmin, canManage, canViewHistory } }
 export function getTeamOptions() {
-  return request('/api/merchant/teams/options', { auth: true });
+  return request('/api/merchant/team/options', { auth: true });
 }
 
-// Teams of one account (balance id), by name. Response shape: [team]
+// Response shape: { items: [member], total, page, limit, counts: { all, active, invited, inactive } }
+export function getTeamMembers({ status = '', q = '', role = '', team = '', page = 1, limit = 25 } = {}) {
+  return request(`/api/merchant/team/members?${teamQuery({ status, q, role, team, page, limit })}`, { auth: true });
+}
+
+// The CSV export's URL (same filters as getTeamMembers), to open as a download.
+export function teamMembersExportUrl({ status = '', q = '', role = '', team = '' } = {}) {
+  return `${API_BASE_URL}/api/merchant/team/members/export?${teamQuery({ status, q, role, team })}`;
+}
+
+// Response shape: member, with access.
+export function getTeamMember(id) {
+  return request(`/api/merchant/team/members/${id}`, { auth: true });
+}
+
+// { emails: [email] (10 max), name? (one email only), roles: [key], allAccounts, accounts: [id],
+//   teams: [id] }. Each person is emailed an invitation. Response shape (201): { items: [member] }
+export function inviteTeamMembers(body) {
+  return request('/api/merchant/team/members', { method: 'POST', body, auth: true });
+}
+
+// { name, roles, allAccounts, accounts, teams }. Response shape: member, with access.
+export function updateTeamMember(id, body) {
+  return request(`/api/merchant/team/members/${id}`, { method: 'PUT', body, auth: true });
+}
+
+// Response shape: member, with access. 409 owner_protected.
+export function deactivateTeamMember(id) {
+  return request(`/api/merchant/team/members/${id}/deactivate`, { method: 'POST', auth: true });
+}
+
+export function reactivateTeamMember(id) {
+  return request(`/api/merchant/team/members/${id}/reactivate`, { method: 'POST', auth: true });
+}
+
+// Response shape: { member, emailSent }. 409 not_invited once accepted.
+export function resendTeamInvitation(id) {
+  return request(`/api/merchant/team/members/${id}/invitation`, { method: 'POST', auth: true });
+}
+
+// Removes the member and their login. 204, no body.
+export function removeTeamMember(id) {
+  return request(`/api/merchant/team/members/${id}`, { method: 'DELETE', auth: true });
+}
+
+// Teams of every account, or of one (balance id). Response shape: [team]
 export function getTeams(balanceId) {
-  return request(`/api/merchant/teams?balance=${encodeURIComponent(balanceId)}`, { auth: true });
+  return request(`/api/merchant/team/teams${balanceId ? `?balance=${encodeURIComponent(balanceId)}` : ''}`, { auth: true });
 }
 
-// { balance (id), name, habilitation (profile id), access: [reference], emails: [email] }
-// Members are added as 'invited'. Response shape: team (201)
-export function createTeam(team) {
-  return request('/api/merchant/teams', { method: 'POST', body: team, auth: true });
+// { balance (id), name, description?, roles: [key], members: [member id] }. Response shape (201): team
+export function createTeam(body) {
+  return request('/api/merchant/team/teams', { method: 'POST', body, auth: true });
 }
 
-// { name, habilitation, access, emails, status (bool) }: replaces the member list by email (kept
-// members keep their status, new ones are invited). Response shape: team
-export function updateTeam(id, team) {
-  return request(`/api/merchant/teams/${id}`, { method: 'PUT', body: team, auth: true });
+// Same body without balance (a team keeps its account). Response shape: team
+export function updateTeam(id, body) {
+  return request(`/api/merchant/team/teams/${id}`, { method: 'PUT', body, auth: true });
 }
 
 // 204, no body.
 export function deleteTeam(id) {
-  return request(`/api/merchant/teams/${id}`, { method: 'DELETE', auth: true });
+  return request(`/api/merchant/team/teams/${id}`, { method: 'DELETE', auth: true });
 }
 
-// Response shape: the updated team (201). 422 { errors: { email } } if invalid or already a member.
-export function addTeamMember(teamId, email) {
-  return request(`/api/merchant/teams/${teamId}/members`, { method: 'POST', body: { email }, auth: true });
+// { name, description?, permissions: [key] } (implied permissions are added). Response shape
+// (201): the role as in getTeamOptions().roles
+export function createCustomRole(body) {
+  return request('/api/merchant/team/roles', { method: 'POST', body, auth: true });
 }
 
-// Response shape: the updated team.
-export function removeTeamMember(teamId, memberId) {
-  return request(`/api/merchant/teams/${teamId}/members/${memberId}`, { method: 'DELETE', auth: true });
+export function updateCustomRole(id, body) {
+  return request(`/api/merchant/team/roles/${id}`, { method: 'PUT', body, auth: true });
 }
 
-// Sends an invited member a new invitation email (the previous link stops working).
-// Response shape: the team. 409 if the member already accepted, 502 if the email failed.
-export function resendTeamInvitation(teamId, memberId) {
-  return request(`/api/merchant/teams/${teamId}/members/${memberId}/invitation`, { method: 'POST', auth: true });
+// 204; 409 role_in_use while a member or team holds it.
+export function deleteCustomRole(id) {
+  return request(`/api/merchant/team/roles/${id}`, { method: 'DELETE', auth: true });
+}
+
+// Response shape: { items: [{ id, type, category, action, actor, actorId, target, details, ip,
+//   userAgent, createdAt }], total, page, limit }
+export function getSecurityEvents({ category = '', type = '', q = '', from = '', to = '', page = 1, limit = 25 } = {}) {
+  return request(`/api/merchant/team/security-events?${teamQuery({ category, type, q, from, to, page, limit })}`, { auth: true });
+}
+
+function teamQuery(params) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) query.set(key, value);
+  });
+  return query.toString();
 }
 
 // Team invitation link (JoinTeam.jsx, /join-team?token=…). Sent as form data.
-// Response shape: { email, merchantName, teamName, habilitation, needsPassword, expiresAt }.
+// Response shape: { email, merchantName, inviterName, roles: [name], teams: [name], needsPassword, expiresAt }.
 // An invalid, expired or used link — or an email used by another merchant's login — is 422
 // with { errors: { token } }.
 export function checkTeamInvitation(token) {
@@ -242,7 +306,7 @@ export function checkTeamInvitation(token) {
   return request('/api/merchant/team-invitation', { method: 'POST', body });
 }
 
-// Activates the membership; with needsPassword, also creates the portal login (password and
+// Activates the member; with needsPassword, also creates the portal login (password and
 // confirmPassword required). Response shape: { email, loginCreated }; when loginCreated, the new
 // login is also signed in (session cookie; no login code: the link proved the email).
 // Validation failures are 422 with { errors: { token?, password?, confirm_password? } }; a bad password keeps the link.
