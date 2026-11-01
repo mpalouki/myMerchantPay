@@ -31,7 +31,12 @@ function writeSignedInFlag(signedIn) {
 }
 
 function toUser(profile) {
-  return { email: profile?.email ?? null, merchant: profile?.merchant ?? null };
+  return {
+    email: profile?.email ?? null,
+    merchant: profile?.merchant ?? null,
+    member: profile?.member ?? null,
+    permissions: profile?.permissions ?? { merchant: [], accounts: {} },
+  };
 }
 
 export function AuthProvider({ children }) {
@@ -100,6 +105,8 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       merchant: user?.merchant ?? null,
+      member: user?.member ?? null,
+      permissions: user?.permissions ?? null,
       isAuthenticated: !!user,
       restoring,
       login,

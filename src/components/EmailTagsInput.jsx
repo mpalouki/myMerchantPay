@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
-import { EMAIL_PATTERN } from '../data/teams.js';
+import { EMAIL_PATTERN } from '../data/team.js';
 
 // Several email addresses as removable tags: typed text becomes a tag on Enter, comma,
 // semicolon, space or blur (pasting a list works too); Backspace in an empty input removes
 // the last tag. Invalid addresses stay in the input with a message; duplicates are ignored.
-export default function EmailTagsInput({ id, value, onChange, invalid, disabled }) {
+// `rejected` lists tags the server refused (shown in red).
+export default function EmailTagsInput({ id, value, onChange, invalid, disabled, rejected = [] }) {
   const [text, setText] = useState('');
   const [error, setError] = useState('');
 
@@ -39,7 +40,7 @@ export default function EmailTagsInput({ id, value, onChange, invalid, disabled 
         onClick={(e) => e.currentTarget.querySelector('input')?.focus()}
       >
         {value.map((email) => (
-          <span key={email} className="email-tags__tag">
+          <span key={email} className={`email-tags__tag${rejected.includes(email) ? ' email-tags__tag--rejected' : ''}`}>
             {email}
             <button
               type="button"

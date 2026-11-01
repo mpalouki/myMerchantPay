@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AlertDialog from '../components/AlertDialog.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 import Flag from '../components/Flag.jsx';
 import Icon from '../components/Icon.jsx';
 import WithdrawalHistory from '../components/WithdrawalHistory.jsx';
@@ -75,6 +76,8 @@ export default function Withdraw() {
   const [adding, setAdding] = useState(false);
   const navigate = useNavigate();
   const hasAccounts = saved.list.length > 0;
+  // Adding, removing or changing the default account needs withdrawal_accounts.manage.
+  const canManage = usePermissions().can('withdrawal_accounts.manage');
 
   const closeForm = () => {
     setAdding(false);
@@ -104,7 +107,7 @@ export default function Withdraw() {
   // Below the list or the form. Keyed by account: another one starts on page 1.
   const history = <WithdrawalHistory key={selectedBalance.id} account={selectedBalance} />;
 
-  if (hasAccounts && !adding) {
+  if ((hasAccounts && !adding) || !canManage) {
     return (
       <>
         <SavedAccounts
@@ -112,7 +115,7 @@ export default function Withdraw() {
           list={saved.list}
           error={saved.error}
           onChanged={loadSaved}
-          onAdd={() => setAdding(true)}
+          onAdd={canManage ? () => setAdding(true) : null}
         />
         {history}
       </>
@@ -490,7 +493,7 @@ function SavedAccounts({ account, list, error, onChanged, onAdd }) {
               </div>
               {item.isDefault ? (
                 <span className="badge badge--success">Par défaut</span>
-              ) : (
+              ) : onAdd && (
                 <button
                   type="button"
                   className="link-btn"
@@ -500,15 +503,17 @@ function SavedAccounts({ account, list, error, onChanged, onAdd }) {
                   Définir par défaut
                 </button>
               )}
-              <button
-                type="button"
-                className="icon-btn icon-btn--danger"
-                onClick={() => setDialog({ type: 'delete', item })}
-                aria-label={`Supprimer ${title}`}
-                title="Supprimer"
-              >
-                <Icon name="trash" size={16} />
-              </button>
+              {onAdd && (
+                <button
+                  type="button"
+                  className="icon-btn icon-btn--danger"
+                  onClick={() => setDialog({ type: 'delete', item })}
+                  aria-label={`Supprimer ${title}`}
+                  title="Supprimer"
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              )}
             </li>
           );
         })}
@@ -525,9 +530,11 @@ function SavedAccounts({ account, list, error, onChanged, onAdd }) {
             {account.country.name} — {account.accountNumberFormatted}
           </span>
         </div>
-        <button type="button" className="btn btn--primary btn--sm" onClick={onAdd}>
-          <Icon name="plus" size={14} /> Ajouter un compte de retrait
-        </button>
+        {onAdd && (
+          <button type="button" className="btn btn--primary btn--sm" onClick={onAdd}>
+            <Icon name="plus" size={14} /> Ajouter un compte de retrait
+          </button>
+        )}
       </div>
       <div className="card__body">
         {body}

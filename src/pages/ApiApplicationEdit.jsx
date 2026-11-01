@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import ApiIntegrationCard from '../components/ApiIntegrationCard.jsx';
 import ApplicationForm from '../components/ApplicationForm.jsx';
 import { getApplication, updateApplication } from '../api/client.js';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 import { useApplicationOptions } from '../hooks/useApplicationOptions.js';
 
 // Edit an application of "Intégrez notre API" (/dashboard/api-integration/:appId/edit,

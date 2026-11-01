@@ -185,7 +185,7 @@ function PersonalInfoTab() {
         onEdit={() => setEditing((v) => ({ ...v, tradeName: true }))}
         onChange={setTradeName}
         error={fieldErrors.tradeName}
-        disabled={submitting}
+        disabled={submitting || !info.businessEditable}
       />
       <EditableRow
         label="Nom juridique"
@@ -194,8 +194,10 @@ function PersonalInfoTab() {
         onEdit={() => setEditing((v) => ({ ...v, legalName: true }))}
         onChange={setLegalName}
         error={fieldErrors.legalName}
-        disabled={submitting}
-        lockedHint={info.legalNameEditable ? null : 'Verrouillé après la soumission du KYC'}
+        disabled={submitting || !info.businessEditable}
+        lockedHint={
+          !info.businessEditable ? 'Modifiable par un administrateur' : info.legalNameEditable ? null : 'Verrouillé après la soumission du KYC'
+        }
       />
 
       <label className="field field--stacked">
@@ -235,7 +237,7 @@ function PersonalInfoTab() {
             autoComplete="tel-national"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            disabled={submitting}
+            disabled={submitting || !info.businessEditable}
             aria-invalid={!!fieldErrors.phone}
           />
         </div>

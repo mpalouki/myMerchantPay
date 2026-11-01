@@ -184,6 +184,7 @@ body.modal-open {
     }
   }
 
+
   // Overrides the generic .field input look: the box is the wrapper.
   input,
   input:focus {
@@ -195,5 +196,27 @@ body.modal-open {
     background: transparent;
     box-shadow: none;
     font-size: 13px;
+  }
+}
+
+// Side sheet (Modal size="drawer"): full height on the right, body scrolls, a footer stays put.
+.modal-backdrop--drawer {
+  padding: 0;
+  justify-content: flex-end;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.modal--drawer {
+  display: flex;
+  flex-direction: column;
+  max-width: 580px;
+  height: 100%;
+  border-radius: 0;
+
+  .modal__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 }

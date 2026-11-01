@@ -83,7 +83,7 @@ export default function JoinTeam() {
     }
 
     if (!result.loginCreated) {
-      setState({ joined: true, teamName: invitation.teamName });
+      setState({ joined: true, merchantName: invitation.merchantName });
       return;
     }
     try {
@@ -116,7 +116,7 @@ export default function JoinTeam() {
       {state?.joined && (
         <div className="login-card register-card--done">
           <h1>{t('joinTeam.joined.title')}</h1>
-          <p>{t('joinTeam.joined.message', { team: state.teamName })}</p>
+          <p>{t('joinTeam.joined.message', { merchant: state.merchantName })}</p>
           <Link to="/login" className="btn btn--primary btn--block">
             {t('joinTeam.toLogin')}
           </Link>
@@ -125,9 +125,11 @@ export default function JoinTeam() {
 
       {state?.email && (
         <form className="login-card" onSubmit={handleSubmit} noValidate>
-          <h1>{t('joinTeam.title', { team: state.teamName })}</h1>
+          <h1>{t('joinTeam.title', { merchant: state.merchantName })}</h1>
           <p className="login-card__intro">
-            {t('joinTeam.intro', { merchant: state.merchantName, habilitation: state.habilitation })}
+            {t(state.inviterName ? 'joinTeam.introBy' : 'joinTeam.intro', { merchant: state.merchantName, inviter: state.inviterName })}
+            {state.roles.length > 0 && ` ${t('joinTeam.roles', { roles: state.roles.join(', ') })}`}
+            {state.teams.length > 0 && ` ${t('joinTeam.teams', { teams: state.teams.join(', ') })}`}
           </p>
 
           <label className="field field--stacked">

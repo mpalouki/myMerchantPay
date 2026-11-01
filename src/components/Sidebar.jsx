@@ -6,6 +6,7 @@ import { SIDEBAR_ITEMS, RELOAD_SUBMENU, TRANSFER_ITEM, WITHDRAW_ITEM } from '../
 import { useAuth } from '../context/AuthContext.jsx';
 import { useAccount } from '../context/AccountContext.jsx';
 import Flag from './Flag.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 
 const linkClass = ({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`;
 
@@ -16,6 +17,11 @@ export default function Sidebar({ collapsed, onToggle, onClose }) {
   const { selectedBalance, loading: accountLoading } = useAccount();
   const location = useLocation();
   const [reloadOpen, setReloadOpen] = useState(location.pathname.startsWith('/dashboard/reload'));
+  // Only the pages the login's roles open, on the selected account.
+  const { can } = usePermissions();
+  const allowed = (item) => !item.permission || can(item.permission);
+  const reloadItems = RELOAD_SUBMENU.filter(allowed);
+  const moneyItems = [WITHDRAW_ITEM, TRANSFER_ITEM].filter(allowed);
 
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`} aria-label="Navigation">
@@ -43,7 +49,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }) {
       )}
 
       <nav className="sidebar__nav">
-        {SIDEBAR_ITEMS.map((item) => (
+        {SIDEBAR_ITEMS.filter(allowed).map((item) => (
           <NavLink
             key={item.key}
             to={item.path}
@@ -58,25 +64,29 @@ export default function Sidebar({ collapsed, onToggle, onClose }) {
         ))}
       </nav>
 
-      <div className="sidebar__group-label">{!collapsed && 'Mouvements de fonds'}</div>
+      {(reloadItems.length > 0 || moneyItems.length > 0) && (
+        <div className="sidebar__group-label">{!collapsed && 'Mouvements de fonds'}</div>
+      )}
 
       <nav className="sidebar__nav">
-        <button
-          type="button"
-          className="sidebar__link"
-          onClick={() => setReloadOpen((v) => !v)}
-          aria-expanded={reloadOpen}
-          title={collapsed ? 'Recharger le compte' : undefined}
-        >
-          <Icon name="plus" />
-          {!collapsed && <span>Recharger le compte</span>}
-          {!collapsed && (
-            <Icon name={reloadOpen ? 'chevronDown' : 'chevronRight'} size={14} className="sidebar__caret" />
-          )}
-        </button>
-        {reloadOpen && !collapsed && (
+        {reloadItems.length > 0 && (
+          <button
+            type="button"
+            className="sidebar__link"
+            onClick={() => setReloadOpen((v) => !v)}
+            aria-expanded={reloadOpen}
+            title={collapsed ? 'Recharger le compte' : undefined}
+          >
+            <Icon name="plus" />
+            {!collapsed && <span>Recharger le compte</span>}
+            {!collapsed && (
+              <Icon name={reloadOpen ? 'chevronDown' : 'chevronRight'} size={14} className="sidebar__caret" />
+            )}
+          </button>
+        )}
+        {reloadOpen && !collapsed && reloadItems.length > 0 && (
           <div className="sidebar__submenu">
-            {RELOAD_SUBMENU.map((sub) => (
+            {reloadItems.map((sub) => (
               <NavLink
                 key={sub.key}
                 to={sub.path}
@@ -89,7 +99,7 @@ export default function Sidebar({ collapsed, onToggle, onClose }) {
           </div>
         )}
 
-        {[WITHDRAW_ITEM, TRANSFER_ITEM].map((item) => (
+        {moneyItems.map((item) => (
           <NavLink key={item.key} to={item.path} className={linkClass} title={collapsed ? item.label : undefined}>
             <Icon name={item.icon} />
             {!collapsed && <span>{item.label}</span>}

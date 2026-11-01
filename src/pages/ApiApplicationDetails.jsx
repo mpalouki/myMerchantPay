@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
+import usePermissions from '../hooks/usePermissions.js';
 import DeleteApplicationDialog from '../components/DeleteApplicationDialog.jsx';
 import { deleteApplication, getApplication } from '../api/client.js';
 import { SERVICE_LABELS, groupPaymentMethods } from '../data/apiApplications.js';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 
 // "Détails" of an application of "Intégrez notre API" (/dashboard/api-integration/:appId),
 // opened from the list in ApiIntegration.jsx: GET /api/merchant/applications/{id}, with its
@@ -81,13 +82,20 @@ function Status({ on, labels = ['Activé', 'Désactivé'] }) {
 }
 
 function ApplicationPanel({ app, revealed, onToggleReveal, onDelete }) {
+  // Keys are null without the applications.secrets permission; managing needs applications.manage.
+  const { can } = usePermissions();
+  const canManage = can('applications.manage', app.balance.id);
+  const keys = app.keys;
+
   return (
     <>
       <div className="section-row">
         <h3 className="section-title">Informations sur l&apos;application</h3>
-        <button type="button" className="btn btn--outline" onClick={onToggleReveal}>
-          <Icon name="eye" size={16} /> {revealed ? 'Masquer les clés api' : 'Afficher les clés api'}
-        </button>
+        {keys && (
+          <button type="button" className="btn btn--outline" onClick={onToggleReveal}>
+            <Icon name="eye" size={16} /> {revealed ? 'Masquer les clés api' : 'Afficher les clés api'}
+          </button>
+        )}
       </div>
 
       <table className="kv-table">
@@ -134,28 +142,36 @@ function ApplicationPanel({ app, revealed, onToggleReveal, onDelete }) {
               <Status on={app.invoiceEnabled} />
             </td>
           </tr>
-          <tr>
-            <th>Clé Principale</th>
-            <td>
-              <KeyField value={app.keys.master} revealed={revealed} />
-            </td>
-          </tr>
+          {keys && (
+            <tr>
+              <th>Clé Principale</th>
+              <td>
+                <KeyField value={keys.master} revealed={revealed} />
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
-      <h3 className="section-title">Clés API de Test</h3>
-      <div className="key-group">
-        <KeyRow label="Clé Publique" value={app.keys.test.public} revealed={revealed} />
-        <KeyRow label="Clé Privée" value={app.keys.test.private} revealed={revealed} />
-        <KeyRow label="Token" value={app.keys.test.token} revealed={revealed} />
-      </div>
+      {keys ? (
+        <>
+          <h3 className="section-title">Clés API de Test</h3>
+          <div className="key-group">
+            <KeyRow label="Clé Publique" value={keys.test.public} revealed={revealed} />
+            <KeyRow label="Clé Privée" value={keys.test.private} revealed={revealed} />
+            <KeyRow label="Token" value={keys.test.token} revealed={revealed} />
+          </div>
 
-      <h3 className="section-title">Clés API de Production</h3>
-      <div className="key-group">
-        <KeyRow label="Clé Publique" value={app.keys.live.public} revealed={revealed} />
-        <KeyRow label="Clé Privée" value={app.keys.live.private} revealed={revealed} />
-        <KeyRow label="Token" value={app.keys.live.token} revealed={revealed} />
-      </div>
+          <h3 className="section-title">Clés API de Production</h3>
+          <div className="key-group">
+            <KeyRow label="Clé Publique" value={keys.live.public} revealed={revealed} />
+            <KeyRow label="Clé Privée" value={keys.live.private} revealed={revealed} />
+            <KeyRow label="Token" value={keys.live.token} revealed={revealed} />
+          </div>
+        </>
+      ) : (
+        <p className="muted">Vos rôles ne vous permettent pas de voir les clés API de cette application.</p>
+      )}
 
       <h3 className="section-title">Méthodes de paiement autorisées</h3>
       {app.paymentMethods.length === 0 ? (
@@ -198,15 +214,19 @@ function ApplicationPanel({ app, revealed, onToggleReveal, onDelete }) {
         <Status on={app.ipn.enabled} />
       </div>
 
-      <h3 className="section-title">Actions</h3>
-      <div className="action-row">
-        <Link to={`/dashboard/api-integration/${app.id}/edit`} className="btn btn--primary">
-          Modifier la configuration
-        </Link>
-        <button type="button" className="btn btn--danger" onClick={onDelete}>
-          Supprimer la configuration
-        </button>
-      </div>
+      {canManage && (
+        <>
+          <h3 className="section-title">Actions</h3>
+          <div className="action-row">
+            <Link to={`/dashboard/api-integration/${app.id}/edit`} className="btn btn--primary">
+              Modifier la configuration
+            </Link>
+            <button type="button" className="btn btn--danger" onClick={onDelete}>
+              Supprimer la configuration
+            </button>
+          </div>
+        </>
+      )}
       <Link to="/dashboard/api-integration" className="link-btn">
         Retour à la page précédente
       </Link>

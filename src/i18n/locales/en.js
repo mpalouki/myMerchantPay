@@ -170,8 +170,11 @@ export default {
   },
 
   joinTeam: {
-    title: 'Join the {{team}} team',
-    intro: '{{merchant}} invites you to join this team on their merchant space, with the {{habilitation}} habilitation.',
+    title: "Join {{merchant}}'s team",
+    intro: '{{merchant}} invites you to join their team on their merchant space.',
+    introBy: "{{inviter}} invites you to join {{merchant}}'s team on their merchant space.",
+    roles: 'Roles: {{roles}}.',
+    teams: 'Teams: {{teams}}.',
     checking: 'Checking your invitation…',
     existingLogin: 'You already have a MyMerchantPay login with this address: accept, then sign in as usual.',
     submitting: 'Confirming…',
@@ -185,7 +188,7 @@ export default {
     },
     joined: {
       title: 'Invitation accepted',
-      message: 'You are now a member of the {{team}} team. Sign in with your usual credentials.',
+      message: "You are now a member of {{merchant}}'s team. Sign in with your usual credentials.",
     },
     errors: {
       failed: 'Unable to accept the invitation. Please try again.',

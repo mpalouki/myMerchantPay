@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SERVICE_LABELS, groupPaymentMethods } from '../data/apiApplications.js';
-import { readApiErrors } from '../data/teams.js';
+import { readApiErrors } from '../data/team.js';
 
 // Configuration form of an "Intégrez notre API" application (designs "2- Add a…" and
 // "3- Edit Configuration-des-applications.pdf"): identity, services, production mode,

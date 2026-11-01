@@ -171,8 +171,11 @@ export default {
   },
 
   joinTeam: {
-    title: "Rejoindre l'équipe {{team}}",
-    intro: '{{merchant}} vous invite à rejoindre cette équipe sur son espace marchand, avec l’habilitation {{habilitation}}.',
+    title: "Rejoindre l'équipe de {{merchant}}",
+    intro: '{{merchant}} vous invite à rejoindre son équipe sur son espace marchand.',
+    introBy: '{{inviter}} vous invite à rejoindre l’équipe de {{merchant}} sur son espace marchand.',
+    roles: 'Rôles : {{roles}}.',
+    teams: 'Équipes : {{teams}}.',
     checking: "Vérification de l'invitation…",
     existingLogin: 'Vous avez déjà un accès MyMerchantPay avec cette adresse : acceptez, puis connectez-vous comme d’habitude.',
     submitting: 'Validation…',
@@ -186,7 +189,7 @@ export default {
     },
     joined: {
       title: 'Invitation acceptée',
-      message: "Vous faites maintenant partie de l'équipe {{team}}. Connectez-vous avec vos identifiants habituels.",
+      message: "Vous faites maintenant partie de l'équipe de {{merchant}}. Connectez-vous avec vos identifiants habituels.",
     },
     errors: {
       failed: "Impossible d'accepter l'invitation. Veuillez réessayer.",
